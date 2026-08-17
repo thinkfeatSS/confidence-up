@@ -1,0 +1,631 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum OtpType {
+  VERIFY_EMAIL
+  FORGOT_PASSWORD
+}
+
+enum Platform {
+  IOS
+  ANDROID
+}
+
+enum DocumentType {
+  TERMS
+  PRIVACY
+}
+
+enum BadgeTier {
+  BEGINNER
+  GROWTH
+  ADVANCED
+  SPECIAL
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum XpSource {
+  MISSION
+  CHALLENGE
+  STREAK
+  BADGE
+  DAILY_CHECKIN
+  FEAR_LEVEL
+  SPEECH_SESSION
+  SKILL_NODE
+  REFERRAL
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum ReferralStatus {
+  PENDING
+  COMPLETED
+}
+
+enum AnnouncementType {
+  INFO
+  WARNING
+  UPDATE
+}
+
+enum NotificationType {
+  BADGE_EARNED
+  LEVEL_UP
+  STREAK_REMINDER
+  MISSION_REMINDER
+  ANNOUNCEMENT
+  SUPPORT_REPLY
+  SYSTEM
+}
+
+enum ActivityEventType {
+  MISSION_COMPLETED
+  CHALLENGE_COMPLETED
+  BADGE_EARNED
+  LEVEL_UP
+  STREAK_MILESTONE
+  FEAR_LEVEL_COMPLETED
+  SPEECH_SESSION
+  SKILL_NODE_UNLOCKED
+  DAILY_CHECKIN
+  REFERRAL_COMPLETED
+}
+
+// ─── Auth & Users ─────────────────────────────────────────────────────────────
+
+model User {
+  id                   String    @id @default(cuid())
+  email                String    @unique
+  name                 String
+  passwordHash         String?
+  googleId             String?   @unique
+  avatarUrl            String?
+  role                 Role      @default(USER)
+  isVerified           Boolean   @default(false)
+  isBlocked            Boolean   @default(false)
+  blockReason          String?
+  onboardingCompleted  Boolean   @default(false)
+  onboardingFears      Json?
+  onboardingGoals      Json?
+  onboardingDailyTime  String?
+  preferredLanguages   Json?
+  xpTotal              Int       @default(0)
+  level                Int       @default(1)
+  confidenceScore      Float     @default(0)
+  referralCode         String    @unique
+  referredByCode       String?
+  deletionRequestedAt  DateTime?
+  deletionScheduledAt  DateTime?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  emailOtps            EmailOtp[]
+  refreshTokens        RefreshToken[]
+  devices              Device[]
+  termsAcceptances     TermsAcceptance[]
+  settings             UserSettings?
+  accountDeletionReq   AccountDeletionRequest?
+  userBadges           UserBadge[]
+  userFearProgress     UserFearProgress[]
+  userMissions         UserMission[]
+  userChallenges       UserChallenge[]
+  userSkillNodes       UserSkillNode[]
+  xpTransactions       XpTransaction[]
+  streak               Streak?
+  dailyCheckins        DailyCheckin[]
+  speechSessions       SpeechSession[]
+  journalEntries       JournalEntry[]
+  notifications        Notification[]
+  supportTickets       SupportTicket[]
+  userFeedback         UserFeedback[]
+  activityTimeline     ActivityTimeline[]
+  referralsSent        Referral[]         @relation("Referrer")
+  referralsReceived    Referral[]         @relation("Referee")
+  auditLogs            AuditLog[]
+
+  @@map("users")
+}
+
+model EmailOtp {
+  id        String    @id @default(cuid())
+  userId    String
+  otpHash   String
+  type      OtpType
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("email_otps")
+}
+
+model RefreshToken {
+  id        String    @id @default(cuid())
+  userId    String
+  deviceId  String?
+  tokenHash String
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("refresh_tokens")
+}
+
+// ─── Devices & Compliance ─────────────────────────────────────────────────────
+
+model Device {
+  id          String    @id @default(cuid())
+  userId      String
+  fcmToken    String?
+  platform    Platform
+  deviceName  String?
+  appVersion  String?
+  lastSeenAt  DateTime  @default(now())
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("devices")
+}
+
+model TermsAcceptance {
+  id           String       @id @default(cuid())
+  userId       String
+  documentType DocumentType
+  version      String
+  acceptedAt   DateTime     @default(now())
+  ipAddress    String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("terms_acceptances")
+}
+
+model AccountDeletionRequest {
+  id                  String    @id @default(cuid())
+  userId              String    @unique
+  reason              String?
+  scheduledDeletionAt DateTime
+  cancelledAt         DateTime?
+  processedAt         DateTime?
+  createdAt           DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("account_deletion_requests")
+}
+
+// ─── Content (Admin-Managed) ──────────────────────────────────────────────────
+
+model Badge {
+  id          String    @id @default(cuid())
+  name        String
+  description String
+  icon        String
+  tier        BadgeTier
+  category    String
+  criteria    Json
+  xpReward    Int       @default(0)
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  userBadges UserBadge[]
+
+  @@map("badges")
+}
+
+model UserBadge {
+  id       String   @id @default(cuid())
+  userId   String
+  badgeId  String
+  earnedAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge Badge @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, badgeId])
+  @@map("user_badges")
+}
+
+model FearCategory {
+  id          String  @id @default(cuid())
+  name        String
+  description String
+  icon        String
+  color       String
+  orderIndex  Int     @default(0)
+  isActive    Boolean @default(true)
+
+  fearLevels FearLevel[]
+
+  @@map("fear_categories")
+}
+
+model FearLevel {
+  id          String @id @default(cuid())
+  categoryId  String
+  levelNumber Int
+  title       String
+  description String @db.Text
+  xpReward    Int    @default(50)
+
+  category         FearCategory       @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  userFearProgress UserFearProgress[]
+
+  @@map("fear_levels")
+}
+
+model UserFearProgress {
+  id          String   @id @default(cuid())
+  userId      String
+  fearLevelId String
+  completedAt DateTime @default(now())
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fearLevel FearLevel @relation(fields: [fearLevelId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, fearLevelId])
+  @@map("user_fear_progress")
+}
+
+model Mission {
+  id               String     @id @default(cuid())
+  title            String
+  description      String     @db.Text
+  category         String
+  difficulty       Difficulty
+  xpReward         Int        @default(50)
+  estimatedMinutes Int        @default(10)
+  tips             Json
+  prompt           String     @db.Text
+  isActive         Boolean    @default(true)
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+
+  userMissions   UserMission[]
+  dailyMissions  DailyMission[]
+  speechSessions SpeechSession[]
+
+  @@map("missions")
+}
+
+model UserMission {
+  id          String    @id @default(cuid())
+  userId      String
+  missionId   String
+  completedAt DateTime?
+  isBookmarked Boolean  @default(false)
+  createdAt   DateTime  @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mission Mission @relation(fields: [missionId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, missionId])
+  @@map("user_missions")
+}
+
+model DailyMission {
+  id        String   @id @default(cuid())
+  missionId String
+  date      DateTime @db.Date
+
+  mission Mission @relation(fields: [missionId], references: [id], onDelete: Cascade)
+
+  @@unique([date])
+  @@map("daily_missions")
+}
+
+model Challenge {
+  id           String     @id @default(cuid())
+  title        String
+  description  String     @db.Text
+  category     String
+  difficulty   Difficulty
+  xpReward     Int        @default(100)
+  tips         Json
+  durationDays Int        @default(7)
+  isActive     Boolean    @default(true)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  userChallenges UserChallenge[]
+  speechSessions SpeechSession[]
+
+  @@map("challenges")
+}
+
+model UserChallenge {
+  id           String    @id @default(cuid())
+  userId       String
+  challengeId  String
+  startedAt    DateTime  @default(now())
+  completedAt  DateTime?
+  isBookmarked Boolean   @default(false)
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  challenge Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, challengeId])
+  @@map("user_challenges")
+}
+
+model SkillNode {
+  id           String  @id @default(cuid())
+  name         String
+  description  String
+  branch       String
+  tier         Int     @default(1)
+  parentNodeId String?
+  xpRequired   Int     @default(0)
+  positionX    Float   @default(0)
+  positionY    Float   @default(0)
+  isActive     Boolean @default(true)
+
+  parent         SkillNode?      @relation("SkillNodeChildren", fields: [parentNodeId], references: [id])
+  children       SkillNode[]     @relation("SkillNodeChildren")
+  userSkillNodes UserSkillNode[]
+
+  @@map("skill_nodes")
+}
+
+model UserSkillNode {
+  id          String   @id @default(cuid())
+  userId      String
+  skillNodeId String
+  unlockedAt  DateTime @default(now())
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skillNode SkillNode @relation(fields: [skillNodeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, skillNodeId])
+  @@map("user_skill_nodes")
+}
+
+// ─── Gamification ─────────────────────────────────────────────────────────────
+
+model XpTransaction {
+  id          String    @id @default(cuid())
+  userId      String
+  amount      Int
+  source      XpSource
+  referenceId String?
+  createdAt   DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("xp_transactions")
+}
+
+model Streak {
+  id              String    @id @default(cuid())
+  userId          String    @unique
+  currentStreak   Int       @default(0)
+  longestStreak   Int       @default(0)
+  lastCheckinDate DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("streaks")
+}
+
+model DailyCheckin {
+  id        String   @id @default(cuid())
+  userId    String
+  date      DateTime @db.Date
+  xpEarned  Int      @default(10)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+  @@map("daily_checkins")
+}
+
+// ─── App Features ─────────────────────────────────────────────────────────────
+
+model SpeechSession {
+  id                    String   @id @default(cuid())
+  userId                String
+  transcript            String   @db.LongText
+  languageDetected      String?
+  wordCount             Int      @default(0)
+  sentenceCount         Int      @default(0)
+  fillerCount           Int      @default(0)
+  vocabularyRichness    Float    @default(0)
+  repetitionScore       Float    @default(0)
+  averageVolume         Float    @default(0)
+  pauseFrequency        Float    @default(0)
+  speechSpeedWpm        Float    @default(0)
+  fluencyScore          Float    @default(0)
+  topicRelevanceScore   Float    @default(0)
+  overallConfidenceScore Float   @default(0)
+  durationSeconds       Int      @default(0)
+  xpEarned              Int      @default(0)
+  languageMix           Json?
+  coachingFeedback      Json?
+  personalizedSuggestions Json?
+  miniMission           String?
+  analysisMeta          Json?
+  topic                 String?
+  confidenceComponents  Json?
+  localMetrics          Json?
+  aiInsights            Json?
+  fillerBreakdown       Json?
+  missionId             String?
+  challengeId           String?
+  createdAt             DateTime @default(now())
+
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mission   Mission?   @relation(fields: [missionId], references: [id])
+  challenge Challenge? @relation(fields: [challengeId], references: [id])
+
+  @@map("speech_sessions")
+}
+
+model JournalEntry {
+  id               String   @id @default(cuid())
+  userId           String
+  title            String
+  body             String   @db.LongText
+  mood             Int      @default(3)
+  reflectionPrompt String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("journal_entries")
+}
+
+model Notification {
+  id          String           @id @default(cuid())
+  userId      String
+  title       String
+  body        String
+  type        NotificationType
+  referenceId String?
+  isRead      Boolean          @default(false)
+  sentAt      DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+model Announcement {
+  id        String           @id @default(cuid())
+  title     String
+  body      String           @db.Text
+  type      AnnouncementType @default(INFO)
+  startsAt  DateTime
+  endsAt    DateTime
+  isActive  Boolean          @default(true)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  @@map("announcements")
+}
+
+model SupportTicket {
+  id            String       @id @default(cuid())
+  userId        String
+  subject       String
+  body          String       @db.Text
+  status        TicketStatus @default(OPEN)
+  adminResponse String?      @db.Text
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("support_tickets")
+}
+
+model UserSettings {
+  userId            String  @id
+  dailyReminders    Boolean @default(false)
+  soundEffects      Boolean @default(true)
+  darkMode          Boolean @default(true)
+  weeklyReportEmail Boolean @default(false)
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_settings")
+}
+
+model UserFeedback {
+  id          String   @id @default(cuid())
+  userId      String
+  rating      Int
+  comment     String?
+  featureArea String?
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_feedback")
+}
+
+model ActivityTimeline {
+  id         String            @id @default(cuid())
+  userId     String
+  eventType  ActivityEventType
+  eventData  Json
+  createdAt  DateTime          @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("activity_timeline")
+}
+
+model Referral {
+  id            String         @id @default(cuid())
+  referrerId    String
+  refereeId     String         @unique
+  status        ReferralStatus @default(PENDING)
+  xpRewardedAt  DateTime?
+  createdAt     DateTime       @default(now())
+
+  referrer User @relation("Referrer", fields: [referrerId], references: [id], onDelete: Cascade)
+  referee  User @relation("Referee", fields: [refereeId], references: [id], onDelete: Cascade)
+
+  @@map("referrals")
+}
+
+model AppVersion {
+  id                  String   @id @default(cuid())
+  platform            Platform
+  version             String
+  isForceUpdate       Boolean  @default(false)
+  minSupportedVersion String
+  releaseNotes        String?
+  createdAt           DateTime @default(now())
+
+  @@map("app_versions")
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  adminId    String
+  action     String
+  targetType String
+  targetId   String?
+  oldValue   Json?
+  newValue   Json?
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+
+  admin User @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@map("audit_logs")
+}

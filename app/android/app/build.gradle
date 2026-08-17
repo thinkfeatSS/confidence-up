@@ -1,0 +1,252 @@
+apply plugin: "com.android.application"
+apply plugin: "org.jetbrains.kotlin.android"
+apply plugin: "com.facebook.react"
+apply plugin: "com.google.gms.google-services"
+
+project.ext.envConfigFiles = [
+    debug: ".env.development",
+    release: ".env",
+]
+apply from: new File(["node", "--print", "require.resolve('react-native-config/package.json')"].execute(null, rootDir).text.trim(), "../android/dotenv.gradle")
+
+/**
+ * This is the configuration block to customize your React Native Android app.
+ * By default you don't need to apply any configuration, just uncomment the lines you need.
+ */
+react {
+    /* Folders */
+    //   The root of your project, i.e. where "package.json" lives. Default is '../..'
+    // root = file("../../")
+    //   The folder where the react-native NPM package is. Default is ../../node_modules/react-native
+    // reactNativeDir = file("../../node_modules/react-native")
+    //   The folder where the react-native Codegen package is. Default is ../../node_modules/@react-native/codegen
+    // codegenDir = file("../../node_modules/@react-native/codegen")
+    //   The cli.js file which is the React Native CLI entrypoint. Default is ../../node_modules/react-native/cli.js
+    // cliFile = file("../../node_modules/react-native/cli.js")
+
+    /* Variants */
+    //   The list of variants to that are debuggable. For those we're going to
+    //   skip the bundling of the JS bundle and the assets. Default is "debug", "debugOptimized".
+    //   If you add flavors like lite, prod, etc. you'll have to list your debuggableVariants.
+    // debuggableVariants = ["liteDebug", "liteDebugOptimized", "prodDebug", "prodDebugOptimized"]
+
+    /* Bundling */
+    //   A list containing the node command and its flags. Default is just 'node'.
+    // nodeExecutableAndArgs = ["node"]
+    //
+    //   The command to run when bundling. By default is 'bundle'
+    // bundleCommand = "ram-bundle"
+    //
+    //   The path to the CLI configuration file. Default is empty.
+    // bundleConfig = file(../rn-cli.config.js)
+    //
+    //   The name of the generated asset file containing your JS bundle
+    // bundleAssetName = "MyApplication.android.bundle"
+    //
+    //   The entry file for bundle generation. Default is 'index.android.js' or 'index.js'
+    // entryFile = file("../js/MyApplication.android.js")
+    //
+    //   A list of extra flags to pass to the 'bundle' commands.
+    //   See https://github.com/react-native-community/cli/blob/main/docs/commands.md#bundle
+    // extraPackagerArgs = []
+
+    /* Hermes Commands */
+    //   The hermes compiler command to run. By default it is 'hermesc'
+    // hermesCommand = "$rootDir/my-custom-hermesc/bin/hermesc"
+    //
+    //   The list of flags to pass to the Hermes compiler. By default is "-O", "-output-source-map"
+    // hermesFlags = ["-O", "-output-source-map"]
+
+    /* Autolinking */
+    autolinkLibrariesWithApp()
+}
+
+/**
+ * Set this to true to Run Proguard on Release builds to minify the Java bytecode.
+ */
+def enableProguardInReleaseBuilds = false
+
+/**
+ * The preferred build flavor of JavaScriptCore (JSC)
+ *
+ * For example, to use the international variant, you can use:
+ * `def jscFlavor = io.github.react-native-community:jsc-android-intl:2026004.+`
+ *
+ * The international variant includes ICU i18n library and necessary data
+ * allowing to use e.g. `Date.toLocaleString` and `String.localeCompare` that
+ * give correct results when using with locales other than en-US. Note that
+ * this variant is about 6MiB larger per architecture than default.
+ */
+def jscFlavor = 'io.github.react-native-community:jsc-android:2026004.+'
+
+android {
+    ndkVersion rootProject.ext.ndkVersion
+    buildToolsVersion rootProject.ext.buildToolsVersion
+    compileSdk rootProject.ext.compileSdkVersion
+
+    namespace "com.confidenceup"
+    defaultConfig {
+        applicationId "com.confidenceup"
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
+        versionCode 1
+        versionName "1.0"
+        ndk {
+            abiFilters "arm64-v8a"
+        }
+    }
+    signingConfigs {
+        debug {
+            storeFile file('debug.keystore')
+            storePassword 'android'
+            keyAlias 'androiddebugkey'
+            keyPassword 'android'
+        }
+    }
+    buildTypes {
+        debug {
+            signingConfig signingConfigs.debug
+        }
+        release {
+            // Caution! In production, you need to generate your own keystore file.
+            // see https://reactnative.dev/docs/signed-apk-android.
+            signingConfig signingConfigs.debug
+            minifyEnabled enableProguardInReleaseBuilds
+            proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+        }
+    }
+}
+
+/**
+ * RN 0.76+ New Architecture clean fix:
+ * `externalNativeBuildClean*` re-runs CMake against codegen/jni paths in
+ * node_modules that were already deleted by other clean tasks. Disable those
+ * tasks and wipe native caches directly instead.
+ */
+tasks.configureEach { task ->
+    if (task.name.startsWith("externalNativeBuildClean")) {
+        task.enabled = false
+    }
+}
+
+tasks.register("cleanNativeCaches", Delete) {
+    delete file("${projectDir}/.cxx")
+    // App-generated autolinking sources (rebuilt from autolinking.json on preBuild).
+    delete file("${projectDir}/build/generated/autolinking")
+}
+
+/**
+ * autolinking.json is normally created during settings.gradle (Gradle configuration phase).
+ * `./gradlew clean assembleRelease` deletes build outputs first, so regenerate the config
+ * before RN autolinking tasks run in the same invocation.
+ */
+def autolinkingJsonFile = file("${rootProject.projectDir}/build/generated/autolinking/autolinking.json")
+
+tasks.register("ensureAutolinkingConfig") {
+    outputs.file(autolinkingJsonFile)
+    doLast {
+        if (!autolinkingJsonFile.exists()) {
+            autolinkingJsonFile.parentFile.mkdirs()
+            def result = providers.exec {
+                workingDir(rootProject.file(".."))
+                commandLine("npx", "@react-native-community/cli", "config")
+            }
+            autolinkingJsonFile.text = result.standardOutput.asText.get()
+        }
+    }
+}
+
+tasks.named("clean").configure {
+    dependsOn("cleanNativeCaches")
+}
+
+/**
+ * After `clean`, Reanimated/Worklets prefab dirs are removed but the app module
+ * can configure CMake before those libraries rebuild. Ensure native prefab packages
+ * exist before any release CMake configure (fixes Windows clean + assembleRelease).
+ */
+def googleServicesFile = file("$projectDir/google-services.json")
+def googleSignInGeneratedTs = file("$rootDir/../src/config/googleSignIn.generated.ts")
+
+tasks.register("generateGoogleSignInConfig") {
+    inputs.file(googleServicesFile)
+    outputs.file(googleSignInGeneratedTs)
+    doLast {
+        def gs = new groovy.json.JsonSlurper().parse(googleServicesFile)
+        def clients = gs.client?.getAt(0)?.oauth_client ?: []
+        def webClient = clients.find { it.client_type == 3 }?.client_id
+        def packageName = gs.client?.getAt(0)?.client_info?.android_client_info?.package_name
+
+        if (!webClient) {
+            googleSignInGeneratedTs.text = """/** Generated by Gradle from android/app/google-services.json — do not edit. */
+export const GOOGLE_WEB_CLIENT_ID_FROM_FIREBASE: string | null = null;
+"""
+            def setupMsg = """
+Google Sign-In is not ready in google-services.json (oauth_client is empty).
+
+Firebase Console → project "confidence-up":
+  1. Authentication → Get started (if you have not already)
+  2. Sign-in method → Google → Enable → Save
+  3. Project settings → Your apps → com.confidenceup → download google-services.json
+     Replace app/android/app/google-services.json
+  4. Copy the Web client ID to app/.env (GOOGLE_WEB_CLIENT_ID) and API GOOGLE_CLIENT_ID
+  5. Rebuild: ./gradlew clean assembleRelease
+
+See app/android/GOOGLE_SIGNIN.md
+""".trim()
+            if (gradle.startParameter.taskNames.any { it.toLowerCase().contains('release') }) {
+                throw new GradleException(setupMsg)
+            }
+            logger.warn(setupMsg)
+            return
+        }
+
+        googleSignInGeneratedTs.text = """/** Generated by Gradle from android/app/google-services.json — do not edit. */
+export const GOOGLE_WEB_CLIENT_ID_FROM_FIREBASE: string | null = '${webClient}';
+export const GOOGLE_ANDROID_PACKAGE_FROM_FIREBASE = '${packageName}';
+"""
+        logger.lifecycle("Google Sign-In: using Web client from google-services.json (${webClient.take(20)}...)")
+    }
+}
+
+afterEvaluate {
+    tasks.named("preBuild").configure { dependsOn("generateGoogleSignInConfig") }
+
+    // Metro bundle reads app/src (including googleSignIn.generated.ts) — declare explicit dependency for Gradle 9.
+    tasks.matching { it.name.startsWith("createBundle") && it.name.endsWith("JsAndAssets") }.configureEach {
+        dependsOn("generateGoogleSignInConfig")
+    }
+
+    ["generateAutolinkingNewArchitectureFiles", "generateAutolinkingPackageList", "generateReactNativeEntryPoint"].each { taskName ->
+        tasks.findByName(taskName)?.dependsOn("ensureAutolinkingConfig")
+    }
+
+    def nativePrefabDeps = [
+        ":react-native-worklets:prefabReleasePackage",
+        ":react-native-worklets:externalNativeBuildRelease",
+        ":react-native-reanimated:prefabReleasePackage",
+        ":react-native-reanimated:externalNativeBuildRelease",
+    ]
+
+    tasks.configureEach { task ->
+        if (task.name.startsWith("configureCMakeRelWithDebInfo")) {
+            nativePrefabDeps.each { dep ->
+                def depTask = tasks.findByPath(dep)
+                if (depTask != null) {
+                    task.dependsOn(depTask)
+                }
+            }
+        }
+    }
+}
+
+dependencies {
+    // The version of react-native is set by the React Native Gradle Plugin
+    implementation("com.facebook.react:react-android")
+
+    if (hermesEnabled.toBoolean()) {
+        implementation("com.facebook.react:hermes-android")
+    } else {
+        implementation jscFlavor
+    }
+}

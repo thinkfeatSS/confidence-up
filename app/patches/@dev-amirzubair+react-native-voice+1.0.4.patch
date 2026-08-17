@@ -1,0 +1,60 @@
+diff --git a/node_modules/@dev-amirzubair/react-native-voice/android/src/main/java/com/wenkesj/voice/Voice.kt b/node_modules/@dev-amirzubair/react-native-voice/android/src/main/java/com/wenkesj/voice/Voice.kt
+index 086f395..572817c 100644
+--- a/node_modules/@dev-amirzubair/react-native-voice/android/src/main/java/com/wenkesj/voice/Voice.kt
++++ b/node_modules/@dev-amirzubair/react-native-voice/android/src/main/java/com/wenkesj/voice/Voice.kt
+@@ -17,7 +17,6 @@ import com.facebook.react.bridge.Arguments
+ import com.facebook.react.bridge.Callback
+ import com.facebook.react.bridge.Promise
+ import com.facebook.react.bridge.ReactApplicationContext
+-import com.facebook.react.bridge.ReactContext.RCTDeviceEventEmitter
+ import com.facebook.react.bridge.ReadableMap
+ import com.facebook.react.bridge.WritableMap
+ import com.facebook.react.modules.core.PermissionAwareActivity
+@@ -311,8 +310,7 @@ class Voice(context: ReactApplicationContext) : RecognitionListener {
+     val mainHandler = Handler(reactContext.mainLooper)
+     mainHandler.post {
+       try {
+-        val deviceEventEmitter = reactContext.getJSModule(RCTDeviceEventEmitter::class.java)
+-        deviceEventEmitter?.emit(eventName, params)
++        reactContext.emitDeviceEvent(eventName, params)
+       } catch (e: Exception) {
+         // Silently ignore event emission errors
+       }
+@@ -384,11 +382,10 @@ class Voice(context: ReactApplicationContext) : RecognitionListener {
+     
+     if (results != null) {
+       val matches = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
+-      if (matches != null) {
+-        for (result in matches) {
+-          if (!result.isNullOrEmpty()) {
+-            arr.pushString(result)
+-          }
++      if (matches != null && matches.isNotEmpty()) {
++        val best = matches[0]
++        if (!best.isNullOrEmpty()) {
++          arr.pushString(best)
+         }
+       }
+     }
+@@ -405,10 +402,9 @@ class Voice(context: ReactApplicationContext) : RecognitionListener {
+       val matches = partialResults.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
+ 
+       if (matches != null && matches.isNotEmpty()) {
+-        for (result in matches) {
+-          if (!result.isNullOrEmpty()) {
+-            arr.pushString(result)
+-          }
++        val best = matches[0]
++        if (!best.isNullOrEmpty()) {
++          arr.pushString(best)
+         }
+       }
+     }
+@@ -419,6 +415,6 @@ class Voice(context: ReactApplicationContext) : RecognitionListener {
+   }
+ 
+   override fun onEvent(eventType: Int, params: Bundle?) {
+-    TODO("Not yet implemented")
++    // No-op: required on newer API levels; must not throw.
+   }
+ }

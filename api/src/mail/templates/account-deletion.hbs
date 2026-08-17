@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Account Deletion Scheduled</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #0f0f1a; color: #e0e0e0; margin: 0; padding: 0; }
+    .container { max-width: 480px; margin: 40px auto; background: #1a1a2e; border-radius: 16px; overflow: hidden; }
+    .header { background: #7f1d1d; padding: 32px; text-align: center; }
+    .header h1 { color: #fff; margin: 0; font-size: 24px; }
+    .body { padding: 32px; }
+    .body p { color: #ccc; line-height: 1.6; }
+    .warning { background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; border-radius: 8px; padding: 16px; color: #fca5a5; margin: 16px 0; }
+    .footer { padding: 16px 32px; text-align: center; color: #666; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Account Deletion Scheduled</h1>
+    </div>
+    <div class="body">
+      <p>Hi <strong>{{name}}</strong>,</p>
+      <div class="warning">
+        Your account is scheduled for permanent deletion on <strong>{{deletionDate}}</strong>.
+      </div>
+      <p>All your progress, badges, missions, and data will be permanently removed.</p>
+      <p>If this was a mistake, you can cancel the deletion request by opening the ConfidenceUp app and going to Profile → Account Settings → Cancel Deletion.</p>
+    </div>
+    <div class="footer">
+      &copy; 2026 ConfidenceUp by ThinkFeat &bull; info@thinkfeat.com
+    </div>
+  </div>
+</body>
+</html>

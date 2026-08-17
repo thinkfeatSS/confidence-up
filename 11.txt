@@ -1,0 +1,14 @@
+testitan
+explore content type.
+
+
+each test shuld have outline and content for reading.. for test like mdcat we have fixed number of chaptors and topics that may contian subtopic for each subject.
+user can read content as well as see graphs
+for reading contnet user can mark as done to the topic and perform a test of that recive questions form the topic only that user has coverd and unlock new topics and chapters of outline like a game.
+save topic score of user if user has coverd topic in right side topic name in small circle and user can rettepmt topic test any time and imporve his scrore.
+
+
+number of tests
+content
+ai plan
+

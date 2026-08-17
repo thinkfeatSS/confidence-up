@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ConfidenceUp OTP</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #0f0f1a; color: #e0e0e0; margin: 0; padding: 0; }
+    .container { max-width: 480px; margin: 40px auto; background: #1a1a2e; border-radius: 16px; overflow: hidden; }
+    .header { background: linear-gradient(135deg, #7c3aed, #06b6d4); padding: 32px; text-align: center; }
+    .header h1 { color: #fff; margin: 0; font-size: 28px; letter-spacing: 1px; }
+    .header p { color: rgba(255,255,255,0.8); margin: 8px 0 0; }
+    .body { padding: 32px; }
+    .body p { color: #ccc; line-height: 1.6; }
+    .otp-box { background: #0f0f1a; border: 2px solid #7c3aed; border-radius: 12px; text-align: center; padding: 24px; margin: 24px 0; }
+    .otp-code { font-size: 40px; font-weight: bold; letter-spacing: 12px; color: #06b6d4; }
+    .footer { padding: 16px 32px 32px; text-align: center; color: #666; font-size: 13px; }
+    .expiry { color: #f59e0b; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>ConfidenceUp</h1>
+      <p>Your confidence journey starts here</p>
+    </div>
+    <div class="body">
+      <p>Hi <strong>{{name}}</strong>,</p>
+      <p>Use the code below to {{type}}. This code is valid for <span class="expiry">10 minutes</span>.</p>
+      <div class="otp-box">
+        <div class="otp-code">{{otp}}</div>
+      </div>
+      <p>If you didn't request this, please ignore this email.</p>
+    </div>
+    <div class="footer">
+      &copy; 2026 ConfidenceUp by ThinkFeat &bull; info@thinkfeat.com
+    </div>
+  </div>
+</body>
+</html>

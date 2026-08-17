@@ -1,0 +1,28 @@
+import { landingContent } from '@/content/pages/landing';
+import { FaqAccordion } from '@/components/marketing/interactive/FaqAccordion';
+
+type FaqSectionProps = {
+  title?: string;
+  subtitle?: string;
+  faqs: { question: string; answer: string }[];
+};
+
+export function FaqSection({
+  title = 'Frequently asked questions',
+  subtitle = 'Quick answers to common questions about ConfidenceUp.',
+  faqs,
+}: FaqSectionProps) {
+  return (
+    <section className="border-b border-border">
+      <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-2xl text-center">
+          <h2 className="text-2xl font-bold text-foreground sm:text-3xl">{title}</h2>
+          <p className="mt-3 text-muted-foreground">{subtitle}</p>
+        </div>
+        <div className="mt-10">
+          <FaqAccordion faqs={faqs} />
+        </div>
+      </div>
+    </section>
+  );
+}
