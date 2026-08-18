@@ -32,10 +32,10 @@ export const AuthScreen = ({ navigation, route }: Props) => {
   const { register, login, loginWithGoogle, isAuthenticated, hasCompletedOnboarding } = useAuth();
   const verifiedEmail = route.params?.verifiedEmail;
   const showVerifiedBanner = route.params?.showVerifiedBanner;
-  const [mode, setMode] = useState<'login' | 'register'>(verifiedEmail ? 'login' : 'register');
+  const [mode, setMode] = useState<'login' | 'register'>(verifiedEmail ? 'register' : 'login');
   const [name, setName] = useState('');
-  const [email, setEmail] = useState(verifiedEmail ?? '');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState(verifiedEmail ?? 'demo@confidenceup.com');
+  const [password, setPassword] = useState('Demo@12345');
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [verifiedBannerVisible, setVerifiedBannerVisible] = useState(!!showVerifiedBanner);
@@ -132,7 +132,7 @@ export const AuthScreen = ({ navigation, route }: Props) => {
       const nativeMessage =
         code === '10' || code === 'DEVELOPER_ERROR'
           ? getGoogleSignInConfigError() ??
-            'Google Sign-In failed (DEVELOPER_ERROR). In Firebase project confidence-up: enable Authentication → Google, confirm SHA-1 for com.confidenceup, re-download google-services.json, set GOOGLE_WEB_CLIENT_ID to the Web client ID (408638792904-....), and rebuild.'
+          'Google Sign-In failed (DEVELOPER_ERROR). In Firebase project confidence-up: enable Authentication → Google, confirm SHA-1 for com.confidenceup, re-download google-services.json, set GOOGLE_WEB_CLIENT_ID to the Web client ID (408638792904-....), and rebuild.'
           : parsed.message;
 
       Alert.alert('Google Sign-In failed', nativeMessage);

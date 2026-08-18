@@ -1,5 +1,5 @@
 services:
-  # Nginx Gateway
+  # Nginx Gateway & Reverse Proxy (Routes mobile requests to NestJS & FastAPI)
   nginx:
     image: nginx:alpine
     container_name: confidence_nginx
@@ -10,11 +10,11 @@ services:
     depends_on:
       - fastapi
       - api
-    restart: unless-stopped
+    restart: always
     networks:
       - confidence_net
 
-  # FastAPI AI Intelligence API
+  # FastAPI AI Intelligence Engine
   fastapi:
     build:
       context: ./ai-sevices
@@ -23,7 +23,7 @@ services:
     environment:
       - ENVIRONMENT=production
       - DEBUG=false
-      - DATABASE_URL=mysql+aiomysql://root:mysql_secret@mysql:3306/confidence_builder
+      - DATABASE_URL=mysql+aiomysql://u897031851_ismail:Mastsanai110@148.222.53.12:3306/u897031851_confidenceup
       - REDIS_URL=redis://redis:6379/0
       - JWT_SECRET=39xDp8E+RbI5839moflWxbwEZbyK0nm4I+XsGQ6Gmn44
       - OLLAMA_BASE_URL=http://ollama:11434
@@ -35,15 +35,12 @@ services:
       - audio_uploads:/app/uploads
     depends_on:
       - redis
-      - mysql
       - ollama
-    ports:
-      - "8000:8000"
-    restart: unless-stopped
+    restart: always
     networks:
       - confidence_net
 
-  # AI Background Worker
+  # Python AI Background Worker
   worker:
     build:
       context: ./ai-sevices
@@ -52,7 +49,7 @@ services:
     command: python -m app.workers.task_worker
     environment:
       - ENVIRONMENT=production
-      - DATABASE_URL=mysql+aiomysql://root:mysql_secret@mysql:3306/confidence_builder
+      - DATABASE_URL=mysql+aiomysql://u897031851_ismail:Mastsanai110@148.222.53.12:3306/u897031851_confidenceup
       - REDIS_URL=redis://redis:6379/0
       - OLLAMA_BASE_URL=http://ollama:11434
       - OLLAMA_MODEL=llama3.2:3b
@@ -63,13 +60,12 @@ services:
       - audio_uploads:/app/uploads
     depends_on:
       - redis
-      - mysql
       - ollama
-    restart: unless-stopped
+    restart: always
     networks:
       - confidence_net
 
-  # NestJS Core Backend (User Auth, Gamification, Badges)
+  # NestJS Core Backend (Auth, Gamification, Badges, Daily Missions)
   api:
     build:
       context: ./api
@@ -79,9 +75,14 @@ services:
       - ./api/.env
     environment:
       - NODE_ENV=production
-      - DATABASE_URL=mysql://root:mysql_secret@mysql:3306/confidence_builder
+      - PORT=3000
+      - APP_URL=https://pink-nightingale-973118.hostingersite.com
+      - FRONTEND_URL=https://pink-nightingale-973118.hostingersite.com
+      - DATABASE_URL=mysql://u897031851_ismail:Mastsanai110@148.222.53.12:3306/u897031851_confidenceup
       - JWT_SECRET=39xDp8E+RbI5839moflWxbwEZbyK0nm4I+XsGQ6Gmn44
       - JWT_REFRESH_SECRET=A5fvnDAZxMiuFuVBFvMdUKZsCPHkVZiC9jid8lMfcG88
+      - JWT_EXPIRES_IN=15m
+      - JWT_REFRESH_EXPIRES_IN=7d
       - MAIL_HOST=smtp.hostinger.com
       - MAIL_PORT=465
       - MAIL_SECURE=true
@@ -90,11 +91,7 @@ services:
       - MAIL_FROM_NAME=ConfidenceUp
       - MAIL_FROM_ADDRESS=info@thinkfeat.com
       - CRON_SECRET=BIr/MEiDyaIY/D6feYhghZGhL/i+G1rclomzanW4WLcc
-    depends_on:
-      - mysql
-    ports:
-      - "3000:3000"
-    restart: unless-stopped
+    restart: always
     networks:
       - confidence_net
 
@@ -102,35 +99,19 @@ services:
   redis:
     image: redis:7-alpine
     container_name: confidence_redis
-    restart: unless-stopped
+    restart: always
     volumes:
       - redis_data:/data
     networks:
       - confidence_net
 
-  # MySQL Database (Unified for NestJS API & FastAPI AI Services)
-  mysql:
-    image: mysql:8.0
-    container_name: confidence_mysql
-    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
-    environment:
-      - MYSQL_ROOT_PASSWORD=mysql_secret
-      - MYSQL_DATABASE=confidence_builder
-    volumes:
-      - mysql_data:/var/lib/mysql
-    ports:
-      - "3306:3306"
-    restart: unless-stopped
-    networks:
-      - confidence_net
-
-  # Ollama Local LLM
+  # Ollama Local LLM Engine
   ollama:
     image: ollama/ollama:latest
     container_name: confidence_ollama
     volumes:
       - ollama_models:/root/.ollama
-    restart: unless-stopped
+    restart: always
     networks:
       - confidence_net
 
@@ -141,5 +122,4 @@ networks:
 volumes:
   audio_uploads:
   redis_data:
-  mysql_data:
   ollama_models:

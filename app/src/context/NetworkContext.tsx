@@ -33,8 +33,8 @@ const NetworkContext = createContext<NetworkContextValue>({
 });
 
 function isOfflineState(state: NetInfoState): boolean {
+  // Only consider offline if device is explicitly disconnected from all networks
   if (state.isConnected === false) return true;
-  if (state.isInternetReachable === false) return true;
   return false;
 }
 
@@ -75,8 +75,12 @@ export const NetworkProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     setOnNetworkFailure(() => {
-      setIsOffline(true);
-      handleOffline();
+      NetInfo.fetch().then((state) => {
+        if (state.isConnected === false) {
+          setIsOffline(true);
+          handleOffline();
+        }
+      }).catch(() => {});
     });
     return () => setOnNetworkFailure(null);
   }, [handleOffline]);

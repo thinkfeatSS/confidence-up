@@ -5,15 +5,19 @@ from app.core.config import settings
 from app.core.logging import logger
 
 _redis_client = None
+_last_redis_attempt = 0
 _in_memory_queue: asyncio.Queue = asyncio.Queue()
 
 
 async def get_redis_client():
-    global _redis_client
-    if _redis_client is None:
+    global _redis_client, _last_redis_attempt
+    import time
+    now = time.time()
+    if _redis_client is None and (now - _last_redis_attempt > 15):
+        _last_redis_attempt = now
         try:
             import redis.asyncio as redis
-            client = redis.from_url(settings.REDIS_URL, decode_responses=True)
+            client = redis.from_url(settings.REDIS_URL, decode_responses=True, socket_connect_timeout=0.2)
             await client.ping()
             _redis_client = client
             logger.info("Connected to Redis queue successfully.")

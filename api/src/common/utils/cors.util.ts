@@ -48,10 +48,23 @@ function isVercelPreviewOrigin(origin: string): boolean {
   }
 }
 
+function isHostingerOrigin(origin: string): boolean {
+  try {
+    const { hostname } = new URL(origin);
+    return hostname.endsWith('.hostingersite.com');
+  } catch {
+    return false;
+  }
+}
+
 export function isOriginAllowed(origin: string, options: CorsOptions): boolean {
   const normalized = normalizeOrigin(origin);
 
   if (options.allowedOrigins.includes(normalized)) {
+    return true;
+  }
+
+  if (isHostingerOrigin(origin)) {
     return true;
   }
 

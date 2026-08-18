@@ -50,7 +50,7 @@ export function parseApiError(err: unknown, fallback = 'Something went wrong. Pl
   if (isNetwork) {
     return {
       statusCode: 0,
-      message: 'No internet connection. Check your network and try again.',
+      message: 'Unable to reach server. Check your connection or retry in a moment.',
       isNetworkError: true,
     };
   }

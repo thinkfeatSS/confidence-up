@@ -13,6 +13,7 @@ COPY . .
 # Generate Prisma Client and build NestJS
 RUN npx prisma generate
 RUN npm run build
+RUN npx tsc prisma/seed.ts prisma/seed-demo-users.ts --outDir dist/prisma --target es2021 --module commonjs --skipLibCheck --esModuleInterop || true
 
 FROM node:20-alpine
 

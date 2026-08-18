@@ -29,7 +29,7 @@ async def health_check():
         
     # Check Ollama
     try:
-        async with httpx.AsyncClient(timeout=2.0) as client:
+        async with httpx.AsyncClient(timeout=0.5) as client:
             resp = await client.get(f"{settings.OLLAMA_BASE_URL}/api/tags")
             services["ollama"] = "healthy" if resp.status_code == 200 else "degraded"
     except Exception:
