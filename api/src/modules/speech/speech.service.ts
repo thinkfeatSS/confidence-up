@@ -6,7 +6,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 
 import { GamificationService } from '../gamification/gamification.service';
 
-import { generateGeminiJson } from '../../common/utils/gemini.util';
+import { generateOllamaJson } from '../../common/utils/ollama.util';
 import { getLevelInfo } from '../../common/utils/xp-engine.util';
 
 import { CreateSpeechSessionDto } from './dto/create-speech-session.dto';
@@ -208,116 +208,64 @@ export class SpeechService {
 
 
   async analyzeWithAi(userId: string, dto: AnalyzeSpeechAiDto) {
-
     const fallback = this.buildFallbackAiAnalysis(dto);
 
-    const apiKey = this.configService.get<string>('gemini.apiKey')?.trim();
-
-    if (!apiKey) {
-      this.logger.warn('GEMINI_API_KEY is not set — speech analysis using local fallback');
-      return fallback;
-    }
+    const baseUrl = this.configService.get<string>('ollama.baseUrl') ?? 'http://127.0.0.1:11434';
+    const modelName = this.configService.get<string>('ollama.model') ?? 'llama3.2:3b';
 
     try {
-
-      const preferredModel =
-        this.configService.get<string>('gemini.model') ?? 'gemini-2.0-flash';
-
-      const { parsed, model } = await generateGeminiJson({
-        apiKey,
-        model: preferredModel,
-        prompt: this.buildGeminiPrompt(userId, dto),
-        temperature: 0.35,
+      const { parsed, model } = await generateOllamaJson({
+        baseUrl,
+        model: modelName,
+        prompt: this.buildAiPrompt(userId, dto),
+        temperature: 0.3,
       });
 
       return {
-
         topicRelevanceScore: this.clampScore(parsed.topicRelevanceScore, fallback.topicRelevanceScore),
-
         coachingFeedback: this.stringArray(parsed.coachingFeedback, fallback.coachingFeedback),
-
         personalizedSuggestions: this.stringArray(
-
           parsed.personalizedSuggestions,
-
           fallback.personalizedSuggestions,
-
         ),
-
         personalizedExercises: this.stringArray(
-
           parsed.personalizedExercises,
-
           fallback.personalizedExercises,
-
         ),
-
         strengths: this.stringArray(parsed.strengths, fallback.strengths),
-
         weaknesses: this.stringArray(parsed.weaknesses, fallback.weaknesses),
-
         coachMessage:
-
           typeof parsed.coachMessage === 'string' && parsed.coachMessage.trim()
-
             ? parsed.coachMessage.trim()
-
             : fallback.coachMessage,
-
         topicCoverage: this.topicCoverage(parsed.topicCoverage, fallback.topicCoverage),
-
         depthScore: this.depthScore(parsed.depthScore, fallback.depthScore),
-
         codeSwitchingQuality: this.clampScore(
-
           parsed.codeSwitchingQuality,
-
           fallback.codeSwitchingQuality ?? 70,
-
         ),
-
         emotionalTone:
-
           typeof parsed.emotionalTone === 'string' && parsed.emotionalTone.trim()
-
             ? parsed.emotionalTone.trim()
-
             : fallback.emotionalTone,
-
         miniMission:
-
           typeof parsed.miniMission === 'string' && parsed.miniMission.trim()
-
             ? parsed.miniMission.trim()
-
             : fallback.miniMission,
-
         languageFallback:
-
           parsed.languageFallback && typeof parsed.languageFallback === 'object'
-
             ? parsed.languageFallback
-
             : undefined,
-
         analysisMeta: {
-
-          provider: 'gemini',
-
+          provider: 'ollama',
           model,
-
         },
-
       };
-
     } catch (error) {
-
       const message = error instanceof Error ? error.message : String(error);
-      this.logger.error(`Gemini speech analysis failed: ${message}`);
+      this.logger.warn(`Ollama speech analysis failed, using fallback: ${message}`);
       return fallback;
-
     }
-
   }
 
 
@@ -402,44 +350,25 @@ export class SpeechService {
 
 
 
-  private buildGeminiPrompt(userId: string, dto: AnalyzeSpeechAiDto) {
-
+  private buildAiPrompt(userId: string, dto: AnalyzeSpeechAiDto) {
     const payload = dto.structuredPayload ?? {
-
       topic: dto.topic,
-
       transcript: dto.transcript,
-
       nlp: dto.nlpSummary,
-
       audio: dto.audioSummary,
-
       language: dto.languageSummary,
-
     };
 
-
-
     return [
-
       'You are Atlas, the ConfidenceUp speaking coach.',
-
-      'Return strict JSON only. Do not include markdown.',
-
+      'Return strict JSON only. Do not include markdown or explanations.',
       'The app computes the final confidence score locally. You provide semantic coaching only.',
-
       `User ID: ${userId}`,
-
       `Structured local metrics: ${JSON.stringify(payload)}`,
-
       `Transcript: ${dto.transcript}`,
-
       'JSON shape:',
-
       '{"topicRelevanceScore":0,"topicCoverage":{"percent":0,"missing":[""]},"depthScore":0,"codeSwitchingQuality":0,"emotionalTone":"","strengths":[""],"weaknesses":[""],"coachMessage":"","coachingFeedback":[""],"personalizedSuggestions":[""],"personalizedExercises":[""],"miniMission":""}',
-
     ].join('\n');
-
   }
 
 

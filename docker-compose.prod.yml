@@ -71,18 +71,17 @@ services:
       context: ./api
       dockerfile: Dockerfile
     container_name: confidence_nestjs
-    env_file:
-      - ./api/.env
     environment:
       - NODE_ENV=production
       - PORT=3000
-      - APP_URL=https://pink-nightingale-973118.hostingersite.com
-      - FRONTEND_URL=https://pink-nightingale-973118.hostingersite.com
+      - APP_URL=http://binaryunit.tech
+      - FRONTEND_URL=http://binaryunit.tech
       - DATABASE_URL=mysql://u897031851_ismail:Mastsanai110@148.222.53.12:3306/u897031851_confidenceup
       - JWT_SECRET=39xDp8E+RbI5839moflWxbwEZbyK0nm4I+XsGQ6Gmn44
       - JWT_REFRESH_SECRET=A5fvnDAZxMiuFuVBFvMdUKZsCPHkVZiC9jid8lMfcG88
       - JWT_EXPIRES_IN=15m
       - JWT_REFRESH_EXPIRES_IN=7d
+      - GOOGLE_CLIENT_ID=408638792904-bjj0a2ap9ic3ln2aghp0c5vhuf8d2hph.apps.googleusercontent.com
       - MAIL_HOST=smtp.hostinger.com
       - MAIL_PORT=465
       - MAIL_SECURE=true
@@ -91,6 +90,10 @@ services:
       - MAIL_FROM_NAME=ConfidenceUp
       - MAIL_FROM_ADDRESS=info@thinkfeat.com
       - CRON_SECRET=BIr/MEiDyaIY/D6feYhghZGhL/i+G1rclomzanW4WLcc
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - OLLAMA_MODEL=llama3.2:3b
+    depends_on:
+      - ollama
     restart: always
     networks:
       - confidence_net

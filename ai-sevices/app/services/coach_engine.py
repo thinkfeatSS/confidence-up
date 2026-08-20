@@ -63,53 +63,6 @@ Speech Input Data:
         return None
 
 
-class GeminiProvider(BaseAIProvider):
-    def __init__(self, api_key: Optional[str] = settings.GEMINI_API_KEY, model: str = settings.GEMINI_MODEL):
-        self.api_key = api_key
-        self.model = model
-
-    async def generate_coaching(self, input_data: Dict[str, Any]) -> Optional[AiCoachingOutputSchema]:
-        if not self.api_key:
-            return None
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/{self.model}:generateContent?key={self.api_key}"
-        prompt = f"""You are Atlas, the ConfidenceUp speaking coach. Return strict JSON only.
-Schema:
-{{
-  "topic_relevance": 85.0,
-  "topic_coverage_percent": 80.0,
-  "missing_points": ["mention career goal"],
-  "strengths": ["Clear introduction"],
-  "weaknesses": ["Repeated phrase"],
-  "coaching_feedback": ["Structure was clear. Reduce hesitation."],
-  "personalized_suggestions": ["Pause instead of filling"],
-  "next_mission": "Reduce filler words by 20%.",
-  "coach_message": "Good practice!",
-  "emotional_tone": "Neutral"
-}}
-
-Input:
-{json.dumps(input_data, ensure_ascii=False)}
-"""
-        try:
-            async with httpx.AsyncClient(timeout=6.0) as client:
-                resp = await client.post(
-                    url,
-                    json={
-                        "contents": [{"parts": [{"text": prompt}]}],
-                        "generationConfig": {"responseMimeType": "application/json", "temperature": 0.35}
-                    }
-                )
-                if resp.status_code == 200:
-                    candidates = resp.json().get("candidates", [])
-                    if candidates:
-                        text = candidates[0]["content"]["parts"][0]["text"]
-                        parsed = json.loads(text)
-                        return AiCoachingOutputSchema.model_validate(parsed)
-        except Exception as e:
-            logger.warning(f"Gemini fallback coaching generation failed: {str(e)}")
-        return None
-
-
 class DeterministicRuleCoach(BaseAIProvider):
     """Fallback offline coach ensuring robust feedback under all conditions."""
     async def generate_coaching(self, input_data: Dict[str, Any]) -> AiCoachingOutputSchema:
@@ -199,9 +152,8 @@ async def generate_ai_coaching(
 ) -> Tuple[AiCoachingOutputSchema, str, str]:
     """
     Executes AI coaching provider chain:
-    1. Ollama (default local)
-    2. Gemini (fallback)
-    3. DeterministicRuleCoach (offline baseline)
+    1. Ollama (local LLM)
+    2. DeterministicRuleCoach (offline baseline fallback)
     """
     input_payload = {
         "topic": topic,
@@ -223,13 +175,7 @@ async def generate_ai_coaching(
     if res:
         return res, "ollama", settings.OLLAMA_MODEL
         
-    # 2. Try Gemini
-    gemini = GeminiProvider()
-    res = await gemini.generate_coaching(input_payload)
-    if res:
-        return res, "gemini", settings.GEMINI_MODEL
-        
-    # 3. Fallback to Rule Coach
+    # 2. Fallback to Rule Coach
     rule_coach = DeterministicRuleCoach()
     res = await rule_coach.generate_coaching(input_payload)
     return res, "rule-coach", "deterministic-v1"

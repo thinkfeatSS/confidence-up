@@ -22,8 +22,8 @@ client_secret_*.json
 google-services*.json
 google-services.json
 GoogleService-Info.plist
-*secret*
-*credential*
+*secret*.json
+*credential*.json
 New Text Document.txt
 *.pem
 *.key

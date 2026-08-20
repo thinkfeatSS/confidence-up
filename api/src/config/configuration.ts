@@ -49,9 +49,9 @@ export default () => {
       privateKey: readEnvMultiline('FIREBASE_PRIVATE_KEY'),
     },
 
-    gemini: {
-      apiKey: readEnv('GEMINI_API_KEY'),
-      model: readEnv('GEMINI_MODEL') ?? 'gemini-2.0-flash',
+    ollama: {
+      baseUrl: readEnv('OLLAMA_BASE_URL') ?? 'http://127.0.0.1:11434',
+      model: readEnv('OLLAMA_MODEL') ?? 'llama3.2:3b',
     },
 
     cron: {

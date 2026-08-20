@@ -1,6 +1,6 @@
 export type LanguageCode = 'en' | 'ur' | 'hi' | 'sd' | 'mixed' | 'unknown';
 
-export type LanguageDetectionSource = 'local' | 'history' | 'gemini' | 'manual';
+export type LanguageDetectionSource = 'local' | 'history' | 'ollama' | 'ai' | 'gemini' | 'manual';
 
 export interface LanguageDetectionResult {
   label: string;
@@ -9,7 +9,8 @@ export interface LanguageDetectionResult {
   confidence: number;
   source: LanguageDetectionSource;
   scriptRatios: Record<string, number>;
-  geminiNeeded: boolean;
+  aiNeeded?: boolean;
+  geminiNeeded?: boolean;
   romanUrduScore?: number;
   languageStability?: Record<string, number>;
   languageTimeline?: LanguageTimelineSegment[];

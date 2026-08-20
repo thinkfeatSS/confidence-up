@@ -46,7 +46,6 @@ function volumeFromSpeechEvent(value?: number) {
 
 function androidVoiceOptions() {
   return {
-    RECOGNIZER_ENGINE: 'GOOGLE',
     EXTRA_PARTIAL_RESULTS: true,
     REQUEST_PERMISSIONS_AUTO: false,
     EXTRA_MAX_RESULTS: 1,
@@ -370,6 +369,7 @@ export function useSpeechRecorder(preferredLanguages?: string[]) {
           Platform.OS === 'android' ? androidVoiceOptions() : undefined,
         );
         activeLocaleRef.current = locale;
+        setIsListening(true);
         return true;
       } catch {
         // Try the next locale candidate.

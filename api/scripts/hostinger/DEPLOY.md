@@ -34,13 +34,13 @@ MAIL_USER=info@thinkfeat.com
 MAIL_PASSWORD=...        # mailbox password from hPanel → Emails (no extra quotes)
 MAIL_FROM_NAME=ConfidenceUp
 MAIL_FROM_ADDRESS=info@thinkfeat.com
-APP_URL=https://pink-nightingale-973118.hostingersite.com
+APP_URL=http://binaryunit.tech
 FRONTEND_URL=https://confidenceup.vercel.app
 CORS_ALLOWED_ORIGINS=https://confidenceup.vercel.app,https://thinkfeat.com
 CORS_ALLOW_VERCEL_PREVIEWS=true
 GOOGLE_CLIENT_ID=...
-GEMINI_API_KEY=...       # from https://aistudio.google.com/apikey (no quotes)
-GEMINI_MODEL=gemini-2.0-flash
+OLLAMA_BASE_URL=http://ollama:11434
+OLLAMA_MODEL=llama3.2:3b
 ```
 
 ### Mail (Hostinger SMTP)
@@ -50,10 +50,10 @@ GEMINI_MODEL=gemini-2.0-flash
 - Port **465** + `MAIL_SECURE=true` (SSL), or port **587** + `MAIL_SECURE=false` (STARTTLS).
 - Do not wrap values in quotes when pasting into hPanel.
 
-### Gemini (speech AI + coach chat)
+### Ollama (speech AI + coach chat)
 
-- `GEMINI_API_KEY` is server-side only — never put it in the mobile app.
-- `GEMINI_MODEL=gemini-2.0-flash` (API auto-falls back to other models if needed).
+- `OLLAMA_BASE_URL=http://ollama:11434` (or `http://127.0.0.1:11434`).
+- `OLLAMA_MODEL=llama3.2:3b`.
 
 ### Optional: Firebase (push notifications)
 
@@ -78,7 +78,7 @@ Use a **single line** with literal `\n` between PEM lines. If you see `Failed to
 |---------|-----|
 | `Cannot find module dist/main` | Use **Start command:** `npm start` (not `nest start`). Redeploy after pulling latest `package.json`. |
 | `Unable to send email` | Verify `MAIL_*` in hPanel; redeploy after env changes. Check logs for `Mail SMTP: configured`. |
-| Speech/coach show "(Offline)" | Set `GEMINI_API_KEY` in hPanel and redeploy. Check `/api/v1/health` → `gemini.configured: true`. |
+| Speech/coach show "(Offline)" | Check Ollama container status on VPS. Check `/api/v1/health` → `ollama.configured: true`. |
 | `Failed to parse private key` | Fix `FIREBASE_PRIVATE_KEY` format or remove `FIREBASE_*` env vars |
 | Config validation error on boot | Set `CRON_SECRET` when `NODE_ENV=production` |
 | Prisma client error | Ensure build command includes `npm run build` (runs `prisma generate`) |
@@ -87,7 +87,7 @@ Use a **single line** with literal `\n` between PEM lines. If you see `Failed to
 ## Verify after deploy
 
 ```bash
-curl https://pink-nightingale-973118.hostingersite.com/api/v1/health
+curl http://binaryunit.tech/api/v1/health
 ```
 
 Expected:
@@ -98,7 +98,7 @@ Expected:
   "data": {
     "ok": true,
     "mail": { "configured": true, "user": "info@thinkfeat.com" },
-    "gemini": { "configured": true },
+    "ollama": { "configured": true, "baseUrl": "http://ollama:11434", "model": "llama3.2:3b" },
     "nodeEnv": "production"
   }
 }
@@ -107,9 +107,9 @@ Expected:
 Also check Hostinger app logs on startup:
 
 - `Mail SMTP: configured (info@thinkfeat.com)`
-- `Gemini AI: configured`
+- `Ollama AI: configured (http://ollama:11434, model: llama3.2:3b)`
 
-Then test coach (should include `"provider":"gemini"`):
+Then test coach (should include `"provider":"ollama"`):
 
 ```bash
 # Login, then POST /coach/chat with Bearer token

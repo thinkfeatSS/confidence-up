@@ -63,6 +63,7 @@ export const apiClient = axios.create({
 apiClient.interceptors.request.use(async (config) => {
   const token = await AsyncStorage.getItem(ACCESS_TOKEN_KEY);
   if (token) config.headers.Authorization = `Bearer ${token}`;
+  console.log(`[API Request] ${config.method?.toUpperCase()} ${config.baseURL || ''}${config.url || ''}`);
   return config;
 });
 
@@ -71,6 +72,7 @@ apiClient.interceptors.response.use(
   async (error: AxiosError) => {
     const originalRequest = error.config as RetryConfig | undefined;
     const requestUrl = originalRequest?.url ?? '';
+    console.log(`[API Error] ${requestUrl}:`, error.message, error.response?.status, error.response?.data);
 
     if (
       error.response?.status === 401 &&

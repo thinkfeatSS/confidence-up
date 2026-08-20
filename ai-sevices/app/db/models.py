@@ -149,7 +149,7 @@ class AiFeedback(Base):
     id = Column(String(64), primary_key=True, default=generate_id)
     session_id = Column(String(64), ForeignKey("practice_sessions.id", ondelete="CASCADE"), nullable=False, unique=True)
     
-    provider = Column(String(32), default="ollama") # ollama, gemini, fallback
+    provider = Column(String(32), default="ollama") # ollama, rule-coach, fallback
     model = Column(String(64), default="llama3.2:3b")
     
     topic_relevance = Column(Float, default=0.0)

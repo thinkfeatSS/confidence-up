@@ -34,10 +34,6 @@ class Settings(BaseSettings):
     OLLAMA_MODEL: str = "llama3.2:3b"
     OLLAMA_FALLBACK_MODEL: str = "qwen2.5:3b"
 
-    # Google Gemini Fallback
-    GEMINI_API_KEY: Optional[str] = None
-    GEMINI_MODEL: str = "gemini-2.0-flash"
-
     # Speech-to-Text (Whisper)
     WHISPER_MODEL_SIZE: str = "small"  # 'tiny', 'base', 'small', 'medium', 'large-v3'
     WHISPER_DEVICE: str = "cpu"        # 'cpu' or 'cuda'

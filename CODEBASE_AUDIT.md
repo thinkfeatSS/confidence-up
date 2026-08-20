@@ -85,7 +85,7 @@ The repository currently consists of:
   - `gamification` (`streaks`, `daily_checkins`, `badges`, `user_badges`, `xp_transactions`).
   - `content` (`missions`, `user_missions`, `daily_missions`, `challenges`, `fear_categories`, `skill_nodes`).
 - **AI Integration**:
-  - `gemini.util.ts`: Communicates with Google Gemini (`gemini-2.0-flash` / `gemini-2.5-flash`) for AI coaching and semantic topic relevance.
+  - `ollama.util.ts`: Communicates with Ollama LLM (`llama3.2:3b`) for AI coaching and semantic topic relevance.
   - `speech.service.ts`: `analyzeWithAi` endpoint and fallback offline logic.
 
 ### 3.3 Python Service (`ai-sevices/`)

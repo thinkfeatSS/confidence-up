@@ -92,9 +92,10 @@ async function bootstrap() {
 
   const config = app.get(ConfigService);
   const mailUser = config.get<string>('mail.user');
-  const geminiKey = config.get<string>('gemini.apiKey');
+  const ollamaUrl = config.get<string>('ollama.baseUrl');
+  const ollamaModel = config.get<string>('ollama.model');
   logger.log(`Mail SMTP: ${mailUser ? `configured (${mailUser})` : 'NOT CONFIGURED'}`);
-  logger.log(`Gemini AI: ${geminiKey ? 'configured' : 'NOT CONFIGURED — speech/coach use offline fallbacks'}`);
+  logger.log(`Ollama AI: configured (${ollamaUrl}, model: ${ollamaModel})`);
 
   await app.listen(port);
 

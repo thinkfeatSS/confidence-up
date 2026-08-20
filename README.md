@@ -66,7 +66,7 @@ UPDATE users SET role = 'ADMIN' WHERE email = 'your-admin@email.com';
 ### Configure environment
 ```bash
 # web/.env.production — live API (Vercel deploys)
-NEXT_PUBLIC_API_URL=https://pink-nightingale-973118.hostingersite.com/api/v1
+NEXT_PUBLIC_API_URL=http://binaryunit.tech/api/v1
 
 # web/.env.development or .env.local — local API
 NEXT_PUBLIC_API_URL=http://localhost:3000/api/v1
@@ -92,7 +92,7 @@ Use the admin credentials you set up above.
 
 | Build | Env file | API |
 |-------|----------|-----|
-| **Release APK** | `app/.env` | `https://pink-nightingale-973118.hostingersite.com/api/v1` |
+| **Release APK** | `app/.env` | `http://binaryunit.tech/api/v1` |
 | **Debug** (`run-android`) | `app/.env.development` | `http://10.0.2.2:3000/api/v1` (emulator → local API) |
 
 Edit `app/.env.development` for local backend during development. Release builds use `app/.env` (production).
@@ -167,7 +167,7 @@ Cron endpoints (POST, header `X-Cron-Secret`):
 
 ## API Endpoints Summary
 
-Base URL (production): `https://pink-nightingale-973118.hostingersite.com/api/v1`  
+Base URL (production): `http://binaryunit.tech/api/v1`  
 Local dev: `http://localhost:3000/api/v1`
 
 All responses are wrapped: `{ success: boolean, data: T, timestamp: string }`

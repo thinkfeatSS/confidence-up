@@ -5,7 +5,7 @@
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
-    <!-- Required on Android 11+ so SpeechRecognizer can discover Google Voice Typing -->
+    <!-- Required on Android 11+ / 13+ / 14 so SpeechRecognizer can discover Voice Services -->
     <queries>
         <intent>
             <action android:name="android.speech.RecognitionService" />
@@ -14,6 +14,10 @@
             <action android:name="android.speech.action.RECOGNIZE_SPEECH" />
         </intent>
         <package android:name="com.google.android.googlequicksearchbox" />
+        <package android:name="com.google.android.tts" />
+        <package android:name="com.samsung.SMT" />
+        <package android:name="com.samsung.android.bixby.agent" />
+        <package android:name="com.samsung.android.honeyboard" />
     </queries>
 
     <application

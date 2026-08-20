@@ -121,7 +121,7 @@ async def process_speech_session(session_id: str):
                     setattr(metric_record, k, v)
             await db.commit()
             
-            # 3. STAGE: Coaching (Ollama / Gemini / Fallback Rule Coach)
+            # 3. STAGE: Coaching (Ollama / Fallback Rule Coach)
             session.status = "coaching"
             session.status_stage = "Generating personalized AI coaching feedback"
             session.progress_percent = 75

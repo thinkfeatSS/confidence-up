@@ -110,7 +110,7 @@ export async function analyzeSpeech(input: SpeechAnalysisInput): Promise<SpeechA
       preferredLanguages: input.preferredLanguages,
     });
   } catch {
-    // Keep local fallback so practice works offline or without Gemini configuration.
+    // Keep local fallback so practice works offline or without AI server availability.
   }
 
   const components = calculateConfidenceComponents({

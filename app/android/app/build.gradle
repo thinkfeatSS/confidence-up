@@ -93,7 +93,13 @@ android {
         versionName "1.0"
         manifestPlaceholders = [usesCleartextTraffic: "true"]
         ndk {
-            abiFilters "arm64-v8a"
+            abiFilters "armeabi-v7a", "arm64-v8a"
+        }
+        externalNativeBuild {
+            cmake {
+                arguments "-DANDROID_STL=c++_shared"
+                cppFlags "-fno-lto"
+            }
         }
     }
     signingConfigs {
@@ -132,8 +138,10 @@ tasks.configureEach { task ->
 
 tasks.register("cleanNativeCaches", Delete) {
     delete file("${projectDir}/.cxx")
-    // App-generated autolinking sources (rebuilt from autolinking.json on preBuild).
     delete file("${projectDir}/build/generated/autolinking")
+    delete file("${rootDir}/../node_modules/react-native-reanimated/android/.cxx")
+    delete file("${rootDir}/../node_modules/react-native-worklets/android/.cxx")
+    delete file("${rootDir}/../node_modules/react-native-screens/android/.cxx")
 }
 
 /**

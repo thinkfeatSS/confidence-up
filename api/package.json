@@ -44,8 +44,6 @@
 
   "dependencies": {
 
-    "@google/generative-ai": "^0.24.1",
-
     "@nestjs-modules/mailer": "^2.3.7",
 
     "@nestjs/cli": "^11.0.0",

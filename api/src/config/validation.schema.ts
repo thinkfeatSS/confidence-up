@@ -32,8 +32,8 @@ export const validationSchema = Joi.object({
   FIREBASE_CLIENT_EMAIL: Joi.string().optional(),
   FIREBASE_PRIVATE_KEY: Joi.string().optional(),
 
-  GEMINI_API_KEY: Joi.string().optional(),
-  GEMINI_MODEL: Joi.string().default('gemini-2.0-flash'),
+  OLLAMA_BASE_URL: Joi.string().optional(),
+  OLLAMA_MODEL: Joi.string().default('llama3.2:3b'),
 
   CRON_SECRET: Joi.when('NODE_ENV', {
     is: 'production',

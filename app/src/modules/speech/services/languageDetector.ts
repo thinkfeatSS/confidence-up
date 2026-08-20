@@ -84,6 +84,7 @@ export function detectLanguage(args: {
       confidence: 0,
       source: 'local',
       scriptRatios,
+      aiNeeded: true,
       geminiNeeded: true,
     };
   }
@@ -100,6 +101,7 @@ export function detectLanguage(args: {
     confidence,
     source: confidence >= 70 ? 'local' : 'history',
     scriptRatios,
+    aiNeeded: confidence < 70,
     geminiNeeded: confidence < 70,
   };
 }
