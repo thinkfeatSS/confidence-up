@@ -3,9 +3,9 @@ import { PrismaService } from '../../../prisma/prisma.service';
 import { UpdateUserSettingsDto } from './dto/update-user-settings.dto';
 
 const DEFAULT_SETTINGS = {
-  dailyReminders: false,
-  soundEffects: true,
-  darkMode: true,
+  dailyReminders: true,
+  soundEffects: false,
+  darkMode: false,
   weeklyReportEmail: false,
 };
 

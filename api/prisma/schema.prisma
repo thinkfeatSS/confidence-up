@@ -554,9 +554,9 @@ model SupportTicket {
 
 model UserSettings {
   userId            String  @id
-  dailyReminders    Boolean @default(false)
-  soundEffects      Boolean @default(true)
-  darkMode          Boolean @default(true)
+  dailyReminders    Boolean @default(true)
+  soundEffects      Boolean @default(false)
+  darkMode          Boolean @default(false)
   weeklyReportEmail Boolean @default(false)
   user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 

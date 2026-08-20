@@ -57,7 +57,9 @@ export const ProfileScreen = () => {
   const { data: user } = useUser();
   const { data: settings } = useUserSettings();
   const updateSettings = useUpdateUserSettings();
-  const { data: confidenceAreas = [] } = useConfidenceAreas();
+  const { data: confidenceData } = useConfidenceAreas();
+  const confidenceAreas = confidenceData?.areas ?? [];
+  const hasSpeechData = confidenceData?.hasSpeechData ?? false;
   const { data: referral } = useReferralInfo();
 
   if (!user) return null;
@@ -149,30 +151,81 @@ export const ProfileScreen = () => {
           </View>
         </GlassCard>
 
-        <GlassCard>
-          <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>Confidence Areas</Text>
-          {confidenceAreas.length > 0 ? (
-            confidenceAreas.map(area => (
-              <View key={area.name} style={styles.areaRow}>
-                <Text style={[styles.areaLabel, { color: colors.textSecondary }]}>{area.name}</Text>
-                <View style={[styles.areaBarTrack, { backgroundColor: colors.border }]}>
-                  <View style={[styles.areaBarFill, { width: `${area.score}%`, backgroundColor: colors.accentPurple }]} />
-                </View>
-                <Text style={[styles.areaScore, { color: colors.accentPurpleLight }]}>{area.score}%</Text>
-              </View>
-            ))
-          ) : (
-            <View style={{ gap: 12 }}>
-              <Text style={[styles.emptyText, { color: colors.textMuted }]}>
-                Complete a speaking practice session to see your confidence breakdown.
+        <GlassCard glowColor={colors.accentPurple}>
+          <View style={styles.confidenceHeaderRow}>
+            <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>Confidence Breakdown</Text>
+            <View
+              style={[
+                styles.statusBadge,
+                {
+                  backgroundColor: hasSpeechData ? `${colors.success}20` : `${colors.accentCyan}20`,
+                  borderColor: hasSpeechData ? colors.success : colors.accentCyan,
+                },
+              ]}>
+              <Text
+                style={[
+                  styles.statusBadgeText,
+                  { color: hasSpeechData ? colors.success : colors.accentCyan },
+                ]}>
+                {hasSpeechData ? '⚡ Live AI Analysis' : '🎯 Baseline Profile'}
               </Text>
-              <PrimaryButton
-                label="Go to Practice"
-                size="sm"
-                onPress={() => navigation.navigate('Tabs', { screen: 'Practice' })}
-              />
+            </View>
+          </View>
+
+          <View style={{ gap: 10, marginTop: 4 }}>
+            {confidenceAreas.map((area) => {
+              const barColor =
+                area.score >= 80 ? colors.success : area.score >= 65 ? colors.accentCyan : colors.xpGold;
+              return (
+                <View key={area.name} style={styles.areaRow}>
+                  <Text style={[styles.areaLabel, { color: colors.textPrimary }]} numberOfLines={1}>
+                    {(area as any).emoji ? `${(area as any).emoji} ` : ''}{area.name}
+                  </Text>
+                  <View style={[styles.areaBarTrack, { backgroundColor: colors.border }]}>
+                    <View style={[styles.areaBarFill, { width: `${area.score}%`, backgroundColor: barColor }]} />
+                  </View>
+                  <Text style={[styles.areaScore, { color: barColor }]}>{area.score}%</Text>
+                </View>
+              );
+            })}
+          </View>
+
+          {confidenceData?.topStrength && (
+            <View style={styles.insightPillRow}>
+              <View
+                style={[
+                  styles.insightPill,
+                  { backgroundColor: `${colors.success}15`, borderColor: `${colors.success}40` },
+                ]}>
+                <Text style={[styles.insightPillText, { color: colors.success }]}>
+                  🌟 Top: {confidenceData.topStrength}
+                </Text>
+              </View>
+              {confidenceData.focusArea && (
+                <View
+                  style={[
+                    styles.insightPill,
+                    { backgroundColor: `${colors.accentPurple}15`, borderColor: `${colors.accentPurple}40` },
+                  ]}>
+                  <Text style={[styles.insightPillText, { color: colors.accentPurpleLight }]}>
+                    🎯 Focus: {confidenceData.focusArea}
+                  </Text>
+                </View>
+              )}
             </View>
           )}
+
+          <TouchableOpacity
+            style={[
+              styles.boostBtn,
+              { borderColor: `${colors.accentCyan}50`, backgroundColor: `${colors.accentCyan}15` },
+            ]}
+            onPress={() => navigation.navigate('Tabs', { screen: 'Practice' })}
+            activeOpacity={0.8}>
+            <Text style={[styles.boostBtnText, { color: colors.accentCyan }]}>
+              {hasSpeechData ? '🎙️ Practice Speaking to Level Up' : '🎤 Practice Speech to Calibrate AI'}
+            </Text>
+          </TouchableOpacity>
         </GlassCard>
 
         <GlassCard>
@@ -180,21 +233,21 @@ export const ProfileScreen = () => {
           <SettingRow
             icon="🔔"
             label="Daily Reminders"
-            value={settings?.dailyReminders ?? false}
+            value={settings?.dailyReminders ?? true}
             onChange={handleDailyReminders}
             colors={colors}
           />
           <SettingRow
             icon="🔊"
             label="Sound Effects"
-            value={settings?.soundEffects ?? true}
+            value={settings?.soundEffects ?? false}
             onChange={value => patchSetting({ soundEffects: value })}
             colors={colors}
           />
           <SettingRow
             icon="🌙"
             label="Dark Mode"
-            value={settings?.darkMode ?? true}
+            value={settings?.darkMode ?? false}
             onChange={handleDarkMode}
             colors={colors}
           />
@@ -242,6 +295,8 @@ export const ProfileScreen = () => {
           <LinkRow icon="🔒" label="Privacy Policy" onPress={() => navigation.navigate('LegalDocument', { document: 'privacy' })} colors={colors} />
           <View style={[styles.separator, { backgroundColor: colors.border }]} />
           <LinkRow icon="📜" label="Terms of Service" onPress={() => navigation.navigate('LegalDocument', { document: 'terms' })} colors={colors} />
+          <View style={[styles.separator, { backgroundColor: colors.border }]} />
+          <LinkRow icon="🗑️" label="Delete Account & Data" onPress={handleDeleteAccount} isDestructive colors={colors} />
         </GlassCard>
 
         <View style={styles.accountActionSection}>
@@ -253,7 +308,7 @@ export const ProfileScreen = () => {
             style={styles.deleteAccountBtn}
             onPress={handleDeleteAccount}
             activeOpacity={0.7}>
-            <Text style={styles.deleteAccountText}>Delete Account</Text>
+            <Text style={styles.deleteAccountText}>🗑️ Delete Account</Text>
           </TouchableOpacity>
         </View>
 
@@ -285,11 +340,11 @@ const SettingRow = React.memo(({ icon, label, value, onChange, colors }: { icon:
   </View>
 ));
 
-const LinkRow = React.memo(({ icon, label, onPress, colors }: { icon: string; label: string; onPress: () => void; colors: any }) => (
+const LinkRow = React.memo(({ icon, label, onPress, isDestructive, colors }: { icon: string; label: string; onPress: () => void; isDestructive?: boolean; colors: any }) => (
   <TouchableOpacity style={styles.linkRow} activeOpacity={0.7} onPress={onPress}>
     <Text style={{ fontSize: 18 }}>{icon}</Text>
-    <Text style={[styles.linkLabel, { color: colors.textPrimary }]}>{label}</Text>
-    <Text style={{ color: colors.textMuted, fontSize: 16 }}>›</Text>
+    <Text style={[styles.linkLabel, { color: isDestructive ? colors.danger : colors.textPrimary }]}>{label}</Text>
+    <Text style={{ color: isDestructive ? colors.danger : colors.textMuted, fontSize: 16 }}>›</Text>
   </TouchableOpacity>
 ));
 
@@ -314,12 +369,56 @@ const styles = StyleSheet.create({
   statItem: { alignItems: 'center', gap: 4 },
   statValue: { fontSize: 18, fontWeight: '800' },
   statLabel: { fontSize: 10 },
-  areaRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 10 },
-  areaLabel: { width: 80, fontSize: 13, fontWeight: '500' },
+  confidenceHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+  },
+  statusBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: BorderRadius.full,
+    borderWidth: 1,
+  },
+  statusBadgeText: {
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+  },
+  areaRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 8 },
+  areaLabel: { width: 135, fontSize: 12, fontWeight: '600' },
   areaBarTrack: { flex: 1, height: 6, borderRadius: 3 },
   areaBarFill: { height: 6, borderRadius: 3 },
-  areaScore: { width: 36, fontSize: 12, fontWeight: '600', textAlign: 'right' },
-  emptyText: { ...(Typography.bodySmall as object) },
+  areaScore: { width: 36, fontSize: 12, fontWeight: '700', textAlign: 'right' },
+  insightPillRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 10,
+    flexWrap: 'wrap',
+  },
+  insightPill: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: BorderRadius.full,
+    borderWidth: 1,
+  },
+  insightPillText: {
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  boostBtn: {
+    marginTop: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    alignItems: 'center',
+  },
+  boostBtnText: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
   settingRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 8 },
   settingLabel: { flex: 1, ...(Typography.body as object) },
   separator: { height: 1 },

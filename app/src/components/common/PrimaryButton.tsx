@@ -41,14 +41,15 @@ const _PrimaryButton = ({
   }, [scale]);
 
   const height = size === 'sm' ? 40 : size === 'md' ? 48 : 56;
-  const fontSize = size === 'sm' ? 13 : size === 'md' ? 15 : 16;
+  const fontSize = size === 'sm' ? 13 : size === 'md' ? 14 : 16;
+  const paddingHorizontal = size === 'sm' ? 10 : size === 'md' ? 12 : 20;
 
   if (variant === 'outline') {
     return (
       <AnimatedTouchable
         style={[
           styles.base,
-          { height, borderWidth: 1.5, borderColor: colors.accentPurple, borderRadius: BorderRadius.full },
+          { height, borderWidth: 1.5, borderColor: colors.accentPurple, borderRadius: BorderRadius.full, paddingHorizontal },
           animatedStyle,
           style,
         ]}
@@ -57,7 +58,7 @@ const _PrimaryButton = ({
         onPressOut={handlePressOut}
         disabled={disabled || loading}
         activeOpacity={1}>
-        <Text style={[Typography.h3 as any, { fontSize, color: colors.accentPurpleLight }]}>{label}</Text>
+        <Text numberOfLines={1} style={[Typography.h3 as any, { fontSize, color: colors.accentPurpleLight }]}>{label}</Text>
       </AnimatedTouchable>
     );
   }
@@ -65,13 +66,13 @@ const _PrimaryButton = ({
   if (variant === 'ghost') {
     return (
       <AnimatedTouchable
-        style={[styles.base, { height }, animatedStyle, style]}
+        style={[styles.base, { height, paddingHorizontal }, animatedStyle, style]}
         onPress={onPress}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
         disabled={disabled || loading}
         activeOpacity={1}>
-        <Text style={[Typography.h3 as any, { fontSize, color: colors.accentPurpleLight }]}>{label}</Text>
+        <Text numberOfLines={1} style={[Typography.h3 as any, { fontSize, color: colors.accentPurpleLight }]}>{label}</Text>
       </AnimatedTouchable>
     );
   }
@@ -101,11 +102,11 @@ const _PrimaryButton = ({
         colors={[colors.accentPurple, colors.accentPurpleLight]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
-        style={[styles.gradient, { height }]}>
+        style={[styles.gradient, { height, paddingHorizontal }]}>
         {loading ? (
           <ActivityIndicator color={colors.white} size="small" />
         ) : (
-          <Text style={[styles.label, { fontSize, color: colors.white }]}>{label}</Text>
+          <Text numberOfLines={1} style={[styles.label, { fontSize, color: colors.white }]}>{label}</Text>
         )}
       </LinearGradient>
     </AnimatedTouchable>
@@ -121,7 +122,6 @@ const styles = StyleSheet.create({
   gradient: {
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 24,
   },
   label: {
     fontWeight: '700',

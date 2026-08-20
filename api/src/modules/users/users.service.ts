@@ -67,42 +67,24 @@ export class UsersService {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new NotFoundException('User not found');
 
-    const existing = await this.prisma.accountDeletionRequest.findUnique({
-      where: { userId },
-    });
-    if (existing && !existing.cancelledAt) {
-      throw new BadRequestException('Deletion already requested');
+    // Send confirmation email before deletion
+    try {
+      if (user.email) {
+        await this.mailService.sendAccountDeletionWarning(user.email, user.name, new Date());
+      }
+    } catch {
+      // Non-blocking email
     }
 
-    const scheduledDeletionAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+    // Permanently delete user record - database CASCADE deletes all associated data:
+    // speech_sessions, journal_entries, user_badges, user_challenges, user_missions,
+    // streaks, daily_checkins, devices, refresh_tokens, settings, and activity_timeline.
+    await this.prisma.user.delete({ where: { id: userId } });
 
-    if (existing) {
-      await this.prisma.accountDeletionRequest.update({
-        where: { userId },
-        data: {
-          reason: dto.reason,
-          scheduledDeletionAt,
-          cancelledAt: null,
-          processedAt: null,
-        },
-      });
-    } else {
-      await this.prisma.accountDeletionRequest.create({
-        data: { userId, reason: dto.reason, scheduledDeletionAt },
-      });
-    }
-
-    await this.prisma.user.update({
-      where: { id: userId },
-      data: {
-        deletionRequestedAt: new Date(),
-        deletionScheduledAt: scheduledDeletionAt,
-      },
-    });
-
-    await this.mailService.sendAccountDeletionWarning(user.email, user.name, scheduledDeletionAt);
-
-    return { message: 'Account deletion scheduled', scheduledDeletionAt };
+    return {
+      message: 'Account and all associated personal data have been permanently deleted',
+      deletedAt: new Date(),
+    };
   }
 
   async cancelDeletion(userId: string) {

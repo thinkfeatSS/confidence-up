@@ -19,18 +19,18 @@ type ThemeContextValue = {
 };
 
 const ThemeContext = createContext<ThemeContextValue>({
-  colors: darkColors,
-  isDark: true,
+  colors: lightColors,
+  isDark: false,
   setDarkMode: () => {},
 });
 
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
-  const [isDark, setIsDark] = useState(true);
+  const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
     AsyncStorage.getItem(DARK_MODE_KEY)
       .then(value => {
-        if (value === 'false') setIsDark(false);
+        if (value === 'true') setIsDark(true);
       })
       .catch(() => {});
   }, []);

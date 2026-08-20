@@ -1,5 +1,5 @@
 import messaging, { FirebaseMessagingTypes } from '@react-native-firebase/messaging';
-import { PermissionsAndroid, Platform } from 'react-native';
+import { PermissionsAndroid, Platform, Alert } from 'react-native';
 import { apiClient } from './api';
 import { getDeviceInfo } from '../utils/deviceInfo';
 
@@ -94,7 +94,13 @@ export const NotificationsService = {
         onMessage(remoteMessage);
         return;
       }
-      console.log('[Notifications] Foreground message:', remoteMessage.notification?.title);
+      if (remoteMessage.notification?.title) {
+        Alert.alert(
+          remoteMessage.notification.title,
+          remoteMessage.notification.body ?? '',
+          [{ text: 'OK' }],
+        );
+      }
     });
   },
 

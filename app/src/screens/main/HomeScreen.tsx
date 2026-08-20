@@ -6,6 +6,7 @@ import { useUser } from '../../hooks/useUser';
 import { useTodaysMission } from '../../hooks/useMissions';
 import { useFears } from '../../hooks/useFears';
 import { useEarnedBadges } from '../../hooks/useBadges';
+import { useUnreadNotificationCount } from '../../hooks/useNotifications';
 import { GradientBackground } from '../../components/common/GradientBackground';
 import { XPBar } from '../../components/gamification/XPBar';
 import { ConfidenceRing } from '../../components/gamification/ConfidenceRing';
@@ -52,6 +53,7 @@ export const HomeScreen = () => {
   const { data: todaysMission } = useTodaysMission();
   const { data: fears } = useFears();
   const { data: badges } = useEarnedBadges();
+  const unreadCount = useUnreadNotificationCount();
 
   const earnedBadges = useMemo(() => (badges ?? []).slice(0, 8), [badges]);
   const fearList = useMemo(() => fears ?? [], [fears]);
@@ -69,6 +71,7 @@ export const HomeScreen = () => {
   const navToJournal = useCallback(() => navigation.navigate('Journal'), [navigation]);
   const navToBadges = useCallback(() => navigation.navigate('Badges'), [navigation]);
   const navToSkillTree = useCallback(() => navigation.navigate('SkillTree'), [navigation]);
+  const navToNotifications = useCallback(() => navigation.navigate('Notifications'), [navigation]);
   const navToPractice = useCallback(
     () => navigation.navigate('Tabs', { screen: 'Practice' }),
     [navigation],
@@ -89,10 +92,27 @@ export const HomeScreen = () => {
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}>
 
-        {/* Greeting */}
-        <View style={styles.greeting}>
-          <Text style={[styles.greetHi, { color: colors.textPrimary }]}>Hey, {user.name} 👋</Text>
-          <Text style={[styles.greetSub, { color: colors.textMuted }]}>Ready to level up today?</Text>
+        {/* Greeting + Notification Bell */}
+        <View style={styles.greetingRow}>
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.greetHi, { color: colors.textPrimary }]} numberOfLines={1}>
+              Hey, {user.name} 👋
+            </Text>
+            <Text style={[styles.greetSub, { color: colors.textMuted }]}>Ready to level up today?</Text>
+          </View>
+          <TouchableOpacity
+            style={[styles.bellBtn, { backgroundColor: colors.bgInput, borderColor: colors.border }]}
+            onPress={navToNotifications}
+            activeOpacity={0.8}>
+            <Text style={{ fontSize: 20 }}>🔔</Text>
+            {unreadCount > 0 && (
+              <View style={[styles.bellBadge, { backgroundColor: colors.accentCyan }]}>
+                <Text style={[styles.bellBadgeText, { color: colors.bgPrimary }]}>
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </Text>
+              </View>
+            )}
+          </TouchableOpacity>
         </View>
 
         {/* Confidence Ring + Stats */}
@@ -209,9 +229,38 @@ export const HomeScreen = () => {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   scroll: { paddingTop: 8, paddingHorizontal: Spacing.base, gap: Spacing.lg },
-  greeting: { gap: 4 },
+  greetingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: Spacing.sm,
+  },
   greetHi: { fontSize: 22, fontWeight: '800' },
   greetSub: { ...(Typography.body as object) },
+  bellBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  bellBadge: {
+    position: 'absolute',
+    top: -2,
+    right: -2,
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 3,
+  },
+  bellBadgeText: {
+    fontSize: 10,
+    fontWeight: '900',
+  },
   ringCard: { marginBottom: 4 },
   ringRow: { flexDirection: 'row', alignItems: 'center', padding: 20, gap: 20 },
   ringStats: { flex: 1, gap: 8 },

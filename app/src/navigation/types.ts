@@ -39,6 +39,7 @@ export type MainStackParamList = {
   LegalDocument: { document: 'privacy' | 'terms' };
   About: undefined;
   Feedback: undefined;
+  Notifications: undefined;
 };
 
 // ─── Root Stack ───────────────────────────────────────────────────────────────

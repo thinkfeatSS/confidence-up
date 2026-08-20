@@ -13,6 +13,7 @@ import { BadgesScreen } from '../screens/modals/BadgesScreen';
 import { LegalDocumentScreen } from '../screens/legal/LegalDocumentScreen';
 import { AboutScreen } from '../screens/legal/AboutScreen';
 import { FeedbackScreen } from '../screens/modals/FeedbackScreen';
+import { NotificationsScreen } from '../screens/modals/NotificationsScreen';
 import { ChallengesBrowseScreen } from '../screens/main/ChallengesBrowseScreen';
 import { useTheme } from '../theme/ThemeContext';
 
@@ -47,6 +48,7 @@ export const MainNavigator = () => {
       <Stack.Screen name="LegalDocument" component={LegalDocumentScreen} />
       <Stack.Screen name="About" component={AboutScreen} />
       <Stack.Screen name="Feedback" component={FeedbackScreen} />
+      <Stack.Screen name="Notifications" component={NotificationsScreen} />
       <Stack.Screen name="ChallengesBrowse" component={ChallengesBrowseScreen} />
     </Stack.Navigator>
   );

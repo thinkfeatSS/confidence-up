@@ -104,6 +104,39 @@ export class NotificationsService {
   }
 
   async getInbox(userId: string, page: number, limit: number) {
+    const existingCount = await this.prisma.notification.count({ where: { userId } });
+    if (existingCount === 0) {
+      try {
+        await this.prisma.notification.createMany({
+          data: [
+            {
+              userId,
+              title: 'Welcome to ConfidenceUp! 🚀',
+              body: 'Start your speech journey by recording your first speaking practice in the AI studio.',
+              type: NotificationType.SYSTEM,
+              isRead: false,
+            },
+            {
+              userId,
+              title: 'Daily Streak Activated 🔥',
+              body: 'Practice speech daily to build your streak, earn bonus XP, and unlock exclusive badges.',
+              type: NotificationType.STREAK_REMINDER,
+              isRead: false,
+            },
+            {
+              userId,
+              title: 'Atlas AI Speech Coach Ready 🤖',
+              body: 'Get real-time feedback on filler words, fluency, pacing, and pronunciation clarity.',
+              type: NotificationType.SYSTEM,
+              isRead: false,
+            },
+          ],
+        });
+      } catch {
+        // Non-blocking
+      }
+    }
+
     const skip = (page - 1) * limit;
     const [items, total] = await Promise.all([
       this.prisma.notification.findMany({
@@ -206,6 +239,42 @@ export class NotificationsService {
       'Complete your mission today! 🎯',
       'You have missions waiting for you. Build your confidence!',
       NotificationType.MISSION_REMINDER,
+    );
+  }
+
+  async sendDailyPracticePrompts(): Promise<void> {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const spokeToday = await this.prisma.speechSession.findMany({
+      where: { createdAt: { gte: today, lt: tomorrow } },
+      select: { userId: true },
+      distinct: ['userId'],
+    });
+    const spokeUserIds = new Set(spokeToday.map((s) => s.userId));
+
+    const reminderOptIn = await this.prisma.userSettings.findMany({
+      where: { dailyReminders: true },
+      select: { userId: true },
+    });
+    const optedIn = new Set(reminderOptIn.map((s) => s.userId));
+
+    const allUsers = await this.prisma.user.findMany({
+      where: { isBlocked: false },
+      select: { id: true },
+    });
+
+    const userIds = allUsers
+      .map((u) => u.id)
+      .filter((uid) => !spokeUserIds.has(uid) && optedIn.has(uid));
+
+    await this.sendPushToMany(
+      userIds,
+      'Time for your 60-second speech practice! 🎙️',
+      "Boost your verbal fluency and confidence with today's featured AI practice prompt.",
+      NotificationType.SYSTEM,
     );
   }
 }

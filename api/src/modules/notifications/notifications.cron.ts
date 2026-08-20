@@ -13,7 +13,7 @@ export class NotificationsCron {
     private readonly configService: ConfigService,
   ) {}
 
-  @Cron('0 8 * * *')
+  @Cron('0 20 * * *')
   async onStreakSchedule() {
     if (!isInternalCronEnabled(this.configService)) return;
     await this.sendStreakReminders();
@@ -25,6 +25,12 @@ export class NotificationsCron {
     await this.sendMissionReminders();
   }
 
+  @Cron('0 14 * * *')
+  async onPracticeSchedule() {
+    if (!isInternalCronEnabled(this.configService)) return;
+    await this.sendPracticeReminders();
+  }
+
   async sendStreakReminders() {
     await this.notificationsService.sendStreakReminders();
     this.logger.log('Streak reminders sent');
@@ -34,6 +40,12 @@ export class NotificationsCron {
   async sendMissionReminders() {
     await this.notificationsService.sendMissionReminders();
     this.logger.log('Mission reminders sent');
+    return { completed: true };
+  }
+
+  async sendPracticeReminders() {
+    await this.notificationsService.sendDailyPracticePrompts();
+    this.logger.log('Daily practice prompt push notifications sent');
     return { completed: true };
   }
 }

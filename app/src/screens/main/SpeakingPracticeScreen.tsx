@@ -377,15 +377,22 @@ export const SpeakingPracticeScreen = () => {
     <GradientBackground style={styles.container}>
       {/* Header with Topic Library Button */}
       <View style={styles.header}>
-        <View style={{ flex: 1 }}>
-          <Text style={[styles.title, { color: colors.textPrimary }]}>🎤 Speaking Practice</Text>
-          <Text style={[styles.sub, { color: colors.textMuted }]}>AI-Powered Confidence Coach</Text>
+        <View style={styles.headerTitleContainer}>
+          <Text
+            style={[styles.title, { color: colors.textPrimary }]}
+            numberOfLines={1}
+            adjustsFontSizeToFit>
+            🎤 Speaking Practice
+          </Text>
+          <Text style={[styles.sub, { color: colors.textMuted }]} numberOfLines={1}>
+            AI-Powered Confidence Coach
+          </Text>
         </View>
         <TouchableOpacity
           style={[styles.topicsBtn, { backgroundColor: colors.bgInput, borderColor: colors.border }]}
           onPress={() => setShowPracticeListModal(true)}
           activeOpacity={0.8}>
-          <Text style={[styles.topicsBtnText, { color: colors.accentCyan }]}>📋 Topics Library</Text>
+          <Text style={[styles.topicsBtnText, { color: colors.accentCyan }]}>📋 Topics</Text>
         </TouchableOpacity>
       </View>
 
@@ -662,8 +669,19 @@ export const SpeakingPracticeScreen = () => {
 
             {/* Retry Actions */}
             <View style={styles.retryRow}>
-              <PrimaryButton label="Practice Again 🔁" onPress={tryAgain} style={styles.retryButton} />
-              <PrimaryButton label="Choose Topic 📋" onPress={() => setShowPracticeListModal(true)} variant="outline" style={styles.retryButton} />
+              <PrimaryButton
+                label="Practice Again 🔁"
+                onPress={tryAgain}
+                size="md"
+                style={styles.retryButton}
+              />
+              <PrimaryButton
+                label="Choose Topic 📋"
+                onPress={() => setShowPracticeListModal(true)}
+                variant="outline"
+                size="md"
+                style={styles.retryButton}
+              />
             </View>
           </View>
         )}
@@ -758,18 +776,22 @@ const styles = StyleSheet.create({
     paddingBottom: Spacing.sm,
     gap: Spacing.sm,
   },
-  title: { fontSize: 22, fontWeight: '800' },
+  headerTitleContainer: {
+    flex: 1,
+    paddingRight: 6,
+  },
+  title: { fontSize: 20, fontWeight: '800' },
   sub: { ...(Typography.bodySmall as object) },
   topicsBtn: {
-    paddingHorizontal: 12,
-    paddingVertical: 7,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
     borderRadius: BorderRadius.full,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
   topicsBtnText: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '700',
   },
   scroll: { paddingHorizontal: Spacing.base, gap: Spacing.md, paddingBottom: 60 },
