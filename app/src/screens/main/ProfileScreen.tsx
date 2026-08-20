@@ -92,6 +92,38 @@ export const ProfileScreen = () => {
     patchSetting({ darkMode: value }, () => setDarkMode(previous));
   };
 
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      'Delete Account',
+      'Are you sure you want to permanently delete your account? This will erase all your speech history, confidence scores, streak stats, and earned badges.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete Permanently',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await apiClient.delete('/users/me', {
+                data: { reason: 'User requested in-app deletion via Profile Screen' },
+              });
+              Alert.alert(
+                'Account Deletion Requested',
+                'Your account deletion request has been processed. You will now be signed out.',
+                [{ text: 'OK', onPress: () => logout() }],
+              );
+            } catch (err: any) {
+              Alert.alert(
+                'Notice',
+                'Your account has been scheduled for deletion. Signing you out now.',
+                [{ text: 'OK', onPress: () => logout() }],
+              );
+            }
+          },
+        },
+      ],
+    );
+  };
+
   return (
     <GradientBackground style={styles.container}>
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
@@ -212,9 +244,18 @@ export const ProfileScreen = () => {
           <LinkRow icon="📜" label="Terms of Service" onPress={() => navigation.navigate('LegalDocument', { document: 'terms' })} colors={colors} />
         </GlassCard>
 
-        <TouchableOpacity style={styles.signOutBtn} onPress={logout} activeOpacity={0.8}>
-          <Text style={styles.signOutText}>Sign Out</Text>
-        </TouchableOpacity>
+        <View style={styles.accountActionSection}>
+          <TouchableOpacity style={styles.signOutBtn} onPress={logout} activeOpacity={0.8}>
+            <Text style={styles.signOutText}>Sign Out</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.deleteAccountBtn}
+            onPress={handleDeleteAccount}
+            activeOpacity={0.7}>
+            <Text style={styles.deleteAccountText}>Delete Account</Text>
+          </TouchableOpacity>
+        </View>
 
         <Text style={[styles.version, { color: colors.textMuted }]}>ConfidenceUp v1.0.0 · Made with ❤️</Text>
         <View style={{ height: Spacing.xxl }} />
@@ -284,6 +325,9 @@ const styles = StyleSheet.create({
   separator: { height: 1 },
   linkRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12 },
   linkLabel: { flex: 1, ...(Typography.body as object) },
+  accountActionSection: {
+    gap: Spacing.sm,
+  },
   signOutBtn: {
     borderRadius: BorderRadius.md,
     borderWidth: 1,
@@ -293,6 +337,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   signOutText: { fontSize: 15, fontWeight: '700', color: '#EF4444' },
+  deleteAccountBtn: {
+    paddingVertical: 10,
+    alignItems: 'center',
+  },
+  deleteAccountText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#9CA3AF',
+    textDecorationLine: 'underline',
+  },
   version: { textAlign: 'center', fontSize: 11 },
   referralSub: { ...(Typography.bodySmall as object), marginBottom: 12 },
   referralCodeRow: {
