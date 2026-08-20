@@ -11,7 +11,7 @@ export function PublicFooter() {
           <div className="sm:col-span-2 lg:col-span-1">
             <Link href="/" className="flex items-center gap-2 font-semibold">
               <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-sm font-bold text-primary-foreground">
-                C
+                S
               </span>
               {site.name}
             </Link>
