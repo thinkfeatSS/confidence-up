@@ -7,21 +7,22 @@ from app.services.confidence_engine import (
 
 
 def test_speech_fluency_ideal_pace():
-    # Ideal WPM around 145, minimal pauses, high stability
+    # Ideal WPM around 145, minimal pauses, high stability, low filler density
     fluency = calculate_speech_fluency(
         wpm=145.0,
         pause_frequency=3.0,
         volume_stability=90.0,
         repetition_score=95.0,
-        lost_pauses_count=0
+        lost_pauses_count=0,
+        filler_density_percent=1.0
     )
     assert 80.0 <= fluency <= 100.0
 
 
 def test_speech_fluency_slow_and_fast_penalty():
-    fluency_ideal = calculate_speech_fluency(145.0, 3.0, 80.0, 85.0, 0)
-    fluency_fast = calculate_speech_fluency(230.0, 3.0, 80.0, 85.0, 0)
-    fluency_slow = calculate_speech_fluency(60.0, 3.0, 80.0, 85.0, 0)
+    fluency_ideal = calculate_speech_fluency(145.0, 3.0, 80.0, 85.0, 0, 0.0)
+    fluency_fast = calculate_speech_fluency(230.0, 3.0, 80.0, 85.0, 0, 0.0)
+    fluency_slow = calculate_speech_fluency(60.0, 3.0, 80.0, 85.0, 0, 0.0)
     
     assert fluency_ideal > fluency_fast
     assert fluency_ideal > fluency_slow
@@ -35,7 +36,7 @@ def test_practice_consistency_progression():
     assert 0.0 <= score_high <= 100.0
 
 
-def test_deterministic_confidence_formula():
+def test_deterministic_confidence_formula_v2():
     metrics = {
         "words_per_minute": 140.0,
         "pause_frequency": 4.0,
@@ -46,6 +47,9 @@ def test_deterministic_confidence_formula():
         "transition_count": 2,
         "hedging_score": 90.0,
         "energy_score": 80.0,
+        "pronunciation_score": 88.0,
+        "articulation_score": 86.0,
+        "filler_density_percent": 1.5,
     }
     
     final_score, components, xp = calculate_deterministic_confidence(
@@ -61,13 +65,17 @@ def test_deterministic_confidence_formula():
     assert 0.0 <= components.topic_relevance <= 100.0
     assert 0.0 <= components.vocabulary <= 100.0
     assert 0.0 <= components.practice_consistency <= 100.0
+    assert 0.0 <= components.pronunciation_clarity <= 100.0
+    assert 0.0 <= components.structure <= 100.0
     
-    # Check exact formula balance
+    # Check exact formula balance (v2.0: 25% fluency, 20% topic, 15% pronunciation, 15% vocab, 15% structure, 10% consistency)
     expected = (
-        (components.speech_fluency * 0.30) +
-        (components.topic_relevance * 0.30) +
-        (components.vocabulary * 0.20) +
-        (components.practice_consistency * 0.20)
+        (components.speech_fluency * 0.25) +
+        (components.topic_relevance * 0.20) +
+        (components.pronunciation_clarity * 0.15) +
+        (components.vocabulary * 0.15) +
+        (components.structure * 0.15) +
+        (components.practice_consistency * 0.10)
     )
     assert abs(final_score - round(expected, 1)) < 0.2
     assert xp >= 50

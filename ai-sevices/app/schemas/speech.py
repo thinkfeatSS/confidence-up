@@ -39,6 +39,11 @@ class SpeechMetricsSchema(BaseModel):
     filler_count: int = 0
     filler_words: List[str] = Field(default_factory=list)
     filler_breakdown: Dict[str, int] = Field(default_factory=dict)
+    filler_density_percent: float = 0.0
+    
+    pronunciation_score: float = 0.0
+    articulation_score: float = 0.0
+    unclear_words: List[Dict[str, Any]] = Field(default_factory=list)
     
     words_per_minute: float = 0.0
     active_speaking_seconds: float = 0.0
@@ -67,6 +72,7 @@ class ConfidenceComponentsSchema(BaseModel):
     practice_consistency: float = 0.0
     structure: float = 0.0
     energy: float = 0.0
+    pronunciation_clarity: float = 0.0
 
 
 class AiCoachingOutputSchema(BaseModel):

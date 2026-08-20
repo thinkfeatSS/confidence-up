@@ -1,4 +1,5 @@
 import { NlpMetrics } from '../types/speechAnalysis.types';
+import { FILLERS_BY_LANGUAGE, HESITATION_FILLER_PATTERNS } from '../data/fillers';
 import { HEDGING_WORDS } from './dictionaries/hedging';
 import { NEGATIVE_WORDS, POSITIVE_WORDS } from './dictionaries/mindset';
 import { TRANSITION_WORDS } from './dictionaries/transitions';
@@ -16,6 +17,73 @@ const REPEATED_PHRASE_SEEDS = [
   'kind of',
   'sort of',
 ];
+
+export function detectMultilingualFillers(transcript: string, tokens: string[]) {
+  const lower = transcript.toLowerCase();
+  const breakdown: Record<string, number> = {};
+
+  // 1. Multi-word phrases
+  const multiWordFillers = [
+    'you know',
+    'sort of',
+    'kind of',
+    'i mean',
+    'okay so',
+    'so yeah',
+    'theek hai',
+    'میرا خیال ہے',
+    'مثال کے طور پر',
+    'ٹھیک ہے',
+  ];
+  for (const phrase of multiWordFillers) {
+    const escaped = phrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const pattern = new RegExp(`(?:^|\\s)${escaped}(?=\\s|$|[,.!?])`, 'gi');
+    const matches = lower.match(pattern)?.length ?? 0;
+    if (matches > 0) breakdown[phrase] = matches;
+  }
+
+  // 2. Hesitation sound patterns (elongated ummm, uhhh, ahhh, hmmm)
+  for (const pattern of HESITATION_FILLER_PATTERNS) {
+    const matches = lower.match(pattern);
+    if (matches) {
+      for (const raw of matches) {
+        const word = raw.trim().toLowerCase();
+        const norm =
+          word.startsWith('u') && word.includes('m')
+            ? 'um'
+            : word.startsWith('u') && word.includes('h')
+            ? 'uh'
+            : word.startsWith('h') && word.includes('m')
+            ? 'hmm'
+            : word;
+        breakdown[norm] = (breakdown[norm] ?? 0) + 1;
+      }
+    }
+  }
+
+  // 3. Single-word token matching across languages
+  for (const token of tokens) {
+    const lowerToken = token.toLowerCase();
+    for (const words of Object.values(FILLERS_BY_LANGUAGE)) {
+      if (words.includes(lowerToken) && !['to', 'wo', 'so'].includes(lowerToken)) {
+        breakdown[lowerToken] = (breakdown[lowerToken] ?? 0) + 1;
+        break;
+      }
+    }
+  }
+
+  const fillerCount = Object.values(breakdown).reduce((sum, count) => sum + count, 0);
+  const fillerWords = Object.keys(breakdown);
+  const fillerDensityPercent =
+    tokens.length > 0 ? Math.round((fillerCount / tokens.length) * 1000) / 10 : 0;
+
+  return {
+    fillerCount,
+    fillerWords,
+    fillerBreakdown: breakdown,
+    fillerDensityPercent,
+  };
+}
 
 function countPhraseMatches(transcript: string, phrases: string[]) {
   const lower = transcript.toLowerCase();
@@ -56,12 +124,18 @@ function sentenceLengthScore(avgSentenceLength: number) {
   return 55;
 }
 
-export function enrichNlpMetrics(base: NlpMetrics, transcript: string): NlpMetrics {
+export function enrichNlpMetrics(base: NlpMetrics, transcript: string, rawTokens?: string[]): NlpMetrics {
   const trimmed = transcript.trim();
   if (!trimmed) {
     return {
       ...base,
       fillerBreakdown: {},
+      fillerCount: 0,
+      fillerWords: [],
+      fillerDensityPercent: 0,
+      pronunciationScore: 85,
+      articulationScore: 85,
+      unclearWords: [],
       avgSentenceLength: 0,
       transitionCount: 0,
       organizationScore: 0,
@@ -75,6 +149,8 @@ export function enrichNlpMetrics(base: NlpMetrics, transcript: string): NlpMetri
     };
   }
 
+  const tokens = rawTokens ?? trimmed.split(/[\s،,.;:!?؟۔]+/).map(t => t.trim()).filter(Boolean);
+  const fillers = detectMultilingualFillers(trimmed, tokens);
   const transitionCount = countPhraseMatches(trimmed, TRANSITION_WORDS);
   const hedgingCount = countPhraseMatches(trimmed, HEDGING_WORDS);
   const positiveCount = countPhraseMatches(trimmed, POSITIVE_WORDS);
@@ -94,9 +170,13 @@ export function enrichNlpMetrics(base: NlpMetrics, transcript: string): NlpMetri
 
   return {
     ...base,
-    fillerBreakdown: {},
-    fillerCount: 0,
-    fillerWords: [],
+    fillerBreakdown: fillers.fillerBreakdown,
+    fillerCount: fillers.fillerCount,
+    fillerWords: fillers.fillerWords,
+    fillerDensityPercent: fillers.fillerDensityPercent,
+    pronunciationScore: base.pronunciationScore ?? 85,
+    articulationScore: base.articulationScore ?? 85,
+    unclearWords: base.unclearWords ?? [],
     avgSentenceLength,
     transitionCount,
     organizationScore: Math.round(organizationScore * 0.6 + structureBandScore * 0.4),

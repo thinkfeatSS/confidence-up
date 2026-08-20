@@ -62,6 +62,10 @@ export interface NlpMetrics {
   fillerCount: number;
   fillerWords: string[];
   fillerBreakdown: Record<string, number>;
+  fillerDensityPercent?: number;
+  pronunciationScore?: number;
+  articulationScore?: number;
+  unclearWords?: Array<{ word: string; confidence: number; startMs?: number }>;
   speakingLengthSeconds: number;
   vocabularyScore: number;
   avgSentenceLength: number;
@@ -105,6 +109,7 @@ export interface ConfidenceComponents {
   structureScore: number;
   energyScore: number;
   practiceConsistencyScore: number;
+  pronunciationScore?: number;
 }
 
 export interface LocalMetricsSnapshot {

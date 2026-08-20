@@ -8,16 +8,29 @@ from typing import Dict, Any, List, Tuple, Optional
 FILLERS_BY_LANGUAGE: Dict[str, List[str]] = {
     "English": [
         "um", "uh", "er", "ah", "eh", "hmm", "hm", "like", "you know",
-        "basically", "literally", "actually", "sort of", "kind of", "i mean"
+        "basically", "literally", "actually", "sort of", "kind of", "i mean",
+        "right", "okay so", "anyway", "honestly", "so yeah"
     ],
-    "Urdu": ["تو", "یعنی", "اچھا", "بس", "مطلب", "وہ", "ہمم", "ام", "اہ", "ہم"],
-    "Sindhi": ["ته", "يعني", "اڇا", "بس", "مطلب", "هو", "هم"],
-    "Hindi": ["तो", "मतलब", "अच्छा", "वो", "यानी", "हम्म", "अम", "आह", "उम"],
+    "Urdu": ["تو", "یعنی", "اچھا", "بس", "مطلب", "وہ", "ہمم", "ام", "اہ", "ہم", "صحیح", "ٹھیک ہے", "دیکھیں"],
+    "Sindhi": ["ته", "يعني", "اڇا", "بس", "مطلب", "هو", "هم", "صحيح"],
+    "Hindi": ["तो", "मतलब", "अच्छा", "वो", "यानी", "हम्म", "अम", "आह", "उम", "सही", "ठीक है"],
     "Roman Urdu": [
         "matlab", "yani", "yaani", "acha", "achha", "bas", "toh", "to",
-        "wo", "woh", "umm", "hmm", "mtlb", "bs"
+        "wo", "woh", "umm", "hmm", "mtlb", "bs", "sahi", "theek hai", "dekhein"
     ]
 }
+
+HESITATION_PATTERNS = [
+    r"\b[uúù]m+m*\b",
+    r"\b[uúù]h+h*\b",
+    r"\b[eéè]r+r*\b",
+    r"\b[aáà]h+h*\b",
+    r"\b[eéè]h+h*\b",
+    r"\b[hH]m+\b",
+    r"\b[hH]mm+\b",
+    r"\baa+\b",
+    r"\b[eéè]m+m*\b",
+]
 
 ALL_FILLERS = [item for sublist in FILLERS_BY_LANGUAGE.values() for item in sublist]
 
@@ -88,15 +101,31 @@ def detect_fillers(text: str, tokens: List[str]) -> Tuple[int, List[str], Dict[s
     breakdown: Dict[str, int] = {}
     
     # 1. Multi-word fillers
-    for phrase in ["you know", "sort of", "kind of", "i mean", "میرا خیال ہے", "مثال کے طور پر"]:
+    multi_word_phrases = [
+        "you know", "sort of", "kind of", "i mean", "okay so", "so yeah",
+        "right now", "as such", "میرا خیال ہے", "مثال کے طور پر", "ٹھیک ہے", "theek hai"
+    ]
+    for phrase in multi_word_phrases:
         matches = len(re.findall(r"(?:^|\s)" + re.escape(phrase) + r"(?=\s|$|[,.!?])", lower_text))
         if matches > 0:
             breakdown[phrase] = matches
             
-    # 2. Single-word fillers
+    # 2. Hesitation sound patterns (elongated ummm, uhhh, ahhh, hmmm)
+    for pat in HESITATION_PATTERNS:
+        for match in re.finditer(pat, lower_text):
+            word = match.group(0).strip().lower()
+            if word:
+                norm_word = "um" if word.startswith("u") and "m" in word else (
+                    "uh" if word.startswith("u") and "h" in word else (
+                        "hmm" if word.startswith("h") and "m" in word else word
+                    )
+                )
+                breakdown[norm_word] = breakdown.get(norm_word, 0) + 1
+
+    # 3. Single-word fillers from dictionary
     for token in tokens:
         for lang, words in FILLERS_BY_LANGUAGE.items():
-            if token in words and token not in ["to", "wo"]:  # prevent over-triggering short generic Roman syllables
+            if token in words and token not in ["to", "wo", "so"]:  # prevent false positives on common words
                 breakdown[token] = breakdown.get(token, 0) + 1
                 break
                 
@@ -226,6 +255,77 @@ def analyze_audio_pauses_and_volume(
     }
 
 
+def analyze_pronunciation_clarity(
+    segments: List[Dict[str, Any]],
+    duration_seconds: float,
+    word_count: int,
+    volume_stability: float
+) -> Tuple[float, float, List[Dict[str, Any]]]:
+    """
+    Extracts word-level acoustic confidence from Whisper segments, identifies unclear or
+    mispronounced words, and computes overall Pronunciation Clarity (0-100) and Articulation Score (0-100).
+    """
+    extracted_words = []
+    if segments:
+        for seg in segments:
+            for w in seg.get("words", []):
+                word_text = w.get("word", "").strip()
+                if word_text and len(word_text) > 1:
+                    extracted_words.append({
+                        "word": word_text,
+                        "probability": float(w.get("probability", 0.9)),
+                        "start_ms": int(w.get("start_ms", 0)),
+                        "end_ms": int(w.get("end_ms", 0)),
+                    })
+                    
+    unclear_words: List[Dict[str, Any]] = []
+    
+    if extracted_words:
+        probs = [w["probability"] for w in extracted_words]
+        avg_prob = float(np.mean(probs))
+        
+        # Base pronunciation score
+        # 0.95+ prob -> 95+, 0.80 -> 80, 0.60 -> 60
+        pronunciation_score = round(clamp(avg_prob * 100.0, 40.0, 98.0), 1)
+        
+        # Identify unclear words (confidence < 0.70)
+        for w in extracted_words:
+            # Exclude very short words or known simple tokens
+            if w["probability"] < 0.72 and len(w["word"]) > 2:
+                unclear_words.append({
+                    "word": w["word"],
+                    "confidence": round(w["probability"] * 100.0, 1),
+                    "start_ms": w["start_ms"],
+                    "end_ms": w["end_ms"],
+                })
+        # Limit to top 8 unclear words sorted by lowest confidence
+        unclear_words = sorted(unclear_words, key=lambda x: x["confidence"])[:8]
+    else:
+        # Fallback heuristic if word timestamps are not populated
+        if segments:
+            seg_confs = [float(s.get("confidence", 0.85)) for s in segments]
+            avg_seg_conf = float(np.mean(seg_confs))
+            if avg_seg_conf < 0: # logprob format (e.g. -0.2)
+                base = clamp(100.0 + avg_seg_conf * 30.0, 45.0, 95.0)
+            else:
+                base = clamp(avg_seg_conf * 100.0, 45.0, 95.0)
+            pronunciation_score = round(base, 1)
+        else:
+            pronunciation_score = 85.0
+
+    # Articulation score balances acoustic clarity with volume stability & lack of mumbled words
+    penalty = len(unclear_words) * 3.5
+    articulation_score = round(clamp(
+        (pronunciation_score * 0.65) +
+        (volume_stability * 0.25) +
+        (max(0.0, 10.0 - penalty)),
+        35.0,
+        98.0
+    ), 1)
+    
+    return pronunciation_score, articulation_score, unclear_words
+
+
 def analyze_speech_data(
     transcript: str,
     duration_seconds: float,
@@ -251,6 +351,7 @@ def analyze_speech_data(
     
     # Fillers
     filler_count, filler_words, filler_breakdown = detect_fillers(clean_text, tokens)
+    filler_density_percent = round((filler_count / max(1, word_count)) * 100.0, 1)
     
     # Mindset, Transitions & Hedging
     transition_count = count_phrase_matches(clean_text, TRANSITION_WORDS)
@@ -268,6 +369,15 @@ def analyze_speech_data(
         word_count=word_count
     )
     
+    # Pronunciation & Articulation metrics
+    vol_stability = audio_metrics.get("volume_stability_score", 80.0)
+    pronunciation_score, articulation_score, unclear_words = analyze_pronunciation_clarity(
+        segments=segments or [],
+        duration_seconds=duration_seconds,
+        word_count=word_count,
+        volume_stability=vol_stability
+    )
+    
     return {
         "word_count": word_count,
         "sentence_count": sentence_count,
@@ -278,6 +388,10 @@ def analyze_speech_data(
         "filler_count": filler_count,
         "filler_words": filler_words,
         "filler_breakdown": filler_breakdown,
+        "filler_density_percent": filler_density_percent,
+        "pronunciation_score": pronunciation_score,
+        "articulation_score": articulation_score,
+        "unclear_words": unclear_words,
         "transition_count": transition_count,
         "hedging_count": hedging_count,
         "hedging_score": hedging_score,

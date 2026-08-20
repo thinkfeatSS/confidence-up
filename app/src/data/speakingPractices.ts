@@ -1,0 +1,133 @@
+export interface SpeakingPracticeItem {
+  id: string;
+  title: string;
+  prompt: string;
+  category: 'Career' | 'Storytelling' | 'Debate' | 'Leadership' | 'Social' | 'Academic';
+  difficulty: 'Easy' | 'Medium' | 'Hard';
+  targetDurationSeconds: number;
+  emoji: string;
+  tips: string[];
+}
+
+export const SPEAKING_PRACTICES: SpeakingPracticeItem[] = [
+  {
+    id: 'sp-1',
+    title: 'Dream Job Pitch',
+    prompt: 'Introduce yourself as if meeting your dream employer for the first time.',
+    category: 'Career',
+    difficulty: 'Medium',
+    targetDurationSeconds: 60,
+    emoji: '💼',
+    tips: ['Lead with your passion & core expertise', 'Highlight one standout accomplishment', 'Keep your pace steady at 130-150 WPM'],
+  },
+  {
+    id: 'sp-2',
+    title: 'Biggest Achievement in 60s',
+    prompt: 'Explain your biggest personal or professional achievement in 60 seconds.',
+    category: 'Career',
+    difficulty: 'Easy',
+    targetDurationSeconds: 60,
+    emoji: '🏆',
+    tips: ['Use the STAR method: Situation, Task, Action, Result', 'Emphasize your personal contribution', 'Avoid filler words when pausing'],
+  },
+  {
+    id: 'sp-3',
+    title: 'Convince a Friend',
+    prompt: 'Convince a friend to try your favorite hobby, book, or movie.',
+    category: 'Social',
+    difficulty: 'Easy',
+    targetDurationSeconds: 90,
+    emoji: '🎮',
+    tips: ['Show genuine enthusiasm in your vocal tone', 'Give 2 specific reasons why they will love it', 'End with an inviting call to action'],
+  },
+  {
+    id: 'sp-4',
+    title: 'Overcoming an Obstacle',
+    prompt: 'Talk about a major challenge or obstacle you overcame and what you learned.',
+    category: 'Storytelling',
+    difficulty: 'Medium',
+    targetDurationSeconds: 90,
+    emoji: '🧗',
+    tips: ['Set the scene quickly', 'Describe the turning point with emotion', 'Conclude with the life lesson you gained'],
+  },
+  {
+    id: 'sp-5',
+    title: 'Explain Tech to a 10-Year-Old',
+    prompt: 'Explain how Artificial Intelligence or the Internet works to a 10-year-old child.',
+    category: 'Academic',
+    difficulty: 'Medium',
+    targetDurationSeconds: 90,
+    emoji: '🤖',
+    tips: ['Use simple, visual analogies (like recipes or games)', 'Avoid complex technical jargon', 'Check engagement with rhetorical questions'],
+  },
+  {
+    id: 'sp-6',
+    title: '2-Minute Startup Pitch',
+    prompt: 'Pitch an innovative startup idea or app solution to potential angel investors.',
+    category: 'Career',
+    difficulty: 'Hard',
+    targetDurationSeconds: 120,
+    emoji: '🚀',
+    tips: ['State the painful problem in the first 15 seconds', 'Explain your unique solution', 'Finish with the market potential and ask'],
+  },
+  {
+    id: 'sp-7',
+    title: 'Social Media Debate',
+    prompt: 'Argue for or against whether social media does more harm than good for student focus.',
+    category: 'Debate',
+    difficulty: 'Medium',
+    targetDurationSeconds: 90,
+    emoji: '📱',
+    tips: ['Pick a clear side immediately', 'Provide 2 strong evidence-backed arguments', 'Acknowledge the counter-argument briefly'],
+  },
+  {
+    id: 'sp-8',
+    title: 'Team Crisis Leadership',
+    prompt: 'Deliver an inspiring speech to rally your team during a high-stakes project delay.',
+    category: 'Leadership',
+    difficulty: 'Hard',
+    targetDurationSeconds: 120,
+    emoji: '🛡️',
+    tips: ['Acknowledge the reality with empathy', 'Focus on solutions and team strength', 'End on an uplifting, confident note'],
+  },
+  {
+    id: 'sp-9',
+    title: 'Memorable Childhood Story',
+    prompt: 'Tell a vivid story about a funny, surprising, or touching childhood moment.',
+    category: 'Storytelling',
+    difficulty: 'Easy',
+    targetDurationSeconds: 90,
+    emoji: '🌟',
+    tips: ['Use descriptive sensory words (sights, sounds, feelings)', 'Vary your speaking pace for dramatic effect', 'Deliver a clear punchline or takeaway'],
+  },
+  {
+    id: 'sp-10',
+    title: 'Urgent Climate Solution',
+    prompt: 'Present your opinion on the most effective climate action individuals can take today.',
+    category: 'Debate',
+    difficulty: 'Medium',
+    targetDurationSeconds: 90,
+    emoji: '🌍',
+    tips: ['Focus on one concrete high-impact action', 'Explain the ripple effect of community adoption', 'Keep your tone hopeful rather than despairing'],
+  },
+  {
+    id: 'sp-11',
+    title: 'Mastering Stage Fright',
+    prompt: 'Teach a newcomer three psychological tricks to conquer speech anxiety and fear.',
+    category: 'Academic',
+    difficulty: 'Easy',
+    targetDurationSeconds: 60,
+    emoji: '🧠',
+    tips: ['Use transition words: Firstly, Secondly, Finally', 'Include a quick breathing or posture tip', 'Speak with reassuring warmth'],
+  },
+  {
+    id: 'sp-12',
+    title: 'Tech Conference Networking',
+    prompt: 'Introduce yourself and start a conversation at an international tech conference mixer.',
+    category: 'Social',
+    difficulty: 'Medium',
+    targetDurationSeconds: 60,
+    emoji: '🤝',
+    tips: ['State your name, what you build, and why you are excited to be there', 'Ask an engaging open question to keep the conversation flowing'],
+  },
+];

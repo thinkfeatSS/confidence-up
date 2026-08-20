@@ -146,6 +146,34 @@ export class SpeechService {
       session.id,
     );
 
+    if (dto.challengeId) {
+      try {
+        const challenge = await this.prisma.challenge.findUnique({
+          where: { id: dto.challengeId },
+        });
+        if (challenge) {
+          const existing = await this.prisma.userChallenge.findUnique({
+            where: { userId_challengeId: { userId, challengeId: dto.challengeId } },
+          });
+          if (!existing?.completedAt) {
+            await this.prisma.userChallenge.upsert({
+              where: { userId_challengeId: { userId, challengeId: dto.challengeId } },
+              update: { completedAt: new Date() },
+              create: { userId, challengeId: dto.challengeId, completedAt: new Date() },
+            });
+            await this.gamificationService.awardXp(
+              userId,
+              challenge.xpReward,
+              XpSource.CHALLENGE,
+              dto.challengeId,
+            );
+          }
+        }
+      } catch {
+        // Non-blocking
+      }
+    }
+
     let newBadges: Array<{
       id: string;
       name: string;
@@ -360,9 +388,10 @@ export class SpeechService {
     };
 
     return [
-      'You are Atlas, the ConfidenceUp speaking coach.',
+      'You are Atlas, the expert ConfidenceUp speaking, pronunciation, and confidence coach.',
       'Return strict JSON only. Do not include markdown or explanations.',
-      'The app computes the final confidence score locally. You provide semantic coaching only.',
+      'The app computes the final confidence score locally. You provide semantic coaching, pronunciation guidance, and filler word feedback.',
+      'Identify exact filler words and words with unclear pronunciation. Provide actionable tips to replace fillers with silent pauses.',
       `User ID: ${userId}`,
       `Structured local metrics: ${JSON.stringify(payload)}`,
       `Transcript: ${dto.transcript}`,
@@ -371,34 +400,31 @@ export class SpeechService {
     ].join('\n');
   }
 
-
-
   private buildFallbackAiAnalysis(dto: AnalyzeSpeechAiDto) {
-
     const words = dto.transcript.toLowerCase().split(/\s+/).filter(Boolean);
-
     const topicWords = dto.topic.toLowerCase().split(/\s+/).filter((word) => word.length > 3);
-
     const matched = topicWords.filter((word) => words.some((spoken) => spoken.includes(word)));
-
     const relevance = topicWords.length
-
       ? Math.round((matched.length / topicWords.length) * 100)
-
       : 70;
 
     const topicRelevanceScore = Math.max(45, Math.min(90, relevance || 55));
-
     const nlp = (dto.nlpSummary ?? {}) as Record<string, unknown>;
-
     const hedgingCount = Number(nlp.hedgingCount ?? 0);
+    const fillerCount = Number(nlp.fillerCount ?? 0);
+    const fillerWords = Array.isArray(nlp.fillerWords) ? (nlp.fillerWords as string[]) : [];
 
     const strengths: string[] = [];
     const weaknesses: string[] = [];
 
     if (topicRelevanceScore >= 70) strengths.push('Stayed close to the prompt topic.');
-    if (hedgingCount > 3) weaknesses.push('Use more direct language instead of hedging.');
+    if (fillerCount === 0) {
+      strengths.push('Clean delivery with zero filler words.');
+    } else if (fillerCount > 3) {
+      weaknesses.push(`Used ${fillerCount} filler words (${fillerWords.slice(0, 3).join(', ')}). Practice pausing silently instead.`);
+    }
 
+    if (hedgingCount > 3) weaknesses.push('Use more direct language instead of hedging phrases.');
     if (topicRelevanceScore < 65) weaknesses.push('Connect your answer more directly to the prompt.');
 
 

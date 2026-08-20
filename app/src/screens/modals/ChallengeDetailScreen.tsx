@@ -22,10 +22,23 @@ export const ChallengeDetailScreen = ({ route, navigation }: Props) => {
   const { triggerXPGain } = useAppContext();
   const [showXP, setShowXP] = useState(false);
 
+  const isSpeakingChallenge = challenge.category === 'speaking';
+
   const handleComplete = () => {
     complete(challenge.id);
     triggerXPGain(challenge.xpReward);
     setShowXP(true);
+  };
+
+  const handleStartSpeakingPractice = () => {
+    // Navigate directly into Speaking Practice Tab with this challenge prompt
+    navigation.navigate('Tabs', {
+      screen: 'Practice',
+      params: {
+        prompt: `${challenge.title}: ${challenge.description}`,
+        challengeId: challenge.id,
+      },
+    });
   };
 
   return (
@@ -77,8 +90,24 @@ export const ChallengeDetailScreen = ({ route, navigation }: Props) => {
             <Text style={{ fontSize: 32 }}>✅</Text>
             <Text style={[styles.doneTitle, { color: colors.success }]}>Challenge Complete!</Text>
           </GlassCard>
+        ) : isSpeakingChallenge ? (
+          <View style={styles.speakingActionContainer}>
+            <PrimaryButton
+              label="Start Speaking Practice 🎙️"
+              onPress={handleStartSpeakingPractice}
+              size="lg"
+            />
+            <Text style={[styles.speakingHint, { color: colors.accentCyan }]}>
+              🎤 Complete this task by speaking into the AI studio. Your score and challenge progress will be recorded automatically!
+            </Text>
+          </View>
         ) : (
-          <PrimaryButton label="Mark as Complete ✅" onPress={handleComplete} loading={isPending} size="lg" />
+          <PrimaryButton
+            label="Mark as Complete ✅"
+            onPress={handleComplete}
+            loading={isPending}
+            size="lg"
+          />
         )}
 
         <View style={{ height: Spacing.xxl }} />
@@ -111,4 +140,14 @@ const styles = StyleSheet.create({
   tip: { ...(Typography.body as object), lineHeight: 26, marginBottom: 4 },
   doneCard: { alignItems: 'center', gap: Spacing.sm },
   doneTitle: { fontSize: 18, fontWeight: '700' },
+  speakingActionContainer: {
+    gap: Spacing.sm,
+  },
+  speakingHint: {
+    fontSize: 12,
+    lineHeight: 18,
+    textAlign: 'center',
+    fontWeight: '600',
+    paddingHorizontal: Spacing.sm,
+  },
 });

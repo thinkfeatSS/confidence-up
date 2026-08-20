@@ -12,11 +12,13 @@ def calculate_speech_fluency(
     pause_frequency: float,
     volume_stability: float,
     repetition_score: float,
-    lost_pauses_count: int
+    lost_pauses_count: int,
+    filler_density_percent: float = 0.0
 ) -> float:
     """
     Calculates deterministic Speech Fluency (0-100).
     Ideal WPM: 130 - 160.
+    Factors in pace, pauses, volume stability, repetition, and filler density penalty.
     """
     if wpm <= 0:
         pace_score = 50.0
@@ -24,17 +26,20 @@ def calculate_speech_fluency(
         # Distance from ideal pace of 145 WPM
         pace_score = clamp(100.0 - abs(wpm - 145.0) * 0.7)
         
-    pause_score = clamp(100.0 - (pause_frequency * 6.0) - (lost_pauses_count * 15.0))
+    pause_score = clamp(100.0 - (pause_frequency * 5.0) - (lost_pauses_count * 12.0))
     volume_score = clamp(volume_stability)
     rep_score = clamp(repetition_score)
+    
+    # Fair filler penalty based on density (> 3% density applies gradual reduction)
+    filler_penalty = clamp((filler_density_percent - 2.5) * 3.0, 0.0, 30.0) if filler_density_percent > 2.5 else 0.0
     
     fluency = (
         (pace_score * 0.35) +
         (pause_score * 0.30) +
         (volume_score * 0.20) +
         (rep_score * 0.15)
-    )
-    return round(clamp(fluency), 1)
+    ) - filler_penalty
+    return round(clamp(fluency, 20.0, 98.0), 1)
 
 
 def calculate_practice_consistency(
@@ -63,35 +68,50 @@ def calculate_deterministic_confidence(
     previous_score: Optional[float] = None
 ) -> Tuple[float, ConfidenceComponentsSchema, int]:
     """
-    Authoritative, deterministic Confidence Scoring Engine (v1.0):
-    Confidence Score = Fluency (30%) + Topic Relevance (30%) + Vocabulary (20%) + Consistency (20%)
+    Authoritative, deterministic Confidence Scoring Engine (v2.0):
+    Confidence Score = Fluency (25%) + Topic (20%) + Pronunciation (15%) + Vocabulary (15%) + Structure (15%) + Consistency (10%)
     """
     wpm = metrics.get("words_per_minute", 120.0)
     pause_freq = metrics.get("pause_frequency", 5.0)
     vol_stability = metrics.get("volume_stability_score", 80.0)
     rep_score = metrics.get("repetition_score", 85.0)
     lost_pauses = metrics.get("lost_pauses_count", 0)
+    filler_density = metrics.get("filler_density_percent", 0.0)
     
     # 1. Fluency
-    fluency_score = calculate_speech_fluency(wpm, pause_freq, vol_stability, rep_score, lost_pauses)
+    fluency_score = calculate_speech_fluency(
+        wpm=wpm,
+        pause_frequency=pause_freq,
+        volume_stability=vol_stability,
+        repetition_score=rep_score,
+        lost_pauses_count=lost_pauses,
+        filler_density_percent=filler_density
+    )
     
     # 2. Topic Relevance
     topic_score = round(clamp(topic_relevance_score), 1)
     
-    # 3. Vocabulary
+    # 3. Pronunciation & Articulation Clarity
+    pron_score = metrics.get("pronunciation_score", 85.0)
+    art_score = metrics.get("articulation_score", 85.0)
+    pronunciation_clarity = round(clamp(pron_score * 0.7 + art_score * 0.3), 1)
+    
+    # 4. Vocabulary
     vocab_richness = metrics.get("vocabulary_richness", 75.0)
     vocabulary_score = round(clamp(vocab_richness * 0.75 + rep_score * 0.25), 1)
     
-    # Structure & Energy
+    # 5. Structure & Organization
     structure_score = round(clamp(
-        metrics.get("transition_count", 0) * 15.0 +
-        metrics.get("hedging_score", 80.0) * 0.4 +
-        30.0
+        metrics.get("transition_count", 0) * 14.0 +
+        metrics.get("hedging_score", 80.0) * 0.35 +
+        35.0
     ), 1)
+    
+    # Energy
     energy_score = round(clamp(metrics.get("energy_score", 75.0)), 1)
     
     # Estimate for consistency
-    current_estimate = (fluency_score + topic_score + vocabulary_score) / 3.0
+    current_estimate = (fluency_score + topic_score + pronunciation_clarity + vocabulary_score + structure_score) / 5.0
     consistency_score = calculate_practice_consistency(
         current_streak=current_streak,
         sessions_last_7_days=sessions_last_7_days,
@@ -99,12 +119,14 @@ def calculate_deterministic_confidence(
         current_estimate=current_estimate
     )
     
-    # 4. Final Deterministic Formula (v1.0)
+    # 6. Final Deterministic Formula (v2.0 with Pronunciation & Filler Density)
     final_score = (
-        (fluency_score * 0.30) +
-        (topic_score * 0.30) +
-        (vocabulary_score * 0.20) +
-        (consistency_score * 0.20)
+        (fluency_score * 0.25) +
+        (topic_score * 0.20) +
+        (pronunciation_clarity * 0.15) +
+        (vocabulary_score * 0.15) +
+        (structure_score * 0.15) +
+        (consistency_score * 0.10)
     )
     final_score = round(clamp(final_score), 1)
     
@@ -115,6 +137,7 @@ def calculate_deterministic_confidence(
         practice_consistency=consistency_score,
         structure=structure_score,
         energy=energy_score,
+        pronunciation_clarity=pronunciation_clarity,
     )
     
     # XP Award calculation

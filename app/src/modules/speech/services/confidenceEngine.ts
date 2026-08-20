@@ -41,8 +41,16 @@ export function calculateConfidenceComponents(args: {
   });
   const structureScore = calculateStructureScore(args.nlp);
   const energyScore = args.audio.energyScore;
+  const pronunciationScore = Math.round(clamp(args.nlp.pronunciationScore ?? 85));
+
   const currentScoreEstimate = Math.round(
-    (speechFluencyScore + args.topicRelevanceScore + args.nlp.vocabularyScore + structureScore + energyScore) / 5,
+    (speechFluencyScore +
+      args.topicRelevanceScore +
+      pronunciationScore +
+      args.nlp.vocabularyScore +
+      structureScore +
+      energyScore) /
+      6,
   );
 
   return {
@@ -51,6 +59,7 @@ export function calculateConfidenceComponents(args: {
     vocabularyScore: Math.round(clamp(args.nlp.vocabularyScore)),
     structureScore,
     energyScore,
+    pronunciationScore,
     practiceConsistencyScore: calculatePracticeConsistency({
       currentStreak: args.currentStreak,
       sessionsLast7Days: args.sessionsLast7Days,
@@ -61,13 +70,14 @@ export function calculateConfidenceComponents(args: {
 }
 
 export function calculateConfidenceScore(components: ConfidenceComponents) {
+  const pronScore = components.pronunciationScore ?? 85;
   return Math.round(
     0.25 * components.speechFluencyScore +
-      0.2 * components.topicRelevanceScore +
+      0.20 * components.topicRelevanceScore +
+      0.15 * pronScore +
       0.15 * components.vocabularyScore +
       0.15 * components.structureScore +
-      0.1 * components.energyScore +
-      0.15 * components.practiceConsistencyScore,
+      0.10 * components.practiceConsistencyScore,
   );
 }
 
@@ -76,6 +86,12 @@ export function xpForConfidence(score: number) {
 }
 
 export function buildMiniMission(result: Pick<SpeechAnalysisResult, 'nlp' | 'audio' | 'components'>) {
+  if (result.nlp.fillerCount > 2) {
+    return `Practice replacing filler words (${result.nlp.fillerWords.slice(0, 2).join(', ')}) with 1-second silent pauses.`;
+  }
+  if ((result.components.pronunciationScore ?? 85) < 75) {
+    return 'Enunciate consonants and word endings crisply to improve articulation clarity.';
+  }
   if (result.audio.pauseBreakdown.lost > 0) {
     return 'Add shorter pauses when thinking — avoid long silences over 3 seconds.';
   }
