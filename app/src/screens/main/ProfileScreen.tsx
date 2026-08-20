@@ -286,7 +286,7 @@ export const ProfileScreen = () => {
         ) : null}
 
         <GlassCard>
-          <LinkRow icon="📄" label="About ConfidenceUp" onPress={() => navigation.navigate('About')} colors={colors} />
+          <LinkRow icon="📄" label="About SpeakUpMic" onPress={() => navigation.navigate('About')} colors={colors} />
           <View style={[styles.separator, { backgroundColor: colors.border }]} />
           <LinkRow icon="⭐" label="Rate the App" onPress={() => Linking.openURL(APP_LINKS.playStore)} colors={colors} />
           <View style={[styles.separator, { backgroundColor: colors.border }]} />
@@ -312,7 +312,7 @@ export const ProfileScreen = () => {
           </TouchableOpacity>
         </View>
 
-        <Text style={[styles.version, { color: colors.textMuted }]}>ConfidenceUp v1.0.0 · Made with ❤️</Text>
+        <Text style={[styles.version, { color: colors.textMuted }]}>SpeakUpMic v1.0.0 · Made with ❤️</Text>
         <View style={{ height: Spacing.xxl }} />
       </ScrollView>
     </GradientBackground>

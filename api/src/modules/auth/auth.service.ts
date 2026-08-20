@@ -84,20 +84,27 @@ export class AuthService {
     const valid = await verifyOtp(dto.otp, record.otpHash);
     if (!valid) throw new BadRequestException('Invalid OTP');
 
-    await this.prisma.$transaction([
-      this.prisma.emailOtp.update({
+    const updatedUser = await this.prisma.$transaction(async (tx) => {
+      await tx.emailOtp.update({
         where: { id: record.id },
         data: { usedAt: new Date() },
-      }),
-      this.prisma.user.update({
+      });
+      return tx.user.update({
         where: { id: user.id },
-        data: { isVerified: true },
-      }),
-    ]);
+        data: { isVerified: true, onboardingCompleted: true },
+      });
+    });
 
     await this.mailService.sendWelcomeEmail(user.email, user.name);
 
-    return { message: 'Email verified successfully' };
+    const device = await this.upsertDevice(user.id, dto as any);
+    const tokens = await this.generateTokens(user.id, user.email, user.role, device.id);
+
+    return {
+      message: 'Email verified successfully',
+      user: this.sanitizeUser(updatedUser),
+      ...tokens,
+    };
   }
 
   // ── Login ──────────────────────────────────────────────────────────────────

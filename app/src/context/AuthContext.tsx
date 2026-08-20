@@ -194,9 +194,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     await persistSession(payload.user, payload.accessToken, payload.refreshToken);
   }, [persistSession]);
 
-  const verifyEmail = useCallback(async (email: string, otp: string) => {
-    await apiClient.post('/auth/verify-email', { email, otp });
-  }, []);
+  const verifyEmail = useCallback(
+    async (email: string, otp: string) => {
+      const device = await NotificationsService.getAuthDevicePayload();
+      const res = await apiClient.post<any, any>('/auth/verify-email', {
+        email,
+        otp,
+        ...device,
+      });
+      const payload = unwrapApiData<{
+        accessToken?: string;
+        refreshToken?: string;
+        user?: any;
+      }>(res);
+      if (payload?.accessToken && payload?.refreshToken && payload?.user) {
+        await persistSession(payload.user, payload.accessToken, payload.refreshToken);
+      }
+    },
+    [persistSession],
+  );
 
   const resendOtp = useCallback(async (email: string) => {
     await apiClient.post('/auth/verify-email/resend', { email });

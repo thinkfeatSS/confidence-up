@@ -105,15 +105,6 @@ export const OTPVerificationScreen = ({ route, navigation }: Props) => {
     try {
       if (purpose === 'register') {
         await verifyEmail(email, otp);
-        navigation.reset({
-          index: 0,
-          routes: [
-            {
-              name: 'Login',
-              params: { verifiedEmail: email, showVerifiedBanner: true },
-            },
-          ],
-        });
       } else {
         navigation.replace('ResetPassword', { email, otp });
       }

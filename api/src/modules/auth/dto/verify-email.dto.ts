@@ -1,5 +1,5 @@
 import { Transform } from 'class-transformer';
-import { IsEmail, IsString, Length } from 'class-validator';
+import { IsEmail, IsOptional, IsString, Length } from 'class-validator';
 
 export class VerifyEmailDto {
   @Transform(({ value }) =>
@@ -12,4 +12,20 @@ export class VerifyEmailDto {
   @IsString()
   @Length(6, 6)
   otp: string;
+
+  @IsOptional()
+  @IsString()
+  deviceToken?: string;
+
+  @IsOptional()
+  @IsString()
+  deviceName?: string;
+
+  @IsOptional()
+  @IsString()
+  platform?: string;
+
+  @IsOptional()
+  @IsString()
+  appVersion?: string;
 }

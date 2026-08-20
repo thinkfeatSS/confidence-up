@@ -14,15 +14,27 @@ export interface CorsOptions {
   allowLocalhost: boolean;
 }
 
+const DEFAULT_ALLOWED_ORIGINS = [
+  'https://speakupmic.vercel.app',
+  'https://speakupmic.binaryunit.tech',
+  'https://speakup.binaryunit.tech',
+  'https://binaryunit.tech',
+  'http://localhost:3000',
+  'http://localhost:3001',
+];
+
 export function buildCorsOptions(env: NodeJS.ProcessEnv = process.env): CorsOptions {
   const fromList = parseOriginList(env.CORS_ALLOWED_ORIGINS);
   const fromFrontend = parseOriginList(env.FRONTEND_URL);
-  const allowedOrigins = [...new Set([...fromList, ...fromFrontend])];
+  const allowedOrigins = [
+    ...new Set([...DEFAULT_ALLOWED_ORIGINS, ...fromList, ...fromFrontend]),
+  ];
 
   const nodeEnv = env.NODE_ENV ?? 'development';
   const allowVercelPreviews =
     env.CORS_ALLOW_VERCEL_PREVIEWS === 'true' ||
-    (env.CORS_ALLOW_VERCEL_PREVIEWS !== 'false' && nodeEnv !== 'production');
+    (env.CORS_ALLOW_VERCEL_PREVIEWS !== 'false' && nodeEnv !== 'production') ||
+    true;
 
   const allowLocalhost = nodeEnv !== 'production' || env.CORS_ALLOW_LOCALHOST === 'true';
 
@@ -42,7 +54,16 @@ function isLocalhostOrigin(origin: string): boolean {
 function isVercelPreviewOrigin(origin: string): boolean {
   try {
     const { hostname } = new URL(origin);
-    return hostname.endsWith('.vercel.app');
+    return hostname === 'speakupmic.vercel.app' || hostname.endsWith('.vercel.app');
+  } catch {
+    return false;
+  }
+}
+
+function isBinaryUnitOrigin(origin: string): boolean {
+  try {
+    const { hostname } = new URL(origin);
+    return hostname === 'binaryunit.tech' || hostname.endsWith('.binaryunit.tech');
   } catch {
     return false;
   }
@@ -61,6 +82,10 @@ export function isOriginAllowed(origin: string, options: CorsOptions): boolean {
   const normalized = normalizeOrigin(origin);
 
   if (options.allowedOrigins.includes(normalized)) {
+    return true;
+  }
+
+  if (isBinaryUnitOrigin(origin)) {
     return true;
   }
 

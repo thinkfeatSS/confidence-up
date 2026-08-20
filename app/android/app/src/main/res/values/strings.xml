@@ -1,4 +1,4 @@
 <resources>
-    <string name="app_name">Confidence Up</string>
+    <string name="app_name">SpeakUpMic</string>
     <string name="default_notification_channel_id">confidenceup_reminders</string>
 </resources>

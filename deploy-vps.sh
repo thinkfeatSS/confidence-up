@@ -14,8 +14,8 @@ if [ ! -f api/.env ]; then
 DATABASE_URL="mysql://u897031851_ismail:Mastsanai110@148.222.53.12:3306/u897031851_confidenceup"
 NODE_ENV=production
 PORT=3000
-APP_URL=http://binaryunit.tech
-FRONTEND_URL=http://binaryunit.tech
+APP_URL=https://speakupmic.binaryunit.tech
+FRONTEND_URL=https://speakupmic.vercel.app
 JWT_SECRET=39xDp8E+RbI5839moflWxbwEZbyK0nm4I+XsGQ6Gmn44
 JWT_EXPIRES_IN=15m
 JWT_REFRESH_SECRET=A5fvnDAZxMiuFuVBFvMdUKZsCPHkVZiC9jid8lMfcG88
@@ -26,21 +26,34 @@ MAIL_PORT=465
 MAIL_SECURE=true
 MAIL_USER=info@thinkfeat.com
 MAIL_PASSWORD=c948f8^I
-MAIL_FROM_NAME=ConfidenceUp
+MAIL_FROM_NAME=SpeakUpMic
 MAIL_FROM_ADDRESS=info@thinkfeat.com
 CRON_SECRET=BIr/MEiDyaIY/D6feYhghZGhL/i+G1rclomzanW4WLcc
 OLLAMA_BASE_URL=http://ollama:11434
 OLLAMA_MODEL=llama3.2:3b
+CORS_ALLOWED_ORIGINS=https://speakupmic.vercel.app,https://speakupmic.binaryunit.tech,https://binaryunit.tech
 EOF
 else
-  echo "🔄 Updating existing api/.env with Ollama and binaryunit.tech..."
+  echo "🔄 Updating existing api/.env with SpeakUpMic, Ollama and speakupmic.binaryunit.tech..."
   sed -i '/GEMINI/d' api/.env 2>/dev/null || true
   grep -q "OLLAMA_BASE_URL" api/.env || echo "OLLAMA_BASE_URL=http://ollama:11434" >> api/.env
   grep -q "OLLAMA_MODEL" api/.env || echo "OLLAMA_MODEL=llama3.2:3b" >> api/.env
-  sed -i 's|pink-nightingale-973118.hostingersite.com|binaryunit.tech|g' api/.env 2>/dev/null || true
+  sed -i 's|http://binaryunit.tech|https://speakupmic.binaryunit.tech|g' api/.env 2>/dev/null || true
+  sed -i 's|MAIL_FROM_NAME=ConfidenceUp|MAIL_FROM_NAME=SpeakUpMic|g' api/.env 2>/dev/null || true
 fi
 
-# 1. Pull latest code or build images
+# 1. Ensure SSL directory & placeholder exists so Nginx can start HTTPS
+mkdir -p ./certbot/conf/live/speakupmic.binaryunit.tech
+mkdir -p ./certbot/www/.well-known/acme-challenge
+if [ ! -f ./certbot/conf/live/speakupmic.binaryunit.tech/fullchain.pem ]; then
+  echo "🛡️ Creating bootstrap self-signed SSL cert for Nginx..."
+  openssl req -x509 -nodes -newkey rsa:2048 -days 1 \
+    -keyout ./certbot/conf/live/speakupmic.binaryunit.tech/privkey.pem \
+    -out ./certbot/conf/live/speakupmic.binaryunit.tech/fullchain.pem \
+    -subj "/CN=localhost" 2>/dev/null || true
+fi
+
+# 2. Pull latest code or build images
 echo "📦 Building and starting Docker containers..."
 docker compose -f docker-compose.prod.yml up -d --build
 

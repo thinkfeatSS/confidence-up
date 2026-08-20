@@ -4,27 +4,27 @@ export const termsContent = {
   title: 'Terms & Conditions',
   lastUpdated: 'June 25, 2026',
   intro:
-    'These Terms & Conditions ("Terms") govern your use of the ConfidenceUp mobile application and related services provided by ThinkFeat. By using ConfidenceUp, you agree to these Terms.',
+    'These Terms & Conditions ("Terms") govern your use of the SpeakUpMic mobile application and related services provided by ThinkFeat. By using SpeakUpMic, you agree to these Terms.',
   sections: [
     {
       id: 'acceptance',
       title: '1. Acceptance of terms',
       paragraphs: [
-        'By creating an account or using ConfidenceUp, you agree to be bound by these Terms and our Privacy Policy. If you do not agree, do not use the service.',
+        'By creating an account or using SpeakUpMic, you agree to be bound by these Terms and our Privacy Policy. If you do not agree, do not use the service.',
       ],
     },
     {
       id: 'eligibility',
       title: '2. Eligibility & account responsibilities',
       paragraphs: [
-        'You must be at least 13 years old to use ConfidenceUp. You are responsible for maintaining the confidentiality of your account credentials and for all activity under your account. Notify us immediately of unauthorized access.',
+        'You must be at least 13 years old to use SpeakUpMic. You are responsible for maintaining the confidentiality of your account credentials and for all activity under your account. Notify us immediately of unauthorized access.',
       ],
     },
     {
       id: 'service',
       title: '3. Description of service',
       paragraphs: [
-        'ConfidenceUp provides gamified confidence-building tools including daily missions, challenges, AI-powered speaking practice, fear exposure tracking, progress analytics, badges, and a private journal. Features may change over time as we improve the product.',
+        'SpeakUpMic provides gamified confidence-building tools including daily missions, challenges, AI-powered speaking practice, fear exposure tracking, progress analytics, badges, and a private journal. Features may change over time as we improve the product.',
       ],
     },
     {
@@ -43,7 +43,7 @@ export const termsContent = {
       id: 'user-content',
       title: '5. User content',
       paragraphs: [
-        'You retain ownership of content you create (journal entries, speech transcripts). By using ConfidenceUp, you grant ThinkFeat a limited license to store, process, and display your content solely to provide and improve the service. We do not claim ownership of your personal reflections or practice sessions.',
+        'You retain ownership of content you create (journal entries, speech transcripts). By using SpeakUpMic, you grant ThinkFeat a limited license to store, process, and display your content solely to provide and improve the service. We do not claim ownership of your personal reflections or practice sessions.',
       ],
     },
     {
@@ -57,21 +57,21 @@ export const termsContent = {
       id: 'ai-disclaimer',
       title: '7. AI coach disclaimer',
       paragraphs: [
-        'Atlas, the AI coach, provides automated feedback on speaking practice. It is not a licensed therapist, counselor, or medical professional. ConfidenceUp does not provide medical, psychological, or therapeutic advice. Seek professional help for serious anxiety or mental health conditions.',
+        'Atlas, the AI coach, provides automated feedback on speaking practice. It is not a licensed therapist, counselor, or medical professional. SpeakUpMic does not provide medical, psychological, or therapeutic advice. Seek professional help for serious anxiety or mental health conditions.',
       ],
     },
     {
       id: 'intellectual-property',
       title: '8. Intellectual property',
       paragraphs: [
-        'ThinkFeat owns all rights in the ConfidenceUp app, including software, design, branding, and content we create. You may not copy, modify, or distribute our intellectual property without written permission.',
+        'ThinkFeat owns all rights in the SpeakUpMic app, including software, design, branding, and content we create. You may not copy, modify, or distribute our intellectual property without written permission.',
       ],
     },
     {
       id: 'payments',
       title: '9. Subscriptions & payments',
       paragraphs: [
-        'ConfidenceUp is currently free to use. If we introduce paid features or subscriptions in the future, we will update these Terms and provide clear pricing before you are charged. Refund policies will be stated at the time of purchase.',
+        'SpeakUpMic is currently free to use. If we introduce paid features or subscriptions in the future, we will update these Terms and provide clear pricing before you are charged. Refund policies will be stated at the time of purchase.',
       ],
     },
     {
@@ -85,7 +85,7 @@ export const termsContent = {
       id: 'liability',
       title: '11. Limitation of liability',
       paragraphs: [
-        'To the maximum extent permitted by law, ThinkFeat shall not be liable for indirect, incidental, special, or consequential damages arising from your use of ConfidenceUp. Our total liability shall not exceed the amount you paid us in the twelve months preceding the claim, or zero if you use the free tier.',
+        'To the maximum extent permitted by law, ThinkFeat shall not be liable for indirect, incidental, special, or consequential damages arising from your use of SpeakUpMic. Our total liability shall not exceed the amount you paid us in the twelve months preceding the claim, or zero if you use the free tier.',
       ],
     },
     {
