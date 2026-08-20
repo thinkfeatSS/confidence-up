@@ -53,11 +53,11 @@ export function Sidebar() {
         {sidebarOpen && (
           <div className="flex items-center gap-2 overflow-hidden">
             <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-xs">CU</span>
+              <span className="text-primary-foreground font-bold text-xs">SUM</span>
             </div>
             <div className="overflow-hidden">
               <p className="text-sm font-bold text-foreground leading-none truncate">
-                ConfidenceUp
+                SpeakUpMic
               </p>
               <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-full font-medium">
                 Admin
@@ -67,7 +67,7 @@ export function Sidebar() {
         )}
         {!sidebarOpen && (
           <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center mx-auto">
-            <span className="text-primary-foreground font-bold text-xs">CU</span>
+            <span className="text-primary-foreground font-bold text-xs">SUM</span>
           </div>
         )}
         {sidebarOpen && (

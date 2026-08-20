@@ -85,7 +85,7 @@ export default function ForgotPasswordPage() {
             <Shield className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-3xl font-bold bg-gradient-to-r from-violet-400 to-cyan-400 bg-clip-text text-transparent">
-            ConfidenceUp
+            SpeakUpMic
           </h1>
           <p className="text-muted-foreground mt-1 text-sm">Admin Panel</p>
         </div>
@@ -112,7 +112,7 @@ export default function ForgotPasswordPage() {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="admin@confidenceup.com"
+                  placeholder="admin@binaryunit.tech"
                   className="bg-white/5 border-white/10 focus-visible:border-violet-500 focus-visible:ring-violet-500/20 h-10"
                   {...emailForm.register('email')}
                 />

@@ -9,7 +9,7 @@ type FaqSectionProps = {
 
 export function FaqSection({
   title = 'Frequently asked questions',
-  subtitle = 'Quick answers to common questions about ConfidenceUp.',
+  subtitle = 'Quick answers to common questions about SpeakUpMic.',
   faqs,
 }: FaqSectionProps) {
   return (

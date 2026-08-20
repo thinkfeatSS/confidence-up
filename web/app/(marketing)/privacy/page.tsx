@@ -6,9 +6,9 @@ import { LegalPageContent } from '@/components/marketing/LegalPageContent';
 export const metadata = buildMetadata({
   title: 'Privacy Policy',
   description:
-    'Read how ConfidenceUp by ThinkFeat collects, uses, and protects your personal data across the mobile app and related services.',
+    'Read how SpeakUpMic by ThinkFeat collects, uses, and protects your personal data across the mobile app and related services.',
   path: '/privacy',
-  keywords: ['privacy policy', 'data protection', 'ConfidenceUp privacy'],
+  keywords: ['privacy policy', 'data protection', 'SpeakUpMic privacy'],
 });
 
 export default function PrivacyPage() {

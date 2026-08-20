@@ -10,14 +10,14 @@ export const privacyContent = {
   title: 'Privacy Policy',
   lastUpdated: 'June 25, 2026',
   intro:
-    'This Privacy Policy explains how ThinkFeat ("we", "us", "our") collects, uses, and protects your information when you use the ConfidenceUp mobile app and related services.',
+    'This Privacy Policy explains how ThinkFeat ("we", "us", "our") collects, uses, and protects your information when you use the SpeakUpMic mobile app and related services.',
   sections: [
     {
       id: 'introduction',
       title: '1. Introduction & data controller',
-      summary: 'ThinkFeat is the data controller for ConfidenceUp.',
+      summary: 'ThinkFeat is the data controller for SpeakUpMic.',
       paragraphs: [
-        'ThinkFeat operates ConfidenceUp and is responsible for your personal data. For privacy-related requests, contact us at info@thinkfeat.com.',
+        'ThinkFeat operates SpeakUpMic and is responsible for your personal data. For privacy-related requests, contact us at info@thinkfeat.com.',
       ],
     },
     {
@@ -62,7 +62,7 @@ export const privacyContent = {
       id: 'data-sharing',
       title: '5. Data sharing',
       summary: 'We do not sell your personal data.',
-      paragraphs: ['We may share data with trusted service providers who help us operate ConfidenceUp:'],
+      paragraphs: ['We may share data with trusted service providers who help us operate SpeakUpMic:'],
       list: [
         'Cloud hosting and database providers.',
         'Email delivery services (transactional emails).',
@@ -97,9 +97,9 @@ export const privacyContent = {
     {
       id: 'children',
       title: "8. Children's privacy",
-      summary: 'ConfidenceUp is not intended for children under 13.',
+      summary: 'SpeakUpMic is not intended for children under 13.',
       paragraphs: [
-        'ConfidenceUp is not directed at children under 13 years of age. We do not knowingly collect personal information from children under 13. If you believe a child has provided us data, contact us and we will delete it promptly.',
+        'SpeakUpMic is not directed at children under 13 years of age. We do not knowingly collect personal information from children under 13. If you believe a child has provided us data, contact us and we will delete it promptly.',
       ],
     },
     {
@@ -115,7 +115,7 @@ export const privacyContent = {
       title: '10. Cookies & tracking',
       summary: 'The admin website uses cookies; the mobile app uses device identifiers.',
       paragraphs: [
-        'The ConfidenceUp admin website may use essential cookies for authentication. The mobile app uses device tokens for push notifications and local storage for session data. You can disable notifications in your device settings.',
+        'The SpeakUpMic admin website may use essential cookies for authentication. The mobile app uses device tokens for push notifications and local storage for session data. You can disable notifications in your device settings.',
       ],
     },
     {
@@ -123,7 +123,7 @@ export const privacyContent = {
       title: '11. Changes to this policy',
       summary: 'We will update this page when our practices change.',
       paragraphs: [
-        'We may update this Privacy Policy from time to time. We will post the revised policy on this page with an updated "Last updated" date. Continued use of ConfidenceUp after changes constitutes acceptance.',
+        'We may update this Privacy Policy from time to time. We will post the revised policy on this page with an updated "Last updated" date. Continued use of SpeakUpMic after changes constitutes acceptance.',
       ],
     },
     {

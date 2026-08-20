@@ -7,11 +7,11 @@ import { PageHero } from '@/components/marketing/sections/PageHero';
 import { CtaSection } from '@/components/marketing/sections/CtaSection';
 
 export const metadata = buildMetadata({
-  title: 'About ConfidenceUp',
+  title: 'About SpeakUpMic',
   description:
-    'Learn how ThinkFeat built ConfidenceUp to make confidence trainable through daily missions, AI coaching, and measurable progress.',
+    'Learn how ThinkFeat built SpeakUpMic to make confidence trainable through daily missions, AI coaching, and measurable progress.',
   path: '/about',
-  keywords: ['ThinkFeat', 'confidence app mission', 'about ConfidenceUp'],
+  keywords: ['ThinkFeat', 'speech practice', 'confidence app mission', 'about SpeakUpMic'],
 });
 
 export default function AboutPage() {
@@ -100,7 +100,7 @@ export default function AboutPage() {
 
       <CtaSection
         title="Ready to build your confidence?"
-        subtitle="Download ConfidenceUp or get in touch with our team."
+        subtitle="Download SpeakUpMic or get in touch with our team."
         buttonLabel="Get the App"
         secondaryHref="/contact"
         secondaryLabel="Contact us"

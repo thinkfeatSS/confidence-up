@@ -81,7 +81,7 @@ export default function LoginPage() {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary mb-4 shadow-lg shadow-primary/20">
             <Sparkles className="w-8 h-8 text-primary-foreground" />
           </div>
-          <h1 className="text-3xl font-bold text-foreground">ConfidenceUp</h1>
+          <h1 className="text-3xl font-bold text-foreground">SpeakUpMic</h1>
           <p className="text-muted-foreground mt-1 text-sm">
             Sign in to view your progress and stats
           </p>

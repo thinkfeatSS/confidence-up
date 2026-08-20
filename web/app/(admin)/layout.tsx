@@ -4,8 +4,8 @@ import { Header } from '@/components/layout/Header';
 import { AdminShell } from '@/components/layout/AdminShell';
 
 export const metadata: Metadata = {
-  title: 'ConfidenceUp Admin',
-  description: 'Admin panel for ConfidenceUp',
+  title: 'SpeakUpMic Admin',
+  description: 'Admin panel for SpeakUpMic',
 };
 
 export default function AdminLayout({

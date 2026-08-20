@@ -5,11 +5,11 @@ export const aboutContent = {
       'We believe confidence is a skill you build through action — not a personality trait you are born with.',
   },
   story: {
-    title: 'Why we built ConfidenceUp',
+    title: 'Why we built SpeakUpMic',
     paragraphs: [
-      'ThinkFeat created ConfidenceUp after seeing too many talented people hold back — not because they lacked ability, but because they lacked confidence in high-stakes moments.',
+      'ThinkFeat created SpeakUpMic after seeing too many talented people hold back — not because they lacked ability, but because they lacked confidence in high-stakes moments.',
       'Traditional self-help books and generic advice rarely translate into daily action. We wanted something different: a system that meets you where you are, gives you small wins every day, and shows measurable progress over weeks and months.',
-      'ConfidenceUp combines behavioral psychology, gamification, and AI feedback into one mobile experience that makes growth feel achievable — and even fun.',
+      'SpeakUpMic combines behavioral psychology, gamification, and AI feedback into one mobile experience that makes growth feel achievable — and even fun.',
     ],
   },
   values: [
@@ -27,7 +27,7 @@ export const aboutContent = {
     },
     {
       title: 'Inclusive access',
-      description: 'Whether you are a student, professional, or introvert, ConfidenceUp adapts to your goals and pace.',
+      description: 'Whether you are a student, professional, or introvert, SpeakUpMic adapts to your goals and pace.',
     },
   ],
   differentiators: {
@@ -42,11 +42,11 @@ export const aboutContent = {
   product: {
     title: 'The product today',
     description:
-      'ConfidenceUp includes daily missions, speaking practice with AI coach Atlas, a fear exposure tracker, XP and badges, progress analytics, and a private journal — all designed to work together as one confidence-building system.',
+      'SpeakUpMic includes daily missions, speaking practice with AI coach Atlas, a fear exposure tracker, XP and badges, progress analytics, and a private journal — all designed to work together as one confidence-building system.',
   },
   company: {
     title: 'About ThinkFeat',
     description:
-      'ThinkFeat builds technology that helps people grow practical life skills. ConfidenceUp is our flagship product, born from a simple belief: everyone deserves tools to show up as their best self.',
+      'ThinkFeat builds technology that helps people grow practical life skills. SpeakUpMic is our flagship product, born from a simple belief: everyone deserves tools to show up as their best self.',
   },
 };

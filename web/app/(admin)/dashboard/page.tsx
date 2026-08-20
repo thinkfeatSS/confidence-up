@@ -103,7 +103,7 @@ export default function DashboardPage() {
       <div>
         <h2 className="text-2xl font-bold text-foreground">Dashboard</h2>
         <p className="text-sm text-muted-foreground mt-1">
-          Welcome back. Here&apos;s what&apos;s happening with ConfidenceUp.
+          Welcome back. Here&apos;s what&apos;s happening with SpeakUpMic.
         </p>
         {isError && (
           <p className="text-sm text-destructive mt-2">Failed to load dashboard stats.</p>

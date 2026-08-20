@@ -84,7 +84,7 @@ export function DailyChallengeCard({ hub, isLoading }: DailyChallengeCardProps) 
           <p className="mt-2 text-sm italic text-primary/90">🎯 {mission.prompt}</p>
           {!missionCompleted && (
             <p className="mt-3 text-xs text-muted-foreground">
-              Complete this in the ConfidenceUp app — tap Practice on the Daily Challenge tab.
+              Complete this in the SpeakUpMic app — tap Practice on the Daily Challenge tab.
             </p>
           )}
         </div>

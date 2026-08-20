@@ -1,10 +1,10 @@
 export const site = {
-  name: 'ConfidenceUp',
+  name: 'SpeakUpMic',
   company: 'ThinkFeat',
   tagline: 'Build real-world confidence, one challenge at a time.',
   description:
-    'ConfidenceUp is a mobile confidence-building app by ThinkFeat that turns personal growth into a daily RPG with AI coaching, missions, challenges, and measurable progress.',
-  url: process.env.NEXT_PUBLIC_SITE_URL ?? 'https://thinkfeat.com',
+    'SpeakUpMic is a mobile speech and confidence-building app by ThinkFeat that turns personal growth into a daily RPG with AI coaching, missions, challenges, and measurable progress.',
+  url: process.env.NEXT_PUBLIC_SITE_URL ?? 'https://speakupmic.vercel.app',
   email: 'info@thinkfeat.com',
   responseTime: 'We respond within 2 business days.',
   appStoreUrl: '#',

@@ -2,12 +2,12 @@ export const landingContent = {
   hero: {
     title: 'Build real-world confidence, one challenge at a time.',
     subtitle:
-      'ConfidenceUp turns personal growth into a daily RPG with AI coaching, real-world missions, and measurable progress you can see every week.',
+      'SpeakUpMic turns personal growth into a daily RPG with AI coaching, real-world missions, and measurable progress you can see every week.',
     primaryCta: 'Get the App',
     secondaryCta: 'Learn More',
   },
   definition:
-    'ConfidenceUp is a mobile confidence-building app by ThinkFeat. It helps students, job seekers, and professionals practice speaking, face social fears, and build lasting habits through gamified daily missions, AI feedback, and progress analytics.',
+    'SpeakUpMic is a mobile speech and confidence-building app by ThinkFeat. It helps students, job seekers, and professionals practice speaking, face social fears, and build lasting habits through gamified daily missions, AI feedback, and progress analytics.',
   stats: [
     { label: 'Daily missions', value: 'Fresh every day' },
     { label: 'AI coach', value: 'Instant feedback' },
@@ -91,14 +91,14 @@ export const landingContent = {
   ],
   faqs: [
     {
-      question: 'What is ConfidenceUp?',
+      question: 'What is SpeakUpMic?',
       answer:
-        'ConfidenceUp is a mobile app by ThinkFeat that helps you build real-world confidence through daily missions, AI-powered speaking practice, fear exposure exercises, and gamified progress tracking.',
+        'SpeakUpMic is a mobile app by ThinkFeat that helps you build real-world confidence through daily missions, AI-powered speaking practice, fear exposure exercises, and gamified progress tracking.',
     },
     {
-      question: 'Is ConfidenceUp free?',
+      question: 'Is SpeakUpMic free?',
       answer:
-        'ConfidenceUp is free to download and use. Core features including daily missions, speaking practice, and progress tracking are available at no cost. Premium features may be introduced in the future.',
+        'SpeakUpMic is free to download and use. Core features including daily missions, speaking practice, and progress tracking are available at no cost. Premium features may be introduced in the future.',
     },
     {
       question: 'How does the AI coach work?',
@@ -111,14 +111,14 @@ export const landingContent = {
         'Yes. Your journal entries, speech transcripts, and personal progress data are stored securely and never sold to third parties. Read our Privacy Policy for full details.',
     },
     {
-      question: 'Who made ConfidenceUp?',
+      question: 'Who made SpeakUpMic?',
       answer:
-        'ConfidenceUp is built by ThinkFeat, a team focused on making personal growth practical, measurable, and engaging through technology.',
+        'SpeakUpMic is built by ThinkFeat, a team focused on making personal growth practical, measurable, and engaging through technology.',
     },
     {
       question: 'Do I need speaking experience to start?',
       answer:
-        'No. ConfidenceUp is designed for beginners. Missions and fear levels start small and gradually increase in difficulty as you build momentum.',
+        'No. SpeakUpMic is designed for beginners. Missions and fear levels start small and gradually increase in difficulty as you build momentum.',
     },
     {
       question: 'How long should I use it each day?',
@@ -126,9 +126,9 @@ export const landingContent = {
         'Most users spend 5–15 minutes per day. You choose your commitment during onboarding, and the app adapts to your schedule.',
     },
     {
-      question: 'Is ConfidenceUp a replacement for therapy?',
+      question: 'Is SpeakUpMic a replacement for therapy?',
       answer:
-        'No. ConfidenceUp is a self-improvement tool, not medical or therapeutic advice. If you have serious anxiety or mental health concerns, please consult a qualified professional.',
+        'No. SpeakUpMic is a self-improvement tool, not medical or therapeutic advice. If you have serious anxiety or mental health concerns, please consult a qualified professional.',
     },
   ],
   cta: {

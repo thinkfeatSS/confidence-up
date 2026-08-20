@@ -9,9 +9,9 @@ import { FaqSection } from '@/components/marketing/sections/FaqSection';
 export const metadata = buildMetadata({
   title: 'Contact',
   description:
-    'Contact the ConfidenceUp team at ThinkFeat. Email info@thinkfeat.com or use our contact form for support, partnerships, and press inquiries.',
+    'Contact the SpeakUpMic team at ThinkFeat. Email info@thinkfeat.com or use our contact form for support, partnerships, and press inquiries.',
   path: '/contact',
-  keywords: ['contact ConfidenceUp', 'ThinkFeat support', 'app help'],
+  keywords: ['contact SpeakUpMic', 'ThinkFeat support', 'app help'],
 });
 
 export default function ContactPage() {
