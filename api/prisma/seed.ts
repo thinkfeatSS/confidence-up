@@ -455,7 +455,7 @@ async function seedAnnouncements() {
 
   const announcements = [
     {
-      title: 'Welcome to ConfidenceUp! 🚀',
+      title: 'Welcome to SpeakUpMic! 🚀',
       body: 'Your confidence journey starts here. Complete today\'s mission, build your streak, and climb the fear ladder one step at a time. Remember: progress beats perfection.',
       type: AnnouncementType.INFO,
     },

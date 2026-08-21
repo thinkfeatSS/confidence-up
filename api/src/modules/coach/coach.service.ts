@@ -33,7 +33,7 @@ export class CoachService {
         .filter(Boolean)
         .join('\n');
 
-      const systemPrompt = `You are Atlas, an expert and concise confidence coach for the ConfidenceUp app.
+      const systemPrompt = `You are Atlas, an expert and concise confidence coach for the SpeakUpMic app.
 Give practical, actionable speaking and confidence advice. No medical or therapy claims.
 Keep replies under 120 words unless the user asks for detail.
 ${contextLines ? `User context:\n${contextLines}` : ''}`;

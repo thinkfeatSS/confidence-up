@@ -32,7 +32,7 @@ export class MailService {
       () =>
         this.mailerService.sendMail({
           to,
-          subject: 'Verify your ConfidenceUp account',
+          subject: 'Verify your SpeakUpMic account',
           template: 'email-otp',
           context: { name, otp, type: 'verify your email address' },
         }),
@@ -45,7 +45,7 @@ export class MailService {
       () =>
         this.mailerService.sendMail({
           to,
-          subject: 'Reset your ConfidenceUp password',
+          subject: 'Reset your SpeakUpMic password',
           template: 'email-otp',
           context: { name, otp, type: 'reset your password' },
         }),
@@ -58,7 +58,7 @@ export class MailService {
       () =>
         this.mailerService.sendMail({
           to,
-          subject: 'Welcome to ConfidenceUp!',
+          subject: 'Welcome to SpeakUpMic!',
           template: 'welcome',
           context: { name },
         }),
@@ -75,7 +75,7 @@ export class MailService {
       () =>
         this.mailerService.sendMail({
           to,
-          subject: 'Your ConfidenceUp account deletion is scheduled',
+          subject: 'Your SpeakUpMic account deletion is scheduled',
           template: 'account-deletion',
           context: {
             name,
@@ -101,7 +101,7 @@ export class MailService {
       () =>
         this.mailerService.sendMail({
           to,
-          subject: 'Your weekly ConfidenceUp report',
+          subject: 'Your weekly SpeakUpMic report',
           template: 'weekly-report',
           context: { name, ...data },
         }),
@@ -129,7 +129,7 @@ export class MailService {
         this.mailerService.sendMail({
           to: 'info@thinkfeat.com',
           replyTo: dto.email,
-          subject: `[ConfidenceUp Contact] ${label} — ${dto.name}`,
+          subject: `[SpeakUpMic Contact] ${label} — ${dto.name}`,
           html: `
             <p><strong>Name:</strong> ${dto.name}</p>
             <p><strong>Email:</strong> ${dto.email}</p>

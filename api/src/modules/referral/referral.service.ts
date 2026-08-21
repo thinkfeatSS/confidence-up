@@ -18,8 +18,8 @@ export class ReferralService {
     const referralCode = user?.referralCode ?? '';
     return {
       referralCode,
-      shareUrl: `https://thinkfeat.com/join?ref=${referralCode}`,
-      shareMessage: `Join me on ConfidenceUp and build your speaking confidence! Use my invite link: https://thinkfeat.com/join?ref=${referralCode}`,
+      shareUrl: `https://speakupmic.vercel.app/join?ref=${referralCode}`,
+      shareMessage: `Join me on SpeakUpMic and build your speaking confidence! Use my invite link: https://speakupmic.vercel.app/join?ref=${referralCode}`,
     };
   }
 

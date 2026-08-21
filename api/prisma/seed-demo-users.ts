@@ -15,13 +15,13 @@ import { generateReferralCode } from '../src/common/utils/otp.util';
 const prisma = new PrismaClient();
 
 const ADMIN = {
-  email: 'admin@confidenceup.com',
-  name: 'ConfidenceUp Admin',
+  email: 'admin@binaryunit.tech',
+  name: 'SpeakUpMic Admin',
   password: 'Admin@12345',
 };
 
 const DEMO = {
-  email: 'demo@confidenceup.com',
+  email: 'demo@speakupmic.com',
   name: 'Alex Demo',
   password: 'Demo@12345',
 };
@@ -254,7 +254,7 @@ async function seedDemoUser(passwordHash: string) {
     {
       topic: 'Practice elevator pitch',
       transcript:
-        'ConfidenceUp helps people build real-world speaking confidence through daily missions, fear ladders, and AI coaching. We turn practice into measurable progress with streaks, XP, and personalized feedback.',
+        'SpeakUpMic helps people build real-world speaking confidence through daily missions, fear ladders, and AI coaching. We turn practice into measurable progress with streaks, XP, and personalized feedback.',
       overallConfidenceScore: 69,
       fluencyScore: 67,
       speechSpeedWpm: 118,

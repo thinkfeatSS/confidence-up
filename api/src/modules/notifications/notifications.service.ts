@@ -82,7 +82,7 @@ export class NotificationsService {
           notification: { title, body },
           android: {
             notification: {
-              channelId: 'confidenceup_reminders',
+              channelId: 'speakupmic_reminders',
             },
           },
         });
@@ -111,7 +111,7 @@ export class NotificationsService {
           data: [
             {
               userId,
-              title: 'Welcome to ConfidenceUp! 🚀',
+              title: 'Welcome to SpeakUpMic! 🚀',
               body: 'Start your speech journey by recording your first speaking practice in the AI studio.',
               type: NotificationType.SYSTEM,
               isRead: false,

@@ -149,7 +149,7 @@ export const AuthScreen = ({ navigation, route }: Props) => {
             <LinearGradient colors={[colors.accentPurple, colors.accentCyan]} style={styles.logoCircle}>
               <Text style={{ fontSize: 40 }}>⚡</Text>
             </LinearGradient>
-            <Text style={[styles.appName, { color: colors.textPrimary }]}>ConfidenceUp</Text>
+            <Text style={[styles.appName, { color: colors.textPrimary }]}>SpeakUpMic</Text>
             <Text style={[styles.tagline, { color: colors.textMuted }]}>Your journey starts here</Text>
           </View>
 

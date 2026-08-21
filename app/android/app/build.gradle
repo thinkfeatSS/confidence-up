@@ -238,11 +238,17 @@ afterEvaluate {
     ]
 
     tasks.configureEach { task ->
-        if (task.name.startsWith("configureCMakeRelWithDebInfo")) {
+        if (task.name.startsWith("configureCMake") || task.name.startsWith("buildCMake")) {
             nativePrefabDeps.each { dep ->
                 def depTask = tasks.findByPath(dep)
                 if (depTask != null) {
                     task.dependsOn(depTask)
+                }
+            }
+            ["generateAutolinkingNewArchitectureFiles", "generateAutolinkingPackageList", "generateReactNativeEntryPoint"].each { autolinkTaskName ->
+                def autolinkTask = tasks.findByName(autolinkTaskName)
+                if (autolinkTask != null) {
+                    task.dependsOn(autolinkTask)
                 }
             }
         }
