@@ -46,8 +46,15 @@ export const MissionDetailScreen = ({ route, navigation }: Props) => {
         <View style={{ width: 40 }} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-        <GlassCard glowColor={mission.completed ? colors.success : colors.accentPurple}>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scroll}
+        showsVerticalScrollIndicator={false}
+        bounces={true}
+        nestedScrollEnabled={true}
+        alwaysBounceVertical={true}
+        keyboardShouldPersistTaps="handled">
+        <GlassCard style={styles.card} glowColor={mission.completed ? colors.success : colors.accentPurple}>
           <View style={styles.metaRow}>
             <CategoryChip category={mission.category} />
             <DifficultyBadge difficulty={mission.difficulty} />
@@ -61,12 +68,12 @@ export const MissionDetailScreen = ({ route, navigation }: Props) => {
           <Text style={[styles.xpReward, { color: colors.xpGold }]}>+{mission.xpReward} XP 🪙</Text>
         </GlassCard>
 
-        <GlassCard glowColor={colors.accentCyan}>
+        <GlassCard style={styles.card} glowColor={colors.accentCyan}>
           <Text style={[styles.promptLabel, { color: colors.accentCyan }]}>🎯 YOUR PROMPT</Text>
           <Text style={[styles.promptText, { color: colors.textPrimary }]}>{mission.prompt}</Text>
         </GlassCard>
 
-        <GlassCard>
+        <GlassCard style={styles.card}>
           <Text style={[styles.sectionLabel, { color: colors.accentCyan }]}>ABOUT THIS MISSION</Text>
           <Text style={[styles.bodyText, { color: colors.textSecondary }]}>{mission.description}</Text>
           {mission.whyItHelps && (
@@ -78,7 +85,7 @@ export const MissionDetailScreen = ({ route, navigation }: Props) => {
         </GlassCard>
 
         {mission.tips && mission.tips.length > 0 && (
-          <GlassCard>
+          <GlassCard style={styles.card}>
             <Text style={[styles.sectionLabel, { color: colors.accentCyan }]}>💡 TIPS FOR SUCCESS</Text>
             {mission.tips.map((tip, i) => (
               <TouchableOpacity
@@ -95,13 +102,13 @@ export const MissionDetailScreen = ({ route, navigation }: Props) => {
         )}
 
         {mission.completed ? (
-          <GlassCard style={styles.completedCard}>
+          <GlassCard style={[styles.completedCard, styles.card]}>
             <Text style={{ fontSize: 32 }}>✅</Text>
             <Text style={[styles.completedTitle, { color: colors.success }]}>Mission Complete!</Text>
             <Text style={[styles.completedSub, { color: colors.textMuted }]}>Great work! Keep the momentum going.</Text>
           </GlassCard>
         ) : (
-          <>
+          <View style={styles.actionsBlock}>
             <PrimaryButton label="Practice this mission 🎤" onPress={handlePracticeMission} size="lg" />
             <PrimaryButton
               label="Complete Mission ✅"
@@ -110,10 +117,10 @@ export const MissionDetailScreen = ({ route, navigation }: Props) => {
               size="md"
               variant="outline"
             />
-          </>
+          </View>
         )}
 
-        <View style={{ height: Spacing.xxl }} />
+        <View style={{ height: Spacing.xxl * 2 }} />
       </ScrollView>
 
       {showXP && <XPGainFloat amount={mission.xpReward} onComplete={() => setShowXP(false)} />}
@@ -123,6 +130,7 @@ export const MissionDetailScreen = ({ route, navigation }: Props) => {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  scrollView: { flex: 1 },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -134,7 +142,19 @@ const styles = StyleSheet.create({
   backBtn: { width: 40, height: 40, justifyContent: 'center' },
   backArrow: { fontSize: 22 },
   headerTitle: { fontSize: 16, fontWeight: '700' },
-  scroll: { paddingHorizontal: Spacing.base, gap: Spacing.md, paddingBottom: 60 },
+  scroll: {
+    paddingHorizontal: Spacing.base,
+    paddingTop: Spacing.xs,
+    paddingBottom: 100,
+    flexGrow: 1,
+  },
+  card: {
+    marginBottom: Spacing.md,
+  },
+  actionsBlock: {
+    gap: Spacing.sm,
+    marginBottom: Spacing.md,
+  },
   metaRow: { flexDirection: 'row', gap: Spacing.xs, flexWrap: 'wrap', marginBottom: Spacing.sm },
   missionTitle: { fontSize: 20, fontWeight: '800', lineHeight: 28 },
   xpReward: { fontSize: 14, fontWeight: '700', marginTop: 6 },

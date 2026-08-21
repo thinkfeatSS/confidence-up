@@ -13,6 +13,7 @@ import { Spacing, BorderRadius, Typography } from '../../theme';
 import { useTheme } from '../../theme/ThemeContext';
 import { apiClient, unwrapApiData } from '../../services/api';
 import { toSpeechSessionDto, mapSpeechSessionFromApi } from '../../utils/apiHelpers';
+import { saveLocalSpeechSession } from '../../services/localSpeechStorage';
 import {
   buildSpeechCelebrations,
   highlightToBadge,
@@ -249,6 +250,13 @@ export const SpeakingPracticeScreen = () => {
       setNewTopicPersonalRecord(null);
     }
 
+    // Save locally right away to guarantee it shows in history even if offline/backend delays
+    await saveLocalSpeechSession(built);
+    queryClient.setQueryData(['progress', 'speeches'], (old: any) => {
+      const list = Array.isArray(old) ? old : [];
+      return [built, ...list.filter((item: any) => item.id !== built.id)];
+    });
+
     try {
       const res = await apiClient.post<any, any>(
         '/speech/sessions',
@@ -256,7 +264,9 @@ export const SpeakingPracticeScreen = () => {
       );
       const payload = unwrapApiData<any>(res);
       const saved = mapSpeechSessionFromApi(payload, currentPrompt);
-      setSession({ ...built, ...saved, prompt: currentPrompt, feedback: built.feedback });
+      const mergedSession = { ...built, ...saved, prompt: currentPrompt, feedback: built.feedback };
+      setSession(mergedSession);
+      await saveLocalSpeechSession(mergedSession);
 
       const gamification = payload?.gamification as SpeechGamificationPayload | undefined;
       setCelebrationQueue(
@@ -267,12 +277,17 @@ export const SpeakingPracticeScreen = () => {
       );
       setCelebrationIndex(0);
 
+      queryClient.setQueryData(['progress', 'speeches'], (old: any) => {
+        const list = Array.isArray(old) ? old : [];
+        return [mergedSession, ...list.filter((item: any) => item.id !== built.id && item.id !== mergedSession.id)];
+      });
       queryClient.invalidateQueries({ queryKey: ['progress'] });
       queryClient.invalidateQueries({ queryKey: ['user'] });
       queryClient.invalidateQueries({ queryKey: ['badges'] });
       queryClient.invalidateQueries({ queryKey: ['gamification'] });
       queryClient.invalidateQueries({ queryKey: ['challenges'] });
-    } catch {
+    } catch (err) {
+      console.warn('[SpeakingPracticeScreen] Remote save failed, preserved locally:', err);
       setSession(built);
       setCelebrationQueue(
         buildSpeechCelebrations(built.xpEarned, undefined, {
@@ -281,6 +296,7 @@ export const SpeakingPracticeScreen = () => {
         }),
       );
       setCelebrationIndex(0);
+      queryClient.invalidateQueries({ queryKey: ['progress'] });
     }
     setState('results');
     setShowXP(true);

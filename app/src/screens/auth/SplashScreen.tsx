@@ -49,7 +49,7 @@ export const SplashScreen = ({ navigation }: Props) => {
       }, 2500);
       return () => clearTimeout(timer);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoading]);
 
   return (
@@ -66,7 +66,7 @@ export const SplashScreen = ({ navigation }: Props) => {
           ]}>
           <Text style={styles.logoEmoji}>⚡</Text>
         </LinearGradient>
-        <Text style={[styles.appName, { color: colors.textPrimary }]}>ConfidenceUp</Text>
+        <Text style={[styles.appName, { color: colors.textPrimary }]}>SpeakUpMic</Text>
       </Animated.View>
 
       <Animated.Text style={[styles.tagline, { color: colors.textSecondary }, taglineStyle]}>

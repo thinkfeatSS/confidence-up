@@ -153,22 +153,35 @@ export const ProgressScreen = () => {
 
   // Merge speech sessions from progress and query
   const allSpeechSessions = useMemo(() => {
-    const raw = speechSessions ?? progress?.speechSessions ?? [];
+    const listA = speechSessions ?? [];
+    const listB = progress?.speechSessions ?? [];
+    const raw = listA.length > 0 ? listA : listB;
     if (sessionFilter === 'best') {
       return [...raw].sort((a, b) => b.overallScore - a.overallScore).slice(0, 8);
     }
-    return [...raw].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 10);
+    return [...raw].sort((a, b) => {
+      const timeA = new Date(a.date).getTime() || 0;
+      const timeB = new Date(b.date).getTime() || 0;
+      return timeB - timeA;
+    }).slice(0, 10);
   }, [speechSessions, progress?.speechSessions, sessionFilter]);
 
   // Real chart points derived from actual speech sessions & history
   const chartPoints = useMemo(() => {
-    if (speechSessions && speechSessions.length > 0) {
-      const sorted = [...speechSessions]
-        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+    const listA = speechSessions ?? [];
+    const listB = progress?.speechSessions ?? [];
+    const raw = listA.length > 0 ? listA : listB;
+    if (raw.length > 0) {
+      const sorted = [...raw]
+        .sort((a, b) => {
+          const timeA = new Date(a.date).getTime() || 0;
+          const timeB = new Date(b.date).getTime() || 0;
+          return timeA - timeB;
+        })
         .slice(-(period === 'week' ? 7 : 14));
       return sorted.map((s, idx) => ({
         score: s.overallScore,
-        date: s.date,
+        date: s.date ? s.date.split('T')[0] : `Session #${idx + 1}`,
         label: `#${idx + 1}`,
       }));
     }
@@ -180,14 +193,17 @@ export const ProgressScreen = () => {
       }));
     }
     return [];
-  }, [speechSessions, history, period]);
+  }, [speechSessions, progress?.speechSessions, history, period]);
 
   const monthlyTimeline = useMemo(() => {
+    const listA = speechSessions ?? [];
+    const listB = progress?.speechSessions ?? [];
+    const raw = listA.length > 0 ? listA : listB;
     const groups = new Map<string, { total: number; count: number; best: number }>();
-    for (const session of speechSessions ?? progress?.speechSessions ?? []) {
+    for (const session of raw) {
       const date = new Date(session.date);
       const key = Number.isNaN(date.getTime())
-        ? session.date.slice(0, 7)
+        ? (session.date ? session.date.slice(0, 7) : 'Recent')
         : date.toLocaleString('default', { month: 'short' });
       const current = groups.get(key) ?? { total: 0, count: 0, best: 0 };
       current.total += session.overallScore;
@@ -289,27 +305,39 @@ export const ProgressScreen = () => {
         </GlassCard>
 
         {/* Past Scores of Speaking Sessions */}
-        <View>
-          <View style={styles.sessionHeaderRow}>
-            <SectionHeader title="Speech History & Past Scores" />
-            <View style={styles.filterRow}>
+        <View style={styles.sessionSection}>
+          <View style={styles.sessionHeaderBlock}>
+            <View style={styles.sessionTitleWrapper}>
+              <Text style={[styles.sessionSectionTitle, { color: colors.textPrimary }]}>
+                Speech History & Past Scores
+              </Text>
+            </View>
+            <View style={[styles.sessionFilterToggle, { backgroundColor: colors.bgInput, borderColor: colors.border }]}>
               <TouchableOpacity
                 style={[
-                  styles.filterChip,
-                  sessionFilter === 'all' && { backgroundColor: colors.accentPurple, borderColor: colors.accentPurple },
+                  styles.sessionFilterBtn,
+                  sessionFilter === 'all' && { backgroundColor: colors.accentPurple },
                 ]}
                 onPress={() => setSessionFilter('all')}>
-                <Text style={[styles.filterChipText, sessionFilter === 'all' ? { color: colors.white } : { color: colors.textMuted }]}>
+                <Text
+                  style={[
+                    styles.sessionFilterBtnText,
+                    sessionFilter === 'all' ? { color: colors.white } : { color: colors.textMuted },
+                  ]}>
                   Recent
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[
-                  styles.filterChip,
-                  sessionFilter === 'best' && { backgroundColor: colors.accentPurple, borderColor: colors.accentPurple },
+                  styles.sessionFilterBtn,
+                  sessionFilter === 'best' && { backgroundColor: colors.accentPurple },
                 ]}
                 onPress={() => setSessionFilter('best')}>
-                <Text style={[styles.filterChipText, sessionFilter === 'best' ? { color: colors.white } : { color: colors.textMuted }]}>
+                <Text
+                  style={[
+                    styles.sessionFilterBtnText,
+                    sessionFilter === 'best' ? { color: colors.white } : { color: colors.textMuted },
+                  ]}>
                   🏆 High Scores
                 </Text>
               </TouchableOpacity>
@@ -535,21 +563,40 @@ const styles = StyleSheet.create({
   periodText: { fontSize: 11, fontWeight: '600' },
   chartLabels: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 4, paddingHorizontal: CHART_PAD_LEFT },
   chartLabel: { fontSize: 10 },
-  sessionHeaderRow: {
+  sessionSection: {},
+  sessionHeaderBlock: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: Spacing.xs,
+    flexWrap: 'wrap',
+    rowGap: 8,
+    columnGap: 8,
+    marginBottom: Spacing.sm,
   },
-  filterRow: { flexDirection: 'row', gap: 6 },
-  filterChip: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: BorderRadius.full,
+  sessionTitleWrapper: {
+    flexShrink: 1,
+  },
+  sessionSectionTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    letterSpacing: 0.3,
+  },
+  sessionFilterToggle: {
+    flexDirection: 'row',
+    borderRadius: 8,
+    padding: 3,
+    gap: 3,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.15)',
   },
-  filterChipText: { fontSize: 11, fontWeight: '700' },
+  sessionFilterBtn: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 6,
+  },
+  sessionFilterBtnText: {
+    fontSize: 11,
+    fontWeight: '700',
+  },
   sessionCard: { marginBottom: 4 },
   sessionCardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
   sessionTopic: { fontSize: 14, fontWeight: '700' },

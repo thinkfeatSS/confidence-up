@@ -47,6 +47,25 @@ export class SpeechService {
 
 
 
+    let validMissionId: string | undefined = undefined;
+    let validChallengeId: string | undefined = undefined;
+
+    if (dto.missionId) {
+      const missionExists = await this.prisma.mission.findUnique({
+        where: { id: dto.missionId },
+        select: { id: true },
+      });
+      if (missionExists) validMissionId = dto.missionId;
+    }
+
+    if (dto.challengeId) {
+      const challengeExists = await this.prisma.challenge.findUnique({
+        where: { id: dto.challengeId },
+        select: { id: true },
+      });
+      if (challengeExists) validChallengeId = dto.challengeId;
+    }
+
     const session = await this.prisma.speechSession.create({
 
       data: {
@@ -103,9 +122,8 @@ export class SpeechService {
 
         analysisMeta: dto.analysisMeta as Prisma.InputJsonValue | undefined,
 
-        missionId: dto.missionId,
-
-        challengeId: dto.challengeId,
+        missionId: validMissionId,
+        challengeId: validChallengeId,
 
       },
 

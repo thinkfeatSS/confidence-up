@@ -54,7 +54,31 @@ export function toSpeechSessionDto(
   built: SpeechSession,
   durationSeconds: number,
 ): Record<string, number | string | string[] | object | undefined> {
-  const wordCount = built.wordCount ?? Math.max(built.transcript.trim().split(/\s+/).filter(Boolean).length, 1);
+  const wordCount = Math.max(
+    built.wordCount ?? built.transcript.trim().split(/\s+/).filter(Boolean).length,
+    1,
+  );
+  const sentenceCount = built.sentenceCount ?? Math.max(built.transcript.split(/[.!?]+/).filter(Boolean).length, 1);
+  const fillerCount = Number.isFinite(built.fillerCount) ? Math.max(0, built.fillerCount) : 0;
+  const overallConfidenceScore = Math.max(0, Math.min(100, Math.round(Number(built.overallScore) || 70)));
+  const clarityScore = Math.max(0, Math.min(100, Math.round(Number(built.clarityScore) || 70)));
+  const toneScore = Math.max(0, Math.min(100, Math.round(Number(built.toneScore) || 70)));
+  const paceWPM = Math.max(0, Math.round(Number(built.paceWPM) || 0));
+  const averageVolume = Math.max(0, Math.min(100, Math.round(Number(built.averageVolume) || 70)));
+  const pauseFrequency = Math.max(0, Math.round((Number(built.pauseFrequency) || 0) * 100) / 100);
+  const vocabularyRichness = Math.max(0, Math.min(100, Math.round(Number(built.vocabularyRichness) || Math.min(100, 40 + wordCount * 3))));
+  const repetitionScore = Math.max(0, Math.min(100, Math.round(Number(built.repetitionScore) || 0)));
+  const xpEarned = Math.max(0, Math.round(Number(built.xpEarned) || 50));
+  const duration = Math.max(1, Math.round(Number(durationSeconds) || 1));
+
+  const feedbackArray = Array.isArray(built.feedback)
+    ? built.feedback.filter((f): f is string => typeof f === 'string' && f.trim().length > 0)
+    : [];
+
+  const suggestionsArray = Array.isArray(built.suggestions)
+    ? built.suggestions.filter((s): s is string => typeof s === 'string' && s.trim().length > 0)
+    : [];
+
   const aiInsights = built.aiInsights ?? {
     strengths: built.strengths ?? [],
     weaknesses: built.weaknesses ?? [],
@@ -66,35 +90,35 @@ export function toSpeechSessionDto(
   };
 
   return {
-    transcript: built.transcript,
-    topic: built.prompt,
-    languageDetected: built.languageDetected,
+    transcript: built.transcript || 'Practice speech',
+    topic: built.prompt || 'Speaking Practice',
+    languageDetected: built.languageDetected || 'English',
     wordCount,
-    sentenceCount: built.sentenceCount ?? 0,
-    fillerCount: built.fillerCount,
-    vocabularyRichness: built.vocabularyRichness ?? Math.min(100, 40 + wordCount * 3),
-    repetitionScore: built.repetitionScore ?? 0,
-    averageVolume: built.averageVolume ?? 70,
-    pauseFrequency: built.pauseFrequency ?? 0,
-    speechSpeedWpm: built.paceWPM,
-    fluencyScore: built.clarityScore,
-    topicRelevanceScore: built.toneScore,
-    overallConfidenceScore: built.overallScore,
-    durationSeconds,
-    xpEarned: built.xpEarned,
+    sentenceCount,
+    fillerCount,
+    vocabularyRichness,
+    repetitionScore,
+    averageVolume,
+    pauseFrequency,
+    speechSpeedWpm: paceWPM,
+    fluencyScore: clarityScore,
+    topicRelevanceScore: toneScore,
+    overallConfidenceScore,
+    durationSeconds: duration,
+    xpEarned,
     confidenceComponents: built.components,
     localMetrics: built.localMetrics,
     aiInsights,
     fillerBreakdown: built.fillerBreakdown,
-    coachingFeedback: built.feedback,
-    personalizedSuggestions: built.suggestions ?? [],
+    coachingFeedback: feedbackArray,
+    personalizedSuggestions: suggestionsArray,
     miniMission: built.miniMission,
     languageMix: built.languageDetected
       ? { label: built.languageDetected, source: 'client' }
       : undefined,
     analysisMeta: {
       source: 'client-speech-intelligence',
-      provider: built.analysisProvider,
+      provider: built.analysisProvider ?? 'client-local',
     },
     missionId: built.missionId,
     challengeId: built.challengeId,
@@ -102,19 +126,38 @@ export function toSpeechSessionDto(
 }
 
 export function mapSpeechSessionFromApi(s: Record<string, any>, prompt = ''): SpeechSession {
-  const fillerCount = s.fillerCount ?? 0;
-  const paceWPM = s.speechSpeedWpm ?? s.paceWPM ?? 0;
-  const overallScore = s.overallConfidenceScore ?? s.overallScore ?? 0;
-  const clarityScore = s.fluencyScore ?? s.clarityScore ?? 0;
-  const toneScore = s.topicRelevanceScore ?? s.toneScore ?? 0;
-  const transcript = s.transcript ?? '';
+  const fillerCount = Number(s.fillerCount ?? 0);
+  const paceWPM = Math.round(Number(s.speechSpeedWpm ?? s.paceWPM ?? 0));
+  const overallScore = Math.round(Number(s.overallConfidenceScore ?? s.overallScore ?? 70));
+  const clarityScore = Math.round(Number(s.fluencyScore ?? s.clarityScore ?? 70));
+  const toneScore = Math.round(Number(s.topicRelevanceScore ?? s.toneScore ?? 70));
+  const transcript = String(s.transcript ?? '');
   const aiInsights = (s.aiInsights ?? {}) as Record<string, unknown>;
   const analysisMeta = (s.analysisMeta ?? {}) as Record<string, unknown>;
 
+  const rawDate = s.createdAt ?? s.date ?? new Date().toISOString();
+  const dateStr = typeof rawDate === 'string' ? rawDate : new Date(rawDate).toISOString();
+
+  let feedback: string[] = [];
+  if (Array.isArray(s.coachingFeedback)) {
+    feedback = s.coachingFeedback.map(String);
+  } else if (Array.isArray(s.feedback)) {
+    feedback = s.feedback.map(String);
+  } else if (s.coachingFeedback && typeof s.coachingFeedback === 'object') {
+    const cf = s.coachingFeedback as Record<string, any>;
+    feedback = [
+      ...(Array.isArray(cf.strengths) ? cf.strengths.map(String) : []),
+      ...(Array.isArray(cf.improvements) ? cf.improvements.map(String) : []),
+    ];
+  }
+  if (!feedback.length) {
+    feedback = generateFeedback([], fillerCount, paceWPM);
+  }
+
   return {
-    id: s.id,
-    date: s.createdAt?.split?.('T')?.[0] ?? s.date ?? new Date().toISOString().split('T')[0],
-    prompt: s.topic ?? prompt,
+    id: s.id ?? `speech-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    date: dateStr,
+    prompt: s.topic ?? prompt ?? 'Speaking Practice Session',
     overallScore,
     clarityScore,
     fillerCount,
@@ -122,20 +165,20 @@ export function mapSpeechSessionFromApi(s: Record<string, any>, prompt = ''): Sp
     toneScore,
     transcript,
     fillerWords: s.fillerWords ?? Object.keys(s.fillerBreakdown ?? {}),
-    feedback: s.coachingFeedback ?? s.feedback ?? generateFeedback([], fillerCount, paceWPM),
-    xpEarned: s.xpEarned ?? 0,
+    feedback,
+    xpEarned: Math.round(Number(s.xpEarned ?? 50)),
     languageDetected: s.languageDetected,
-    sentenceCount: s.sentenceCount ?? 0,
-    wordCount: s.wordCount ?? 0,
-    vocabularyRichness: s.vocabularyRichness ?? 0,
-    repetitionScore: s.repetitionScore ?? 0,
-    averageVolume: s.averageVolume ?? 0,
-    pauseFrequency: s.pauseFrequency ?? 0,
+    sentenceCount: Number(s.sentenceCount ?? 0),
+    wordCount: Number(s.wordCount ?? 0),
+    vocabularyRichness: Number(s.vocabularyRichness ?? 0),
+    repetitionScore: Number(s.repetitionScore ?? 0),
+    averageVolume: Number(s.averageVolume ?? 0),
+    pauseFrequency: Number(s.pauseFrequency ?? 0),
     components: s.confidenceComponents ?? s.components,
     localMetrics: s.localMetrics,
     aiInsights: s.aiInsights,
     fillerBreakdown: s.fillerBreakdown,
-    suggestions: s.personalizedSuggestions ?? [],
+    suggestions: Array.isArray(s.personalizedSuggestions) ? s.personalizedSuggestions.map(String) : [],
     exercises: (aiInsights.personalizedExercises as string[]) ?? [],
     strengths: (aiInsights.strengths as string[]) ?? [],
     weaknesses: (aiInsights.weaknesses as string[]) ?? [],

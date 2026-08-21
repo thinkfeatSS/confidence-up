@@ -51,8 +51,15 @@ export const ChallengeDetailScreen = ({ route, navigation }: Props) => {
         <View style={{ width: 40 }} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-        <GlassCard glowColor={challenge.completed ? colors.success : colors.accentPurple}>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scroll}
+        showsVerticalScrollIndicator={false}
+        bounces={true}
+        nestedScrollEnabled={true}
+        alwaysBounceVertical={true}
+        keyboardShouldPersistTaps="handled">
+        <GlassCard style={styles.card} glowColor={challenge.completed ? colors.success : colors.accentPurple}>
           <View style={styles.metaRow}>
             <CategoryChip category={challenge.category} />
             <DifficultyBadge difficulty={challenge.difficulty} />
@@ -61,7 +68,7 @@ export const ChallengeDetailScreen = ({ route, navigation }: Props) => {
           <Text style={[styles.xp, { color: colors.xpGold }]}>+{challenge.xpReward} XP 🪙</Text>
         </GlassCard>
 
-        <GlassCard>
+        <GlassCard style={styles.card}>
           <Text style={[styles.sectionLabel, { color: colors.accentCyan }]}>ABOUT THIS CHALLENGE</Text>
           <Text style={[styles.body, { color: colors.textSecondary }]}>{challenge.description}</Text>
           {challenge.whyItHelps && (
@@ -75,7 +82,7 @@ export const ChallengeDetailScreen = ({ route, navigation }: Props) => {
         </GlassCard>
 
         {challenge.tips && challenge.tips.length > 0 && (
-          <GlassCard>
+          <GlassCard style={styles.card}>
             <Text style={[styles.sectionLabel, { color: colors.accentCyan }]}>💡 TIPS</Text>
             {challenge.tips.map((tip, i) => (
               <Text key={i} style={[styles.tip, { color: colors.textSecondary }]}>
@@ -86,7 +93,7 @@ export const ChallengeDetailScreen = ({ route, navigation }: Props) => {
         )}
 
         {challenge.completed ? (
-          <GlassCard style={styles.doneCard}>
+          <GlassCard style={[styles.doneCard, styles.card]}>
             <Text style={{ fontSize: 32 }}>✅</Text>
             <Text style={[styles.doneTitle, { color: colors.success }]}>Challenge Complete!</Text>
           </GlassCard>
@@ -110,7 +117,7 @@ export const ChallengeDetailScreen = ({ route, navigation }: Props) => {
           />
         )}
 
-        <View style={{ height: Spacing.xxl }} />
+        <View style={{ height: Spacing.xxl * 2 }} />
       </ScrollView>
 
       {showXP && <XPGainFloat amount={challenge.xpReward} onComplete={() => setShowXP(false)} />}
@@ -120,6 +127,7 @@ export const ChallengeDetailScreen = ({ route, navigation }: Props) => {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  scrollView: { flex: 1 },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -131,7 +139,15 @@ const styles = StyleSheet.create({
   backBtn: { width: 40, height: 40, justifyContent: 'center' },
   backArrow: { fontSize: 22 },
   headerTitle: { fontSize: 16, fontWeight: '700' },
-  scroll: { paddingHorizontal: Spacing.base, gap: Spacing.md, paddingBottom: 60 },
+  scroll: {
+    paddingHorizontal: Spacing.base,
+    paddingTop: Spacing.xs,
+    paddingBottom: 100,
+    flexGrow: 1,
+  },
+  card: {
+    marginBottom: Spacing.md,
+  },
   metaRow: { flexDirection: 'row', gap: Spacing.xs, marginBottom: Spacing.sm },
   title: { fontSize: 20, fontWeight: '800', lineHeight: 28 },
   xp: { fontSize: 14, fontWeight: '700', marginTop: 6 },
@@ -142,6 +158,7 @@ const styles = StyleSheet.create({
   doneTitle: { fontSize: 18, fontWeight: '700' },
   speakingActionContainer: {
     gap: Spacing.sm,
+    marginBottom: Spacing.md,
   },
   speakingHint: {
     fontSize: 12,
