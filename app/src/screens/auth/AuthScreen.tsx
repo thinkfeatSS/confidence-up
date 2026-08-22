@@ -34,8 +34,8 @@ export const AuthScreen = ({ navigation, route }: Props) => {
   const showVerifiedBanner = route.params?.showVerifiedBanner;
   const [mode, setMode] = useState<'login' | 'register'>(verifiedEmail ? 'register' : 'login');
   const [name, setName] = useState('');
-  const [email, setEmail] = useState(verifiedEmail ?? 'demo@speakupmic.com');
-  const [password, setPassword] = useState('Demo@12345');
+  const [email, setEmail] = useState(verifiedEmail ?? '');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [verifiedBannerVisible, setVerifiedBannerVisible] = useState(!!showVerifiedBanner);
