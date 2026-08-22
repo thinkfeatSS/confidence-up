@@ -32,7 +32,9 @@ docker compose -f docker-compose.prod.yml up -d nginx
 
 # 4. Remove dummy self-signed certificate before requesting real certs
 echo "🧹 Preparing Certbot directories for Let's Encrypt challenge..."
-rm -rf "${CERT_DIR}"
+rm -rf "./certbot/conf/live/${PRIMARY_DOMAIN}"
+rm -rf "./certbot/conf/archive/${PRIMARY_DOMAIN}"*
+rm -rf "./certbot/conf/renewal/${PRIMARY_DOMAIN}"*
 
 echo "📜 Requesting genuine Let's Encrypt SSL certificate for ${PRIMARY_DOMAIN}..."
 docker compose -f docker-compose.prod.yml run --rm --entrypoint "\
@@ -45,7 +47,15 @@ docker compose -f docker-compose.prod.yml run --rm --entrypoint "\
     --no-eff-email \
     --force-renewal" certbot
 
-# 5. Reload Nginx with genuine certificates
+# 5. Fix potential duplicate suffix folder if Certbot created -000X
+LATEST_CERT_DIR=$(ls -td ./certbot/conf/live/${PRIMARY_DOMAIN}* 2>/dev/null | head -n 1)
+if [ -n "$LATEST_CERT_DIR" ] && [ "$LATEST_CERT_DIR" != "./certbot/conf/live/${PRIMARY_DOMAIN}" ]; then
+  echo "🔗 Linking ${LATEST_CERT_DIR} to ./certbot/conf/live/${PRIMARY_DOMAIN}..."
+  rm -rf "./certbot/conf/live/${PRIMARY_DOMAIN}"
+  cp -rL "$LATEST_CERT_DIR" "./certbot/conf/live/${PRIMARY_DOMAIN}"
+fi
+
+# 6. Reload Nginx with genuine certificates
 echo "🔄 Reloading Nginx with new SSL certificates..."
 docker compose -f docker-compose.prod.yml exec nginx nginx -s reload
 
