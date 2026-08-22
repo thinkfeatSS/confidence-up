@@ -1,13 +1,21 @@
 import { ChatMessage } from '../types';
 
-export const initialMessages: ChatMessage[] = [
+export const getInitialGreeting = (userName?: string): string => {
+  const name = userName?.trim();
+  const displayName = name || 'there';
+  return `Hey ${displayName}! 👋 I'm Atlas, your AI confidence coach. I'm here whenever you need guidance, motivation, or a practical strategy.\n\nHow are you feeling about your confidence journey today?`;
+};
+
+export const getInitialMessages = (userName?: string): ChatMessage[] => [
   {
     id: 'init-1',
     role: 'ai',
-    content: "Hey Ismail! 👋 I'm Atlas, your AI confidence coach. I'm here whenever you need guidance, motivation, or a practical strategy.\n\nHow are you feeling about your confidence journey today?",
+    content: getInitialGreeting(userName),
     timestamp: new Date().toISOString(),
   },
 ];
+
+export const initialMessages: ChatMessage[] = getInitialMessages();
 
 // Keyword-based response map for the mock AI coach
 // Keys are lowercase keywords; values are AI responses

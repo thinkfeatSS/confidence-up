@@ -11,6 +11,10 @@ class ChatMessageDto {
 
 class CoachContextDto {
   @IsOptional()
+  @IsString()
+  userName?: string;
+
+  @IsOptional()
   streak?: number;
 
   @IsOptional()

@@ -30,11 +30,12 @@ export const AiCoachScreen = ({ navigation }: Props) => {
   const { data: user } = useUser();
   const { data: progress } = useProgress();
   const coachContext = {
+    userName: user?.name,
     streak: user?.streak,
     confidenceScore: user?.confidenceScore,
     lastSessionScore: progress?.speechSessions?.[0]?.overallScore,
   };
-  const { messages, isTyping, sendMessage } = useChat(coachContext);
+  const { messages, isTyping, sendMessage } = useChat(coachContext, user?.name);
   const [inputText, setInputText] = useState('');
   const listRef = useRef<FlatList>(null);
 

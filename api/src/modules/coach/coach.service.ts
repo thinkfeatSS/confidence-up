@@ -22,6 +22,7 @@ export class CoachService {
 
     try {
       const contextLines = [
+        dto.context?.userName ? `User name: ${dto.context.userName}` : null,
         dto.context?.streak !== undefined ? `Current streak: ${dto.context.streak} days` : null,
         dto.context?.confidenceScore !== undefined
           ? `Confidence score: ${dto.context.confidenceScore}`

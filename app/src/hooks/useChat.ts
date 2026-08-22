@@ -1,6 +1,6 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { ChatMessage } from '../types';
-import { initialMessages } from '../data/mockChat';
+import { getInitialMessages, initialMessages } from '../data/mockChat';
 import { sendCoachMessage } from '../modules/coach/services/coachService';
 
 let messageCounter = 100;
@@ -8,14 +8,35 @@ let messageCounter = 100;
 const createId = () => `msg-${++messageCounter}`;
 
 type CoachContext = {
+  userName?: string;
   streak?: number;
   confidenceScore?: number;
   lastSessionScore?: number;
 };
 
-export const useChat = (context?: CoachContext) => {
-  const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
+export const useChat = (context?: CoachContext, userName?: string) => {
+  const resolvedName = userName ?? context?.userName;
+  const [messages, setMessages] = useState<ChatMessage[]>(() =>
+    getInitialMessages(resolvedName),
+  );
   const [isTyping, setIsTyping] = useState(false);
+
+  // Update initial greeting message if user profile loads asynchronously
+  // and the user has not started a custom chat conversation yet
+  useEffect(() => {
+    if (resolvedName) {
+      setMessages(prev => {
+        if (
+          prev.length === 1 &&
+          prev[0].id === 'init-1' &&
+          prev[0].role === 'ai'
+        ) {
+          return getInitialMessages(resolvedName);
+        }
+        return prev;
+      });
+    }
+  }, [resolvedName]);
 
   const sendMessage = useCallback(
     async (content: string) => {
@@ -34,7 +55,7 @@ export const useChat = (context?: CoachContext) => {
 
       try {
         const history = nextMessages.map(message => ({
-          role: message.role === 'ai' ? 'assistant' as const : 'user' as const,
+          role: message.role === 'ai' ? ('assistant' as const) : ('user' as const),
           content: message.content,
         }));
         const reply = await sendCoachMessage(history, context);
@@ -61,8 +82,8 @@ export const useChat = (context?: CoachContext) => {
   );
 
   const clearChat = useCallback(() => {
-    setMessages(initialMessages);
-  }, []);
+    setMessages(getInitialMessages(resolvedName));
+  }, [resolvedName]);
 
   return { messages, isTyping, sendMessage, clearChat };
 };

@@ -303,16 +303,9 @@ export const ProfileScreen = () => {
           <TouchableOpacity style={styles.signOutBtn} onPress={logout} activeOpacity={0.8}>
             <Text style={styles.signOutText}>Sign Out</Text>
           </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.deleteAccountBtn}
-            onPress={handleDeleteAccount}
-            activeOpacity={0.7}>
-            <Text style={styles.deleteAccountText}>🗑️ Delete Account</Text>
-          </TouchableOpacity>
         </View>
 
-        <Text style={[styles.version, { color: colors.textMuted }]}>SpeakUpMic v1.0.0 · Made with ❤️</Text>
+        <Text style={[styles.version, { color: colors.textMuted }]}>SpeakUpMic v1.0.0 · Made by Thinkfeat</Text>
         <View style={{ height: Spacing.xxl }} />
       </ScrollView>
     </GradientBackground>
@@ -436,16 +429,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   signOutText: { fontSize: 15, fontWeight: '700', color: '#EF4444' },
-  deleteAccountBtn: {
-    paddingVertical: 10,
-    alignItems: 'center',
-  },
-  deleteAccountText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#9CA3AF',
-    textDecorationLine: 'underline',
-  },
   version: { textAlign: 'center', fontSize: 11 },
   referralSub: { ...(Typography.bodySmall as object), marginBottom: 12 },
   referralCodeRow: {

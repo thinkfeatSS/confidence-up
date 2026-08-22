@@ -1,7 +1,10 @@
 import React, { useMemo } from 'react';
-import { View, TouchableOpacity, StyleSheet, Text } from 'react-native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { BottomTabBarButtonProps } from '@react-navigation/bottom-tabs';
+import { View, TouchableOpacity, StyleSheet, Text, Platform } from 'react-native';
+import {
+  createBottomTabNavigator,
+  BottomTabBarButtonProps,
+} from '@react-navigation/bottom-tabs';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MainTabParamList } from './types';
 import { HomeScreen } from '../screens/main/HomeScreen';
 import { SpeakingPracticeScreen } from '../screens/main/SpeakingPracticeScreen';
@@ -12,10 +15,23 @@ import { useTheme } from '../theme/ThemeContext';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
-const TabIcon = ({ emoji, focused, dotColor }: { emoji: string; focused: boolean; dotColor: string }) => (
+const TabIcon = ({
+  emoji,
+  focused,
+  dotColor,
+}: {
+  emoji: string;
+  focused: boolean;
+  dotColor: string;
+}) => (
   <View style={tabStyles.iconWrapper}>
     <Text style={tabStyles.tabEmoji}>{emoji}</Text>
-    {focused && <View style={[tabStyles.activeDot, { backgroundColor: dotColor }]} />}
+    <View
+      style={[
+        tabStyles.activeDot,
+        focused && { backgroundColor: dotColor },
+      ]}
+    />
   </View>
 );
 
@@ -24,17 +40,32 @@ const MissionsTabButton = ({
   onPress,
   bgColor,
   borderColor,
+  style,
+  accessibilityState,
+  accessibilityRole,
+  accessibilityLabel,
+  testID,
 }: BottomTabBarButtonProps & { bgColor: string; borderColor: string }) => (
-  <TouchableOpacity
-    style={[tabStyles.centerButton, { backgroundColor: bgColor, borderColor }]}
-    onPress={onPress ?? undefined}
-    activeOpacity={0.85}>
-    {children}
-  </TouchableOpacity>
+  <View style={[tabStyles.centerButtonWrapper, style]} pointerEvents="box-none">
+    <TouchableOpacity
+      style={[tabStyles.centerButton, { backgroundColor: bgColor, borderColor }]}
+      onPress={onPress ?? undefined}
+      activeOpacity={0.85}
+      accessibilityRole={accessibilityRole ?? 'button'}
+      accessibilityState={accessibilityState}
+      accessibilityLabel={accessibilityLabel ?? 'Daily Missions'}
+      testID={testID}>
+      {children}
+    </TouchableOpacity>
+  </View>
 );
 
 export const MainTabNavigator = () => {
   const { colors } = useTheme();
+  const insets = useSafeAreaInsets();
+
+  const bottomInset = Math.max(insets.bottom, Platform.OS === 'android' ? 8 : 10);
+  const barHeight = 56 + bottomInset;
 
   const screenOptions = useMemo(
     () => ({
@@ -43,15 +74,20 @@ export const MainTabNavigator = () => {
         backgroundColor: colors.bgSecondary,
         borderTopColor: colors.border,
         borderTopWidth: 1,
-        height: 60,
-        paddingBottom: 6,
+        height: barHeight,
+        paddingBottom: bottomInset,
         paddingTop: 6,
+      },
+      tabBarItemStyle: {
+        justifyContent: 'center' as const,
+        alignItems: 'center' as const,
       },
       tabBarShowLabel: false as const,
       tabBarActiveTintColor: colors.accentPurpleLight,
       tabBarInactiveTintColor: colors.textMuted,
+      tabBarHideOnKeyboard: true as const,
     }),
-    [colors],
+    [colors, barHeight, bottomInset],
   );
 
   const homeOptions = useMemo(
@@ -72,7 +108,7 @@ export const MainTabNavigator = () => {
   );
   const missionsOptions = useMemo(
     () => ({
-      tabBarIcon: () => <Text style={{ fontSize: 24 }}>⚔️</Text>,
+      tabBarIcon: () => <Text style={tabStyles.centerEmoji}>⚔️</Text>,
       tabBarButton: (props: BottomTabBarButtonProps) => (
         <MissionsTabButton
           {...props}
@@ -114,7 +150,8 @@ export const MainTabNavigator = () => {
 const tabStyles = StyleSheet.create({
   iconWrapper: {
     alignItems: 'center',
-    gap: 3,
+    justifyContent: 'center',
+    minHeight: 34,
   },
   tabEmoji: {
     fontSize: 22,
@@ -123,19 +160,30 @@ const tabStyles = StyleSheet.create({
     width: 4,
     height: 4,
     borderRadius: 2,
+    marginTop: 3,
+    backgroundColor: 'transparent',
+  },
+  centerButtonWrapper: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   centerButton: {
-    top: -20,
+    position: 'relative',
+    top: -16,
     justifyContent: 'center',
     alignItems: 'center',
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: 58,
+    height: 58,
+    borderRadius: 29,
     shadowColor: '#7C3AED',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.35,
-    shadowRadius: 16,
+    shadowRadius: 14,
     elevation: 10,
     borderWidth: 3,
+  },
+  centerEmoji: {
+    fontSize: 24,
   },
 });

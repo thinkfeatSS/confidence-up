@@ -70,7 +70,7 @@ export const SplashScreen = ({ navigation }: Props) => {
       </Animated.View>
 
       <Animated.Text style={[styles.tagline, { color: colors.textSecondary }, taglineStyle]}>
-        Real-life Confidence RPG{'\n'}powered by AI
+        Real-life Confidence RPG{'\n'}powered by Thinkfeat
       </Animated.Text>
 
       <View style={styles.footer}>

@@ -3,6 +3,7 @@ import { apiClient, unwrapApiData } from '../../../services/api';
 type CoachMessage = { role: 'user' | 'assistant'; content: string };
 
 type CoachContext = {
+  userName?: string;
   streak?: number;
   confidenceScore?: number;
   lastSessionScore?: number;

@@ -13,3 +13,6 @@ messaging().setBackgroundMessageHandler(async remoteMessage => {
 });
 
 AppRegistry.registerComponent(appName, () => App);
+if (appName !== 'app') {
+  AppRegistry.registerComponent('app', () => App);
+}
