@@ -89,8 +89,8 @@ android {
         applicationId "com.speakupmic"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 4
-        versionName "1.0.2"
+        versionCode 5
+        versionName "1.0.3"
         manifestPlaceholders = [usesCleartextTraffic: "false"]
         ndk {
             abiFilters "armeabi-v7a", "arm64-v8a"
@@ -216,7 +216,7 @@ Google Sign-In is not ready in google-services.json (oauth_client is empty).
 Firebase Console → project "confidence-up":
   1. Authentication → Get started (if you have not already)
   2. Sign-in method → Google → Enable → Save
-  3. Project settings → Your apps → com.confidenceup → download google-services.json
+  3. Project settings → Your apps → com.speakupmic → download google-services.json
      Replace app/android/app/google-services.json
   4. Copy the Web client ID to app/.env (GOOGLE_WEB_CLIENT_ID) and API GOOGLE_CLIENT_ID
   5. Rebuild: ./gradlew clean assembleRelease
