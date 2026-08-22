@@ -105,6 +105,13 @@ export const AuthScreen = ({ navigation, route }: Props) => {
 
     setGoogleLoading(true);
     try {
+      const webClientId = getGoogleWebClientId();
+      if (webClientId) {
+        GoogleSignin.configure({
+          webClientId,
+          offlineAccess: false,
+        });
+      }
       await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
       const result = await GoogleSignin.signIn();
 
@@ -129,11 +136,12 @@ export const AuthScreen = ({ navigation, route }: Props) => {
       const parsed = parseApiError(err);
       if (parsed.isNetworkError || isNetworkError(err)) return;
 
-      const nativeMessage =
+      const rawMsg = (err as Error)?.message || String(err);
+      const nativeMessage = `Error [${code || 'UNKNOWN'}]: ${rawMsg}\n\n${
         code === '10' || code === 'DEVELOPER_ERROR'
-          ? getGoogleSignInConfigError() ??
-          'Google Sign-In failed (DEVELOPER_ERROR). In Firebase project confidence-up: enable Authentication → Google, confirm SHA-1 for com.confidenceup, re-download google-services.json, set GOOGLE_WEB_CLIENT_ID to the Web client ID (408638792904-....), and rebuild.'
-          : parsed.message;
+          ? 'Check Google Play Services OAuth propagation or account authentication.'
+          : ''
+      }`;
 
       Alert.alert('Google Sign-In failed', nativeMessage);
     } finally {
