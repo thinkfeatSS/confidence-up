@@ -37,7 +37,7 @@ services:
     environment:
       - ENVIRONMENT=production
       - DEBUG=false
-      - DATABASE_URL=${DATABASE_URL:-mysql+aiomysql://root:mysql_secret@host.docker.internal:3306/truefluent_ai}
+      - DATABASE_URL=mysql+aiomysql://crypto_user:your_secure_crypto_password_2026@crypto_mysql:3306/truefluent_ai
       - REDIS_URL=redis://redis:6379/0
       - JWT_SECRET=39xDp8E+RbI5839moflWxbwEZbyK0nm4I+XsGQ6Gmn44
       - JWT_REFRESH_SECRET=A5fvnDAZxMiuFuVBFvMdUKZsCPHkVZiC9jid8lMfcG88
@@ -59,14 +59,13 @@ services:
       - WHISPER_COMPUTE_TYPE=int8
     volumes:
       - audio_uploads:/app/uploads
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     depends_on:
       - redis
       - ollama
     restart: always
     networks:
       - confidence_net
+      - crypto_crypto_network
 
   # Truefluent AI Background Audio Processing Worker
   worker:
@@ -77,7 +76,7 @@ services:
     command: python -m app.workers.task_worker
     environment:
       - ENVIRONMENT=production
-      - DATABASE_URL=${DATABASE_URL:-mysql+aiomysql://root:mysql_secret@host.docker.internal:3306/truefluent_ai}
+      - DATABASE_URL=mysql+aiomysql://crypto_user:your_secure_crypto_password_2026@crypto_mysql:3306/truefluent_ai
       - REDIS_URL=redis://redis:6379/0
       - OLLAMA_BASE_URL=http://ollama:11434
       - OLLAMA_MODEL=llama3.2:3b
@@ -86,14 +85,13 @@ services:
       - WHISPER_COMPUTE_TYPE=int8
     volumes:
       - audio_uploads:/app/uploads
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     depends_on:
       - redis
       - ollama
     restart: always
     networks:
       - confidence_net
+      - crypto_crypto_network
 
   # Redis Task Queue
   redis:
@@ -118,6 +116,8 @@ services:
 networks:
   confidence_net:
     driver: bridge
+  crypto_crypto_network:
+    external: true
 
 volumes:
   audio_uploads:

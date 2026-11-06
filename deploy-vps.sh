@@ -23,7 +23,7 @@ MYSQL_CONTAINER=$(docker ps --filter "name=mysql" --format "{{.Names}}" | head -
 
 if [ -n "$MYSQL_CONTAINER" ]; then
   echo "   Found MySQL container: $MYSQL_CONTAINER"
-  # Attempt creating truefluent_ai database (tries common passwords or environment)
+  docker exec "$MYSQL_CONTAINER" mysql -uroot -pyour_secure_root_password_2026 -e "CREATE DATABASE IF NOT EXISTS truefluent_ai CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci; GRANT ALL PRIVILEGES ON truefluent_ai.* TO 'crypto_user'@'%'; FLUSH PRIVILEGES;" 2>/dev/null || \
   docker exec "$MYSQL_CONTAINER" mysql -uroot -pmysql_secret -e "CREATE DATABASE IF NOT EXISTS truefluent_ai CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" 2>/dev/null || \
   docker exec "$MYSQL_CONTAINER" mysql -uroot -e "CREATE DATABASE IF NOT EXISTS truefluent_ai CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" 2>/dev/null || \
   echo "   Note: Please verify truefluent_ai database exists in $MYSQL_CONTAINER"
