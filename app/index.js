@@ -13,6 +13,12 @@ messaging().setBackgroundMessageHandler(async remoteMessage => {
 });
 
 AppRegistry.registerComponent(appName, () => App);
+if (appName !== 'SpeakUpMic') {
+  AppRegistry.registerComponent('SpeakUpMic', () => App);
+}
+if (appName !== 'TruefluentAI') {
+  AppRegistry.registerComponent('TruefluentAI', () => App);
+}
 if (appName !== 'app') {
   AppRegistry.registerComponent('app', () => App);
 }

@@ -3,6 +3,8 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
+    "android": "react-native run-android",
+    "android:reverse": "adb reverse tcp:8081 tcp:8081",
     "build:android": "cd android && gradlew assembleRelease",
     "bundle:android": "cd android && gradlew bundleRelease",
     "android:clean": "cd android && gradlew clean",
