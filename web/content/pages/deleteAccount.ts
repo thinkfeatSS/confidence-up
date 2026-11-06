@@ -7,17 +7,17 @@ export type DeletionStep = {
 export const deleteAccountContent = {
   title: 'Request Account & Data Deletion',
   subtitle:
-    'Instructions and options to delete your SpeakUpMic account and all associated personal data.',
-  lastUpdated: 'June 25, 2026',
-  appTitle: 'SpeakUpMic',
+    'Instructions and options to delete your Truefluent AI account and all associated personal data.',
+  lastUpdated: 'November 6, 2026',
+  appTitle: 'Truefluent AI',
   company: 'ThinkFeat',
-  supportEmail: 'info@thinkfeat.com',
+  supportEmail: 'info@testitan.com',
   retentionPeriod: '30 days',
   inAppSteps: [
     {
       step: 1,
-      title: 'Open SpeakUpMic App',
-      description: 'Launch the SpeakUpMic app on your Android or iOS device.',
+      title: 'Open Truefluent AI App',
+      description: 'Launch the Truefluent AI app on your Android or iOS device.',
     },
     {
       step: 2,

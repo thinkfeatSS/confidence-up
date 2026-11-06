@@ -67,13 +67,14 @@ export const HomeScreen = () => {
     [navigation, todaysMission],
   );
   const navToFearTracker = useCallback(() => navigation.navigate('FearTracker'), [navigation]);
-  const navToAiCoach = useCallback(() => navigation.navigate('AiCoach'), [navigation]);
-  const navToJournal = useCallback(() => navigation.navigate('Journal'), [navigation]);
   const navToBadges = useCallback(() => navigation.navigate('Badges'), [navigation]);
-  const navToSkillTree = useCallback(() => navigation.navigate('SkillTree'), [navigation]);
   const navToNotifications = useCallback(() => navigation.navigate('Notifications'), [navigation]);
   const navToPractice = useCallback(
     () => navigation.navigate('Tabs', { screen: 'Practice' }),
+    [navigation],
+  );
+  const navToProgress = useCallback(
+    () => navigation.navigate('Tabs', { screen: 'Progress' }),
     [navigation],
   );
 
@@ -162,9 +163,9 @@ export const HomeScreen = () => {
           <SectionHeader title="Quick Actions" />
           <View style={styles.actionsGrid}>
             <QuickAction emoji="🎤" label="Practice Speaking" color={colors.accentCyan} onPress={navToPractice} />
-            <QuickAction emoji="😰" label="Fear Tracker" color={colors.streakOrange} onPress={navToFearTracker} />
-            <QuickAction emoji="🤖" label="AI Coach" color={colors.accentPurpleLight} onPress={navToAiCoach} />
-            <QuickAction emoji="📔" label="Journal" color={colors.xpGold} onPress={navToJournal} />
+            <QuickAction emoji="🎯" label="Daily Mission" color={colors.accentPurpleLight} onPress={navToDaily} />
+            <QuickAction emoji="😰" label="Fear Ladder" color={colors.streakOrange} onPress={navToFearTracker} />
+            <QuickAction emoji="📊" label="Speech Analytics" color={colors.xpGold} onPress={navToProgress} />
           </View>
         </View>
 
@@ -208,15 +209,15 @@ export const HomeScreen = () => {
           </View>
         )}
 
-        {/* Skill Tree CTA */}
-        <TouchableOpacity onPress={navToSkillTree} activeOpacity={0.85}>
-          <GlassCard style={styles.skillTreeCTA} glowColor={colors.accentCyan}>
-            <Text style={styles.ctaMapEmoji}>🗺️</Text>
+        {/* Exposure Ladder CTA */}
+        <TouchableOpacity onPress={navToFearTracker} activeOpacity={0.85}>
+          <GlassCard style={styles.skillTreeCTA} glowColor={colors.streakOrange}>
+            <Text style={styles.ctaMapEmoji}>🧗</Text>
             <View style={styles.ctaText}>
-              <Text style={[styles.ctaTitle, { color: colors.textPrimary }]}>Skill Tree</Text>
-              <Text style={[styles.ctaSub, { color: colors.textSecondary }]}>Unlock speaking, confidence & communication skills</Text>
+              <Text style={[styles.ctaTitle, { color: colors.textPrimary }]}>Exposure Therapy Ladder</Text>
+              <Text style={[styles.ctaSub, { color: colors.textSecondary }]}>Conquer speaking anxiety one micro-step at a time</Text>
             </View>
-            <Text style={[styles.ctaArrow, { color: colors.accentCyan }]}>→</Text>
+            <Text style={[styles.ctaArrow, { color: colors.streakOrange }]}>→</Text>
           </GlassCard>
         </TouchableOpacity>
 

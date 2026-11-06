@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Image } from 'react-native';
 import Animated, {
   useSharedValue,
   withTiming,
@@ -55,22 +55,18 @@ export const SplashScreen = ({ navigation }: Props) => {
   return (
     <BrandHeroBackground style={styles.container}>
       <Animated.View style={[styles.logoContainer, logoStyle]}>
-        <LinearGradient
-          colors={[colors.accentPurple, colors.accentCyan]}
-          style={[
-            styles.logoCircle,
-            {
-              shadowColor: isDark ? colors.glowPurple : 'rgba(124,58,237,0.35)',
-              shadowOpacity: isDark ? 0.8 : 0.45,
-            },
-          ]}>
-          <Text style={styles.logoEmoji}>⚡</Text>
-        </LinearGradient>
-        <Text style={[styles.appName, { color: colors.textPrimary }]}>SpeakUpMic</Text>
+        <View style={styles.logoCircleWrapper}>
+          <Image
+            source={require('../../assets/images/logo.png')}
+            style={styles.logoImage}
+            resizeMode="contain"
+          />
+        </View>
+        <Text style={[styles.appName, { color: colors.textPrimary }]}>Truefluent AI</Text>
       </Animated.View>
 
       <Animated.Text style={[styles.tagline, { color: colors.textSecondary }, taglineStyle]}>
-        Real-life Confidence RPG{'\n'}powered by Thinkfeat
+        Voice & Speech Intelligence{'\n'}Real-World Confidence
       </Animated.Text>
 
       <View style={styles.footer}>
@@ -91,18 +87,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 16,
   },
-  logoCircle: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+  logoCircleWrapper: {
+    width: 110,
+    height: 110,
+    borderRadius: 28,
+    overflow: 'hidden',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowOffset: { width: 0, height: 0 },
-    shadowRadius: 30,
-    elevation: 20,
   },
-  logoEmoji: {
-    fontSize: 48,
+  logoImage: {
+    width: 100,
+    height: 100,
   },
   appName: {
     fontSize: 32,

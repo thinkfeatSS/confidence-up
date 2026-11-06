@@ -1,4 +1,4 @@
 <resources>
-    <string name="app_name">SpeakUpMic</string>
-    <string name="default_notification_channel_id">confidenceup_reminders</string>
+    <string name="app_name">Truefluent AI</string>
+    <string name="default_notification_channel_id">truefluent_reminders</string>
 </resources>

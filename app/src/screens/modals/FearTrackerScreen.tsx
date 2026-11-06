@@ -132,13 +132,29 @@ export const FearTrackerScreen = ({ navigation }: Props) => {
                     <Text style={[styles.levelXP, { color: colors.xpGold }]}>+{level.xpReward} XP</Text>
                   </View>
                   {level.level === selectedFear.currentLevel && !level.completed && (
-                    <TouchableOpacity
-                      style={[styles.completeBtn, { borderColor: selectedFear.color }]}
-                      onPress={() =>
-                        handleCompleteLevel(selectedFear, level.level, level.xpReward, level.id)
-                      }>
-                      <Text style={[styles.completeBtnText, { color: selectedFear.color }]}>Done</Text>
-                    </TouchableOpacity>
+                    <View style={styles.actionColumn}>
+                      <TouchableOpacity
+                        style={[styles.practiceBtn, { backgroundColor: selectedFear.color }]}
+                        activeOpacity={0.8}
+                        onPress={() => {
+                          const prompt = `${selectedFear.name} Level ${level.level}: ${level.title} — ${level.description}`;
+                          setSelectedFear(null);
+                          navigation.navigate('Tabs', {
+                            screen: 'Practice',
+                            params: { prompt },
+                          });
+                        }}>
+                        <Text style={styles.practiceBtnText}>Practice 🎤</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={[styles.completeBtn, { borderColor: selectedFear.color }]}
+                        activeOpacity={0.8}
+                        onPress={() =>
+                          handleCompleteLevel(selectedFear, level.level, level.xpReward, level.id)
+                        }>
+                        <Text style={[styles.completeBtnText, { color: selectedFear.color }]}>Done</Text>
+                      </TouchableOpacity>
+                    </View>
                   )}
                 </View>
               ))}
@@ -207,4 +223,7 @@ const styles = StyleSheet.create({
   levelXP: { fontSize: 11, fontWeight: '600' },
   completeBtn: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, borderWidth: 1 },
   completeBtnText: { fontSize: 12, fontWeight: '700' },
+  actionColumn: { gap: 6, alignItems: 'flex-end', justifyContent: 'center' },
+  practiceBtn: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8 },
+  practiceBtnText: { fontSize: 11, fontWeight: '800', color: '#ffffff' },
 });

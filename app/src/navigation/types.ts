@@ -29,12 +29,7 @@ export type MainStackParamList = {
   Tabs: NavigatorScreenParams<MainTabParamList>;
   MissionDetail: { mission: Mission };
   ChallengeDetail: { challenge: Challenge };
-  ChallengesBrowse: undefined;
   FearTracker: undefined;
-  AiCoach: undefined;
-  Journal: undefined;
-  JournalEntry: { entryId?: string };
-  SkillTree: undefined;
   Badges: undefined;
   LegalDocument: { document: 'privacy' | 'terms' };
   About: undefined;

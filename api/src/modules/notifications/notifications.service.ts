@@ -111,7 +111,7 @@ export class NotificationsService {
           data: [
             {
               userId,
-              title: 'Welcome to SpeakUpMic! 🚀',
+              title: 'Welcome to Speak Up Mic! 🚀',
               body: 'Start your speech journey by recording your first speaking practice in the AI studio.',
               type: NotificationType.SYSTEM,
               isRead: false,

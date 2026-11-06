@@ -71,3 +71,46 @@ export function mergeSpeechSessions(
   // Sort newest first
   return merged.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }
+
+export interface OfflineAudioJob {
+  id: string;
+  filePath: string;
+  topic: string;
+  missionId?: string;
+  challengeId?: string;
+  durationSeconds: number;
+  timestamp: number;
+}
+
+const OFFLINE_AUDIO_QUEUE_KEY = '@offline_audio_queue';
+
+export async function enqueueOfflineAudio(job: OfflineAudioJob): Promise<void> {
+  try {
+    const queue = await getOfflineAudioQueue();
+    const updated = [job, ...queue.filter((q) => q.id !== job.id)];
+    await AsyncStorage.setItem(OFFLINE_AUDIO_QUEUE_KEY, JSON.stringify(updated));
+  } catch (err) {
+    console.warn('[LocalSpeechStorage] Failed to enqueue offline audio job:', err);
+  }
+}
+
+export async function getOfflineAudioQueue(): Promise<OfflineAudioJob[]> {
+  try {
+    const raw = await AsyncStorage.getItem(OFFLINE_AUDIO_QUEUE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? (parsed as OfflineAudioJob[]) : [];
+  } catch (err) {
+    return [];
+  }
+}
+
+export async function dequeueOfflineAudio(id: string): Promise<void> {
+  try {
+    const queue = await getOfflineAudioQueue();
+    const updated = queue.filter((q) => q.id !== id);
+    await AsyncStorage.setItem(OFFLINE_AUDIO_QUEUE_KEY, JSON.stringify(updated));
+  } catch (err) {
+    console.warn('[LocalSpeechStorage] Failed to dequeue offline audio job:', err);
+  }
+}

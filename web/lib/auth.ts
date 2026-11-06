@@ -39,7 +39,6 @@ export const ADMIN_ROUTE_PREFIXES = [
   '/missions',
   '/badges',
   '/fear-categories',
-  '/skill-tree',
   '/announcements',
   '/feedback',
   '/support-tickets',

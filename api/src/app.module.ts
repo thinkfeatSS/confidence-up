@@ -13,10 +13,8 @@ import { BadgesModule } from './modules/badges/badges.module';
 import { FearCategoriesModule } from './modules/fear-categories/fear-categories.module';
 import { MissionsModule } from './modules/missions/missions.module';
 import { ChallengesModule } from './modules/challenges/challenges.module';
-import { SkillTreeModule } from './modules/skill-tree/skill-tree.module';
 import { GamificationModule } from './modules/gamification/gamification.module';
 import { SpeechModule } from './modules/speech/speech.module';
-import { JournalModule } from './modules/journal/journal.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { AnnouncementsModule } from './modules/announcements/announcements.module';
@@ -25,7 +23,6 @@ import { FeedbackModule } from './modules/feedback/feedback.module';
 import { ReferralModule } from './modules/referral/referral.module';
 import { ActivityModule } from './modules/activity/activity.module';
 import { ComplianceModule } from './modules/compliance/compliance.module';
-import { CoachModule } from './modules/coach/coach.module';
 import { DailyModule } from './modules/daily/daily.module';
 import { DevicesModule } from './modules/devices/devices.module';
 import { AuditModule } from './modules/audit/audit.module';
@@ -54,10 +51,8 @@ import { RolesGuard } from './common/guards/roles.guard';
     FearCategoriesModule,
     MissionsModule,
     ChallengesModule,
-    SkillTreeModule,
     GamificationModule,
     SpeechModule,
-    JournalModule,
     NotificationsModule,
     AnalyticsModule,
     AnnouncementsModule,
@@ -66,7 +61,6 @@ import { RolesGuard } from './common/guards/roles.guard';
     ReferralModule,
     ActivityModule,
     ComplianceModule,
-    CoachModule,
     DailyModule,
     DevicesModule,
     AuditModule,

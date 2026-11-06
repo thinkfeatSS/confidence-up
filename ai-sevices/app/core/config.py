@@ -5,7 +5,7 @@ from pydantic import Field
 
 
 class Settings(BaseSettings):
-    PROJECT_NAME: str = "ConfidenceUp AI Intelligence Engine"
+    PROJECT_NAME: str = "Truefluent AI Unified Engine"
     API_V1_STR: str = "/api/v1"
     ENVIRONMENT: str = "development"
     DEBUG: bool = True
@@ -22,12 +22,31 @@ class Settings(BaseSettings):
         description="Redis connection URL for async task queue"
     )
 
-    # JWT Authentication (shares secret with NestJS)
+    # JWT Authentication
     JWT_SECRET: str = Field(
         default="39xDp8E+RbI5839moflWxbwEZbyK0nm4I+XsGQ6Gmn44",
         description="JWT secret key for validating access tokens"
     )
+    JWT_REFRESH_SECRET: str = Field(
+        default="A5fvnDAZxMiuFuVBFvMdUKZsCPHkVZiC9jid8lMfcG88",
+        description="JWT refresh secret key"
+    )
     JWT_ALGORITHM: str = "HS256"
+    JWT_ACCESS_EXPIRES_MINUTES: int = 15
+    JWT_REFRESH_EXPIRES_DAYS: int = 7
+
+    # Email / SMTP Settings (Hostinger testitan.com)
+    MAIL_HOST: str = "smtp.hostinger.com"
+    MAIL_PORT: int = 465
+    MAIL_SECURE: bool = True
+    MAIL_USER: str = "info@testitan.com"
+    MAIL_PASSWORD: str = "Mastsanai110#"
+    MAIL_FROM_NAME: str = "Truefluent AI"
+    MAIL_FROM_ADDRESS: str = "info@testitan.com"
+
+    # Application URLs
+    APP_URL: str = "https://speakupmic.binaryunit.tech"
+    FRONTEND_URL: str = "https://speakupmic.vercel.app"
 
     # Ollama LLM
     OLLAMA_BASE_URL: str = "http://localhost:11434"
@@ -50,6 +69,16 @@ class Settings(BaseSettings):
 
     # Confidence Engine
     CONFIDENCE_ENGINE_VERSION: str = "1.0"
+
+    # Core NestJS API Inter-Service Bridge
+    CORE_API_URL: str = Field(
+        default="http://localhost:3000",
+        description="Base URL of core NestJS API for inter-service sync"
+    )
+    INTERNAL_SERVICE_SECRET: str = Field(
+        default="",
+        description="Shared secret for internal service-to-service communication"
+    )
 
     model_config = {
         "env_file": ".env",

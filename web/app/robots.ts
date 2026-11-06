@@ -14,7 +14,6 @@ export default function robots(): MetadataRoute.Robots {
         '/missions',
         '/badges',
         '/fear-categories',
-        '/skill-tree',
         '/announcements',
         '/feedback',
         '/support-tickets',

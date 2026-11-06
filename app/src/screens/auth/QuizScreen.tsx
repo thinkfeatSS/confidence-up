@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
 import { StackScreenProps } from '@react-navigation/stack';
 import { AuthStackParamList } from '../../navigation/types';
@@ -39,6 +40,7 @@ const TOTAL_STEPS = 4;
 
 export const QuizScreen = ({ navigation }: Props) => {
   const { colors } = useTheme();
+  const insets = useSafeAreaInsets();
   const { completeOnboarding, isAuthenticated } = useAuth();
   const [step, setStep] = useState(1);
   const [selectedFears, setSelectedFears] = useState<string[]>([]);
@@ -75,7 +77,14 @@ export const QuizScreen = ({ navigation }: Props) => {
   return (
     <GradientBackground style={styles.container}>
       {/* Progress bar */}
-      <View style={[styles.progressTrack, { backgroundColor: colors.border }]}>
+      <View
+        style={[
+          styles.progressTrack,
+          {
+            backgroundColor: colors.border,
+            marginTop: Math.max(insets.top, 16) + Spacing.sm,
+          },
+        ]}>
         <LinearGradient
           colors={[colors.accentPurple, colors.accentCyan]}
           start={{ x: 0, y: 0 }}
@@ -202,7 +211,15 @@ export const QuizScreen = ({ navigation }: Props) => {
         )}
       </ScrollView>
 
-      <View style={[styles.footer, { borderTopColor: colors.border }]}>
+      <View
+        style={[
+          styles.footer,
+          {
+            backgroundColor: colors.bgPrimary,
+            borderTopColor: colors.border,
+            paddingBottom: Math.max(insets.bottom, Spacing.lg),
+          },
+        ]}>
         <PrimaryButton
           label={step === TOTAL_STEPS ? "Let's Begin! 🚀" : 'Continue →'}
           onPress={next}
@@ -217,7 +234,6 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   progressTrack: {
     height: 3,
-    marginTop: 56,
   },
   progressFill: {
     height: 3,
@@ -278,7 +294,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     padding: Spacing.xl,
-    backgroundColor: 'rgba(10,11,20,0.9)',
     borderTopWidth: 1,
   },
 });

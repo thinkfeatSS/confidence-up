@@ -29,7 +29,6 @@ const navItems = [
   { href: '/fear-categories', label: 'Fear Categories', icon: Layers },
   { href: '/missions', label: 'Missions', icon: Target },
   { href: '/challenges', label: 'Challenges', icon: Zap },
-  { href: '/skill-tree', label: 'Skill Tree', icon: GitBranch },
   { href: '/announcements', label: 'Announcements', icon: Megaphone },
   { href: '/support-tickets', label: 'Support Tickets', icon: MessageSquare },
   { href: '/feedback', label: 'Feedback', icon: Star },
@@ -52,12 +51,10 @@ export function Sidebar() {
       <div className="flex items-center justify-between px-4 py-4 border-b border-sidebar-border min-h-[64px]">
         {sidebarOpen && (
           <div className="flex items-center gap-2 overflow-hidden">
-            <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-xs">SUM</span>
-            </div>
+            <img src="/logo.png" alt="Truefluent AI" className="flex-shrink-0 w-8 h-8 rounded-lg object-contain" />
             <div className="overflow-hidden">
               <p className="text-sm font-bold text-foreground leading-none truncate">
-                SpeakUpMic
+                Truefluent AI
               </p>
               <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-full font-medium">
                 Admin
@@ -66,8 +63,8 @@ export function Sidebar() {
           </div>
         )}
         {!sidebarOpen && (
-          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center mx-auto">
-            <span className="text-primary-foreground font-bold text-xs">SUM</span>
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center mx-auto">
+            <img src="/logo.png" alt="Truefluent AI" className="w-8 h-8 rounded-lg object-contain" />
           </div>
         )}
         {sidebarOpen && (

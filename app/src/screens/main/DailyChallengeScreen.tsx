@@ -44,7 +44,9 @@ export const DailyChallengeScreen = () => {
     if (hub?.challenge) navigation.navigate('ChallengeDetail', { challenge: hub.challenge });
   }, [hub?.challenge, navigation]);
 
-  const browseAll = useCallback(() => navigation.navigate('ChallengesBrowse'), [navigation]);
+  const navToPractice = useCallback(() => {
+    navigation.navigate('Tabs', { screen: 'Practice' });
+  }, [navigation]);
 
   const todayLabel = hub?.date
     ? new Date(hub.date + 'T12:00:00').toLocaleDateString(undefined, {
@@ -169,7 +171,7 @@ export const DailyChallengeScreen = () => {
           <Stat label="Best streak" value={String(hub?.longestStreak ?? 0)} colors={colors} />
         </GlassCard>
 
-        <PrimaryButton label="Browse all challenges ⚔️" onPress={browseAll} variant="outline" />
+        <PrimaryButton label="Start Speaking Practice 🎤" onPress={navToPractice} variant="outline" />
 
         <View style={{ height: Spacing.xxl }} />
       </ScrollView>

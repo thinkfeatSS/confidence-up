@@ -2,12 +2,12 @@ export const landingContent = {
   hero: {
     title: 'Build real-world confidence, one challenge at a time.',
     subtitle:
-      'SpeakUpMic turns personal growth into a daily RPG with AI coaching, real-world missions, and measurable progress you can see every week.',
+      'Truefluent AI turns vocal fluency and personal growth into a daily practice with Whisper AI coaching, real-world missions, and measurable progress you can see every week.',
     primaryCta: 'Get the App',
     secondaryCta: 'Learn More',
   },
   definition:
-    'SpeakUpMic is a mobile speech and confidence-building app by ThinkFeat. It helps students, job seekers, and professionals practice speaking, face social fears, and build lasting habits through gamified daily missions, AI feedback, and progress analytics.',
+    'Truefluent AI is a voice and speech intelligence platform by ThinkFeat. It helps students, job seekers, and professionals practice speaking, face social fears, and build lasting habits through gamified daily missions, AI feedback, and progress analytics.',
   stats: [
     { label: 'Daily missions', value: 'Fresh every day' },
     { label: 'AI coach', value: 'Instant feedback' },
@@ -91,34 +91,34 @@ export const landingContent = {
   ],
   faqs: [
     {
-      question: 'What is SpeakUpMic?',
+      question: 'What is Truefluent AI?',
       answer:
-        'SpeakUpMic is a mobile app by ThinkFeat that helps you build real-world confidence through daily missions, AI-powered speaking practice, fear exposure exercises, and gamified progress tracking.',
+        'Truefluent AI is a mobile speech and communication platform by ThinkFeat that helps you build real-world confidence through daily missions, AI-powered speaking practice, fear exposure exercises, and gamified progress tracking.',
     },
     {
-      question: 'Is SpeakUpMic free?',
+      question: 'Is Truefluent AI free?',
       answer:
-        'SpeakUpMic is free to download and use. Core features including daily missions, speaking practice, and progress tracking are available at no cost. Premium features may be introduced in the future.',
+        'Truefluent AI is free to download and use. Core features including daily missions, speaking practice, and progress tracking are available at no cost. Premium features may be introduced in the future.',
     },
     {
       question: 'How does the AI coach work?',
       answer:
-        'Atlas, your AI coach, analyzes your speaking practice sessions and provides feedback on clarity, pace, filler words, and confidence. You also get personalized tips to improve over time.',
+        'Whisper AI and Ollama analyze your speaking practice sessions and provide feedback on clarity, pace, filler words, and confidence. You also get personalized tips to improve over time.',
     },
     {
       question: 'Is my data private?',
       answer:
-        'Yes. Your journal entries, speech transcripts, and personal progress data are stored securely and never sold to third parties. Read our Privacy Policy for full details.',
+        'Yes. Your speech recordings, transcripts, and personal progress data are stored securely and never sold to third parties. Read our Privacy Policy for full details.',
     },
     {
-      question: 'Who made SpeakUpMic?',
+      question: 'Who made Truefluent AI?',
       answer:
-        'SpeakUpMic is built by ThinkFeat, a team focused on making personal growth practical, measurable, and engaging through technology.',
+        'Truefluent AI is built by ThinkFeat, a team focused on making personal growth practical, measurable, and engaging through technology.',
     },
     {
       question: 'Do I need speaking experience to start?',
       answer:
-        'No. SpeakUpMic is designed for beginners. Missions and fear levels start small and gradually increase in difficulty as you build momentum.',
+        'No. Truefluent AI is designed for beginners. Missions and fear levels start small and gradually increase in difficulty as you build momentum.',
     },
     {
       question: 'How long should I use it each day?',
@@ -126,9 +126,9 @@ export const landingContent = {
         'Most users spend 5–15 minutes per day. You choose your commitment during onboarding, and the app adapts to your schedule.',
     },
     {
-      question: 'Is SpeakUpMic a replacement for therapy?',
+      question: 'Is Truefluent AI a replacement for therapy?',
       answer:
-        'No. SpeakUpMic is a self-improvement tool, not medical or therapeutic advice. If you have serious anxiety or mental health concerns, please consult a qualified professional.',
+        'No. Truefluent AI is a self-improvement tool, not medical or therapeutic advice. If you have serious anxiety or mental health concerns, please consult a qualified professional.',
     },
   ],
   cta: {

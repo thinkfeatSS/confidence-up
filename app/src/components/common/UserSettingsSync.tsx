@@ -3,6 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useUserSettings } from '../../hooks/useUserSettings';
 import { useTheme } from '../../theme/ThemeContext';
 import { NotificationsService } from '../../services/notifications';
+import { syncOfflineAudioSessions } from '../../services/speechSyncService';
 
 /** Sync server settings once per login — avoids fighting Profile toggles on every refetch */
 export const UserSettingsSync = () => {
@@ -21,6 +22,7 @@ export const UserSettingsSync = () => {
     if (!isAuthenticated || !settings || syncedRef.current) return;
     syncedRef.current = true;
     setDarkMode(settings.darkMode);
+    syncOfflineAudioSessions().catch(() => {});
     if (settings.dailyReminders) {
       NotificationsService.requestPermission()
         .then(granted => (granted ? NotificationsService.syncDeviceWithServer() : null))

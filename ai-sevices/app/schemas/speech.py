@@ -113,6 +113,7 @@ class SessionStatusResponse(BaseModel):
     duration_seconds: Optional[float] = None
     processing_time_ms: Optional[int] = None
     xp_earned: Optional[int] = None
+    gamification: Optional[Dict[str, Any]] = None
     confidence_engine_version: Optional[str] = None
     created_at: Optional[datetime] = None
 

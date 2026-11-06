@@ -7,7 +7,7 @@ export const APP_LINKS = {
   contactSupport: 'https://speakupmic.binaryunit.tech/contact',
   joinUrl: (code: string) => `https://speakupmic.binaryunit.tech/join?ref=${code}`,
   shareMessage: (code: string) =>
-    `Join me on SpeakUpMic and build your speaking confidence! Use my invite link: https://speakupmic.binaryunit.tech/join?ref=${code}`,
+    `Join me on Truefluent AI and build your speaking confidence! Use my invite link: https://speakupmic.binaryunit.tech/join?ref=${code}`,
 };
 
 export const LEGAL_VERSION = 'June 25, 2026';

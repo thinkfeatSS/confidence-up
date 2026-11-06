@@ -39,7 +39,7 @@ export default () => {
       secure: mailSecure,
       user: readEnv('MAIL_USER'),
       password: readEnv('MAIL_PASSWORD'),
-      fromName: readEnv('MAIL_FROM_NAME') ?? 'SpeakUpMic',
+      fromName: readEnv('MAIL_FROM_NAME') ?? 'Speak Up Mic',
       fromAddress: readEnv('MAIL_FROM_ADDRESS'),
     },
 

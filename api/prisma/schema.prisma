@@ -50,7 +50,6 @@ enum XpSource {
   DAILY_CHECKIN
   FEAR_LEVEL
   SPEECH_SESSION
-  SKILL_NODE
   REFERRAL
 }
 
@@ -90,7 +89,6 @@ enum ActivityEventType {
   STREAK_MILESTONE
   FEAR_LEVEL_COMPLETED
   SPEECH_SESSION
-  SKILL_NODE_UNLOCKED
   DAILY_CHECKIN
   REFERRAL_COMPLETED
 }
@@ -133,12 +131,10 @@ model User {
   userFearProgress     UserFearProgress[]
   userMissions         UserMission[]
   userChallenges       UserChallenge[]
-  userSkillNodes       UserSkillNode[]
   xpTransactions       XpTransaction[]
   streak               Streak?
   dailyCheckins        DailyCheckin[]
   speechSessions       SpeechSession[]
-  journalEntries       JournalEntry[]
   notifications        Notification[]
   supportTickets       SupportTicket[]
   userFeedback         UserFeedback[]
@@ -378,38 +374,6 @@ model UserChallenge {
   @@map("user_challenges")
 }
 
-model SkillNode {
-  id           String  @id @default(cuid())
-  name         String
-  description  String
-  branch       String
-  tier         Int     @default(1)
-  parentNodeId String?
-  xpRequired   Int     @default(0)
-  positionX    Float   @default(0)
-  positionY    Float   @default(0)
-  isActive     Boolean @default(true)
-
-  parent         SkillNode?      @relation("SkillNodeChildren", fields: [parentNodeId], references: [id])
-  children       SkillNode[]     @relation("SkillNodeChildren")
-  userSkillNodes UserSkillNode[]
-
-  @@map("skill_nodes")
-}
-
-model UserSkillNode {
-  id          String   @id @default(cuid())
-  userId      String
-  skillNodeId String
-  unlockedAt  DateTime @default(now())
-
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  skillNode SkillNode @relation(fields: [skillNodeId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, skillNodeId])
-  @@map("user_skill_nodes")
-}
-
 // ─── Gamification ─────────────────────────────────────────────────────────────
 
 model XpTransaction {
@@ -491,21 +455,6 @@ model SpeechSession {
   challenge Challenge? @relation(fields: [challengeId], references: [id])
 
   @@map("speech_sessions")
-}
-
-model JournalEntry {
-  id               String   @id @default(cuid())
-  userId           String
-  title            String
-  body             String   @db.LongText
-  mood             Int      @default(3)
-  reflectionPrompt String?
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("journal_entries")
 }
 
 model Notification {

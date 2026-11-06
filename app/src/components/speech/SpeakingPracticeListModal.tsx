@@ -5,6 +5,7 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   ScrollView,
   FlatList,
 } from 'react-native';
@@ -130,7 +131,7 @@ export const SpeakingPracticeListModal: React.FC<SpeakingPracticeListModalProps>
                     styles.scoreBadge,
                     {
                       borderColor: getScoreColor(bestScore),
-                      backgroundColor: 'rgba(0,0,0,0.3)',
+                      backgroundColor: colors.bgInput,
                     },
                   ]}>
                   <Text style={styles.trophyIcon}>🏆</Text>
@@ -164,11 +165,15 @@ export const SpeakingPracticeListModal: React.FC<SpeakingPracticeListModalProps>
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
       <View style={styles.overlay}>
+        <TouchableWithoutFeedback onPress={onClose}>
+          <View style={StyleSheet.absoluteFill} />
+        </TouchableWithoutFeedback>
         <View
           style={[
             styles.sheetContainer,
             {
-              backgroundColor: colors.bgCard,
+              backgroundColor: colors.bgSecondary,
+              borderColor: colors.border,
               paddingTop: Spacing.md,
               paddingBottom: Math.max(insets.bottom, Spacing.md),
             },
@@ -183,7 +188,10 @@ export const SpeakingPracticeListModal: React.FC<SpeakingPracticeListModalProps>
                 Choose a speech topic & beat your personal best
               </Text>
             </View>
-            <TouchableOpacity onPress={onClose} style={styles.closeBtn} activeOpacity={0.7}>
+            <TouchableOpacity
+              onPress={onClose}
+              style={[styles.closeBtn, { backgroundColor: colors.bgInput }]}
+              activeOpacity={0.7}>
               <Text style={[styles.closeBtnText, { color: colors.textSecondary }]}>✕</Text>
             </TouchableOpacity>
           </View>

@@ -44,15 +44,11 @@ async function clearContent() {
   await prisma.userMission.deleteMany();
   await prisma.userChallenge.deleteMany();
   await prisma.userFearProgress.deleteMany();
-  await prisma.userSkillNode.deleteMany();
   await prisma.userBadge.deleteMany();
   await prisma.fearLevel.deleteMany();
   await prisma.fearCategory.deleteMany();
   await prisma.mission.deleteMany();
   await prisma.challenge.deleteMany();
-  await prisma.userSkillNode.deleteMany();
-  await prisma.skillNode.updateMany({ data: { parentNodeId: null } });
-  await prisma.skillNode.deleteMany();
   await prisma.badge.deleteMany();
   await prisma.announcement.deleteMany();
   await prisma.appVersion.deleteMany();
@@ -64,9 +60,7 @@ async function seedBadges() {
     { name: 'First Step', description: 'Complete your very first challenge', icon: '🌱', tier: 'beginner', category: 'milestones', criteria: { type: 'challenges_completed', value: 1 }, xpReward: 25 },
     { name: 'First Speech', description: 'Record your first practice speech', icon: '🎤', tier: 'beginner', category: 'speaking', criteria: { type: 'speech_sessions', value: 1 }, xpReward: 30 },
     { name: 'Streak Starter', description: 'Complete challenges 3 days in a row', icon: '🔥', tier: 'beginner', category: 'streak', criteria: { type: 'streak_milestone', value: 3 }, xpReward: 40 },
-    { name: 'Journal Keeper', description: 'Write your first journal entry', icon: '📔', tier: 'beginner', category: 'journal', criteria: { type: 'journal_entries', value: 1 }, xpReward: 25 },
     { name: 'Fear Facer', description: 'Complete your first fear exposure level', icon: '😤', tier: 'beginner', category: 'fear', criteria: { type: 'fear_levels_completed', value: 1 }, xpReward: 35 },
-    { name: 'Curious Mind', description: 'Chat with Atlas, your AI coach', icon: '🤖', tier: 'beginner', category: 'coach', criteria: { type: 'coach_sessions', value: 1 }, xpReward: 20 },
     { name: 'Daily Warrior', description: 'Complete your first daily mission', icon: '☀️', tier: 'beginner', category: 'missions', criteria: { type: 'missions_completed', value: 1 }, xpReward: 30 },
 
     // GROWTH
@@ -77,22 +71,19 @@ async function seedBadges() {
     { name: 'Fear Climber', description: 'Reach Level 5 in any fear category', icon: '🧗', tier: 'growth', category: 'fear', criteria: { type: 'fear_level_reached', value: 5 }, xpReward: 90 },
     { name: 'Score Riser', description: 'Reach a confidence score of 70+', icon: '📈', tier: 'growth', category: 'confidence', criteria: { type: 'confidence_score', value: 70 }, xpReward: 85 },
     { name: 'Knowledge Sharer', description: 'Complete 3 academic challenges', icon: '🎓', tier: 'growth', category: 'academic', criteria: { type: 'academic_challenges', value: 3 }, xpReward: 65 },
-    { name: 'Reflector', description: 'Write 7 journal entries', icon: '🌟', tier: 'growth', category: 'journal', criteria: { type: 'journal_entries', value: 7 }, xpReward: 60 },
     { name: 'XP Hunter', description: 'Earn 500 total XP', icon: '⭐', tier: 'growth', category: 'xp', criteria: { type: 'xp_milestone', value: 500 }, xpReward: 50 },
 
     // ADVANCED
     { name: 'No Filler Master', description: 'Complete a speech with 0 filler words', icon: '🏆', tier: 'advanced', category: 'speaking', criteria: { type: 'zero_filler_speech', value: 1 }, xpReward: 120 },
     { name: '30-Day Streak', description: 'Maintain a streak for 30 consecutive days', icon: '🌋', tier: 'advanced', category: 'streak', criteria: { type: 'streak_milestone', value: 30 }, xpReward: 200 },
     { name: 'Fear Conqueror', description: 'Complete all levels of any fear category', icon: '🦁', tier: 'advanced', category: 'fear', criteria: { type: 'fear_category_complete', value: 1 }, xpReward: 250 },
-    { name: 'Skill Unlocked', description: 'Unlock your first skill tree node', icon: '🌳', tier: 'advanced', category: 'skill', criteria: { type: 'skill_nodes_unlocked', value: 1 }, xpReward: 75 },
     { name: 'Confidence Booster', description: 'Reach a confidence score of 90+', icon: '🚀', tier: 'advanced', category: 'confidence', criteria: { type: 'confidence_score', value: 90 }, xpReward: 150 },
     { name: 'Top Communicator', description: 'Complete 50 challenges total', icon: '👑', tier: 'advanced', category: 'challenges', criteria: { type: 'challenges_completed', value: 50 }, xpReward: 180 },
     { name: 'Speech Ace', description: 'Score 90+ on 3 consecutive speeches', icon: '🎯', tier: 'advanced', category: 'speaking', criteria: { type: 'high_score_streak', value: 3 }, xpReward: 140 },
 
     // SPECIAL
-    { name: 'Level 10 Reached', description: 'Reach Level 10 in the confidence RPG', icon: '💎', tier: 'special', category: 'level', criteria: { type: 'user_level', value: 10 }, xpReward: 300 },
+    { name: 'Level 10 Reached', description: 'Reach Level 10 in the confidence journey', icon: '💎', tier: 'special', category: 'level', criteria: { type: 'user_level', value: 10 }, xpReward: 300 },
     { name: 'Consistent Champion', description: 'Complete challenges every day for 7 weeks', icon: '✨', tier: 'special', category: 'streak', criteria: { type: 'streak_milestone', value: 49 }, xpReward: 350 },
-    { name: 'AI Partner', description: 'Have 20 coaching sessions with Atlas', icon: '🌐', tier: 'special', category: 'coach', criteria: { type: 'coach_sessions', value: 20 }, xpReward: 200 },
     { name: 'Transformation', description: 'Improve your confidence score by 30+ points', icon: '🦅', tier: 'special', category: 'confidence', criteria: { type: 'confidence_improvement', value: 30 }, xpReward: 400 },
     { name: '100-Day Legend', description: 'Maintain a 100-day streak', icon: '🏅', tier: 'special', category: 'streak', criteria: { type: 'streak_milestone', value: 100 }, xpReward: 500 },
   ];
@@ -398,56 +389,6 @@ async function seedChallenges() {
   console.log(`✅ Seeded ${challenges.length} challenges`);
 }
 
-async function seedSkillTree() {
-  const nodes = [
-    // Speaking branch
-    { name: 'Vocal Basics', description: '🎙️ Understand the fundamentals of clear, audible speech.', branch: 'speaking', tier: 1, xpRequired: 0, x: 60, y: 500, parentTier: null },
-    { name: 'Fluency', description: '🌊 Speak smoothly with minimal pauses and filler words.', branch: 'speaking', tier: 2, xpRequired: 100, x: 60, y: 400, parentTier: 1 },
-    { name: 'Speed Control', description: '⏱️ Vary your speaking pace for emphasis and clarity.', branch: 'speaking', tier: 3, xpRequired: 300, x: 60, y: 300, parentTier: 2 },
-    { name: 'Clarity Master', description: '✨ Consistently deliver clear, well-articulated speech.', branch: 'speaking', tier: 4, xpRequired: 600, x: 60, y: 200, parentTier: 3 },
-    { name: 'Storytelling', description: '📖 Engage any audience with compelling narrative structure.', branch: 'speaking', tier: 5, xpRequired: 1000, x: 60, y: 100, parentTier: 4 },
-    // Confidence branch
-    { name: 'Self-Awareness', description: '🪞 Recognize your emotional patterns in social situations.', branch: 'confidence', tier: 1, xpRequired: 0, x: 160, y: 500, parentTier: null },
-    { name: 'Anxiety Control', description: '🧘 Use breathing and reframing to manage performance anxiety.', branch: 'confidence', tier: 2, xpRequired: 100, x: 160, y: 400, parentTier: 1 },
-    { name: 'Presence', description: '👁️ Command attention by being fully present and grounded.', branch: 'confidence', tier: 3, xpRequired: 300, x: 160, y: 300, parentTier: 2 },
-    { name: 'Resilience', description: '💪 Bounce back quickly from setbacks, criticism, or failures.', branch: 'confidence', tier: 4, xpRequired: 600, x: 160, y: 200, parentTier: 3 },
-    { name: 'Unshakeable', description: '🛡️ Maintain composure and confidence in any high-pressure situation.', branch: 'confidence', tier: 5, xpRequired: 1000, x: 160, y: 100, parentTier: 4 },
-    // Communication branch
-    { name: 'Active Listening', description: '👂 Fully absorb what others say before responding.', branch: 'communication', tier: 1, xpRequired: 0, x: 260, y: 500, parentTier: null },
-    { name: 'Vocabulary Builder', description: '📚 Express ideas more precisely with a richer word bank.', branch: 'communication', tier: 2, xpRequired: 100, x: 260, y: 400, parentTier: 1 },
-    { name: 'Sentence Structure', description: '✍️ Construct clear, concise, and impactful sentences.', branch: 'communication', tier: 3, xpRequired: 300, x: 260, y: 300, parentTier: 2 },
-    { name: 'Persuasion', description: '🎯 Influence others through logic, emotion, and credibility.', branch: 'communication', tier: 4, xpRequired: 600, x: 260, y: 200, parentTier: 3 },
-    { name: 'Master Communicator', description: '🌟 Command any conversation in any setting with grace and impact.', branch: 'communication', tier: 5, xpRequired: 1000, x: 260, y: 100, parentTier: 4 },
-  ];
-
-  const branchMap: Record<string, Record<number, string>> = {
-    speaking: {},
-    confidence: {},
-    communication: {},
-  };
-
-  for (const n of nodes) {
-    const parentNodeId =
-      n.parentTier != null ? branchMap[n.branch][n.parentTier] : null;
-
-    const created = await prisma.skillNode.create({
-      data: {
-        name: n.name,
-        description: n.description,
-        branch: n.branch,
-        tier: n.tier,
-        parentNodeId,
-        xpRequired: n.xpRequired,
-        positionX: n.x,
-        positionY: n.y,
-        isActive: true,
-      },
-    });
-    branchMap[n.branch][n.tier] = created.id;
-  }
-  console.log(`✅ Seeded ${nodes.length} skill tree nodes`);
-}
-
 async function seedAnnouncements() {
   const now = new Date();
   const in30Days = new Date(now);
@@ -515,7 +456,6 @@ async function main() {
   await seedFearCategories();
   await seedMissions();
   await seedChallenges();
-  await seedSkillTree();
   await seedAnnouncements();
   await seedAppVersions();
   console.log('\n🎉 Seed completed successfully!');

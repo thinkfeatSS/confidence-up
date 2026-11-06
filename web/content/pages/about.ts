@@ -5,11 +5,11 @@ export const aboutContent = {
       'We believe confidence is a skill you build through action — not a personality trait you are born with.',
   },
   story: {
-    title: 'Why we built SpeakUpMic',
+    title: 'Why we built Truefluent AI',
     paragraphs: [
-      'ThinkFeat created SpeakUpMic after seeing too many talented people hold back — not because they lacked ability, but because they lacked confidence in high-stakes moments.',
+      'ThinkFeat created Truefluent AI after seeing too many talented people hold back — not because they lacked ability, but because they lacked confidence in high-stakes moments.',
       'Traditional self-help books and generic advice rarely translate into daily action. We wanted something different: a system that meets you where you are, gives you small wins every day, and shows measurable progress over weeks and months.',
-      'SpeakUpMic combines behavioral psychology, gamification, and AI feedback into one mobile experience that makes growth feel achievable — and even fun.',
+      'Truefluent AI combines behavioral psychology, speech intelligence, and Whisper AI feedback into one platform that makes vocal growth feel achievable — and even fun.',
     ],
   },
   values: [
@@ -19,7 +19,7 @@ export const aboutContent = {
     },
     {
       title: 'Privacy first',
-      description: 'Your journal, speech practice, and personal data belong to you. We never sell your information.',
+      description: 'Your speech practice, audio recordings, and personal data belong to you. We never sell your information.',
     },
     {
       title: 'Science-informed design',
@@ -27,14 +27,14 @@ export const aboutContent = {
     },
     {
       title: 'Inclusive access',
-      description: 'Whether you are a student, professional, or introvert, SpeakUpMic adapts to your goals and pace.',
+      description: 'Whether you are a student, professional, or introvert, Truefluent AI adapts to your goals and pace.',
     },
   ],
   differentiators: {
     title: 'What makes us different',
     items: [
       'Gamification tied to real-world tasks — not endless scrolling or passive content.',
-      'AI-powered speaking feedback that helps you improve measurably session by session.',
+      'Whisper AI-powered speaking feedback that helps you improve measurably session by session.',
       'Structured fear exposure paths instead of vague “just be confident” advice.',
       'Progress analytics so you can see your confidence score improve over time.',
     ],
@@ -42,11 +42,11 @@ export const aboutContent = {
   product: {
     title: 'The product today',
     description:
-      'SpeakUpMic includes daily missions, speaking practice with AI coach Atlas, a fear exposure tracker, XP and badges, progress analytics, and a private journal — all designed to work together as one confidence-building system.',
+      'Truefluent AI includes daily missions, speaking practice with Whisper AI, a fear exposure tracker, XP and badges, and progress analytics — all designed to work together as one unified speech intelligence system.',
   },
   company: {
     title: 'About ThinkFeat',
     description:
-      'ThinkFeat builds technology that helps people grow practical life skills. SpeakUpMic is our flagship product, born from a simple belief: everyone deserves tools to show up as their best self.',
+      'ThinkFeat builds technology that helps people grow practical life skills. Truefluent AI is our flagship product, born from a simple belief: everyone deserves tools to show up as their best self.',
   },
 };

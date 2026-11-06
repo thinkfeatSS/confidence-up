@@ -19,7 +19,7 @@ export class ReferralService {
     return {
       referralCode,
       shareUrl: `https://speakupmic.vercel.app/join?ref=${referralCode}`,
-      shareMessage: `Join me on SpeakUpMic and build your speaking confidence! Use my invite link: https://speakupmic.vercel.app/join?ref=${referralCode}`,
+      shareMessage: `Join me on Speak Up Mic and build your speaking confidence! Use my invite link: https://speakupmic.vercel.app/join?ref=${referralCode}`,
     };
   }
 

@@ -1,5 +1,5 @@
 services:
-  # Nginx Gateway & Reverse Proxy (Routes mobile requests to NestJS & FastAPI with SSL)
+  # Nginx Gateway & Reverse Proxy (SSL termination & API routing)
   nginx:
     image: nginx:alpine
     container_name: confidence_nginx
@@ -12,7 +12,6 @@ services:
       - ./certbot/www:/var/www/certbot:ro
     depends_on:
       - fastapi
-      - api
     restart: always
     networks:
       - confidence_net
@@ -29,7 +28,7 @@ services:
     networks:
       - confidence_net
 
-  # FastAPI AI Intelligence Engine
+  # Truefluent AI Unified FastAPI Backend
   fastapi:
     build:
       context: ./ai-sevices
@@ -38,9 +37,21 @@ services:
     environment:
       - ENVIRONMENT=production
       - DEBUG=false
-      - DATABASE_URL=mysql+aiomysql://u897031851_ismail:Mastsanai110@148.222.53.12:3306/u897031851_confidenceup
+      - DATABASE_URL=${DATABASE_URL:-mysql+aiomysql://root:mysql_secret@host.docker.internal:3306/truefluent_ai}
       - REDIS_URL=redis://redis:6379/0
       - JWT_SECRET=39xDp8E+RbI5839moflWxbwEZbyK0nm4I+XsGQ6Gmn44
+      - JWT_REFRESH_SECRET=A5fvnDAZxMiuFuVBFvMdUKZsCPHkVZiC9jid8lMfcG88
+      - JWT_ACCESS_EXPIRES_MINUTES=15
+      - JWT_REFRESH_EXPIRES_DAYS=7
+      - MAIL_HOST=smtp.hostinger.com
+      - MAIL_PORT=465
+      - MAIL_SECURE=true
+      - MAIL_USER=info@testitan.com
+      - MAIL_PASSWORD=Mastsanai110#
+      - MAIL_FROM_NAME=Truefluent AI
+      - MAIL_FROM_ADDRESS=info@testitan.com
+      - APP_URL=https://speakupmic.binaryunit.tech
+      - FRONTEND_URL=https://speakupmic.vercel.app
       - OLLAMA_BASE_URL=http://ollama:11434
       - OLLAMA_MODEL=llama3.2:3b
       - WHISPER_MODEL_SIZE=small
@@ -48,6 +59,8 @@ services:
       - WHISPER_COMPUTE_TYPE=int8
     volumes:
       - audio_uploads:/app/uploads
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     depends_on:
       - redis
       - ollama
@@ -55,7 +68,7 @@ services:
     networks:
       - confidence_net
 
-  # Python AI Background Worker
+  # Truefluent AI Background Audio Processing Worker
   worker:
     build:
       context: ./ai-sevices
@@ -64,7 +77,7 @@ services:
     command: python -m app.workers.task_worker
     environment:
       - ENVIRONMENT=production
-      - DATABASE_URL=mysql+aiomysql://u897031851_ismail:Mastsanai110@148.222.53.12:3306/u897031851_confidenceup
+      - DATABASE_URL=${DATABASE_URL:-mysql+aiomysql://root:mysql_secret@host.docker.internal:3306/truefluent_ai}
       - REDIS_URL=redis://redis:6379/0
       - OLLAMA_BASE_URL=http://ollama:11434
       - OLLAMA_MODEL=llama3.2:3b
@@ -73,41 +86,10 @@ services:
       - WHISPER_COMPUTE_TYPE=int8
     volumes:
       - audio_uploads:/app/uploads
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     depends_on:
       - redis
-      - ollama
-    restart: always
-    networks:
-      - confidence_net
-
-  # NestJS Core Backend (Auth, Gamification, Badges, Daily Missions)
-  api:
-    build:
-      context: ./api
-      dockerfile: Dockerfile
-    container_name: confidence_nestjs
-    environment:
-      - NODE_ENV=production
-      - PORT=3000
-      - APP_URL=http://binaryunit.tech
-      - FRONTEND_URL=http://binaryunit.tech
-      - DATABASE_URL=mysql://u897031851_ismail:Mastsanai110@148.222.53.12:3306/u897031851_confidenceup
-      - JWT_SECRET=39xDp8E+RbI5839moflWxbwEZbyK0nm4I+XsGQ6Gmn44
-      - JWT_REFRESH_SECRET=A5fvnDAZxMiuFuVBFvMdUKZsCPHkVZiC9jid8lMfcG88
-      - JWT_EXPIRES_IN=15m
-      - JWT_REFRESH_EXPIRES_IN=7d
-      - GOOGLE_CLIENT_ID=408638792904-bjj0a2ap9ic3ln2aghp0c5vhuf8d2hph.apps.googleusercontent.com
-      - MAIL_HOST=smtp.hostinger.com
-      - MAIL_PORT=465
-      - MAIL_SECURE=true
-      - MAIL_USER=info@thinkfeat.com
-      - MAIL_PASSWORD=c948f8^I
-      - MAIL_FROM_NAME=ConfidenceUp
-      - MAIL_FROM_ADDRESS=info@thinkfeat.com
-      - CRON_SECRET=BIr/MEiDyaIY/D6feYhghZGhL/i+G1rclomzanW4WLcc
-      - OLLAMA_BASE_URL=http://ollama:11434
-      - OLLAMA_MODEL=llama3.2:3b
-    depends_on:
       - ollama
     restart: always
     networks:

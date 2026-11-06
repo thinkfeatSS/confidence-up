@@ -13,7 +13,6 @@ const routeTitles: Record<string, string> = {
   '/fear-categories': 'Fear Categories',
   '/missions': 'Missions',
   '/challenges': 'Challenges',
-  '/skill-tree': 'Skill Tree',
   '/announcements': 'Announcements',
   '/support-tickets': 'Support Tickets',
   '/feedback': 'Feedback',

@@ -97,9 +97,7 @@ export class GamificationService {
       zeroFillerSpeechCount,
       challengeCount,
       missionCount,
-      journalCount,
       fearLevelCount,
-      skillNodeCount,
       socialChallengeCount,
       academicChallengeCount,
       streak,
@@ -110,9 +108,7 @@ export class GamificationService {
       this.prisma.speechSession.count({ where: { userId, fillerCount: 0 } }),
       this.prisma.userChallenge.count({ where: { userId, completedAt: { not: null } } }),
       this.prisma.userMission.count({ where: { userId, completedAt: { not: null } } }),
-      this.prisma.journalEntry.count({ where: { userId } }),
       this.prisma.userFearProgress.count({ where: { userId } }),
-      this.prisma.userSkillNode.count({ where: { userId } }),
       this.prisma.userChallenge.count({
         where: { userId, completedAt: { not: null }, challenge: { category: 'social' } },
       }),
@@ -171,18 +167,12 @@ export class GamificationService {
         case 'missions_completed':
           achieved = missionCount >= value;
           break;
-        case 'journal_entries':
-          achieved = journalCount >= value;
-          break;
         case 'fear_levels_completed':
         case 'fear_level_reached':
           achieved = fearLevelCount >= value;
           break;
         case 'fear_category_complete':
           achieved = completedFearCategoryCount >= value;
-          break;
-        case 'skill_nodes_unlocked':
-          achieved = skillNodeCount >= value;
           break;
         case 'social_challenges':
           achieved = socialChallengeCount >= value;

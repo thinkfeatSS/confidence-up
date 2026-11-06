@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
+  Image,
   StyleSheet,
   TextInput,
   TouchableOpacity,
@@ -154,11 +155,15 @@ export const AuthScreen = ({ navigation, route }: Props) => {
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
           <View style={styles.header}>
-            <LinearGradient colors={[colors.accentPurple, colors.accentCyan]} style={styles.logoCircle}>
-              <Text style={{ fontSize: 40 }}>⚡</Text>
-            </LinearGradient>
-            <Text style={[styles.appName, { color: colors.textPrimary }]}>SpeakUpMic</Text>
-            <Text style={[styles.tagline, { color: colors.textMuted }]}>Your journey starts here</Text>
+            <View style={styles.logoCircleWrapper}>
+              <Image
+                source={require('../../assets/images/logo.png')}
+                style={styles.logoImage}
+                resizeMode="contain"
+              />
+            </View>
+            <Text style={[styles.appName, { color: colors.textPrimary }]}>Truefluent AI</Text>
+            <Text style={[styles.tagline, { color: colors.textMuted }]}>Voice & Speech Intelligence</Text>
           </View>
 
           {verifiedBannerVisible && (
@@ -293,17 +298,18 @@ const styles = StyleSheet.create({
     paddingVertical: 48,
     gap: Spacing.xl,
   },
-  header: { alignItems: 'center', gap: 12 },
-  logoCircle: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+  header: { alignItems: 'center', gap: 10 },
+  logoCircleWrapper: {
+    width: 84,
+    height: 84,
+    borderRadius: 22,
+    overflow: 'hidden',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.7,
-    shadowRadius: 20,
-    elevation: 15,
+  },
+  logoImage: {
+    width: 76,
+    height: 76,
   },
   appName: { fontSize: 26, fontWeight: '900' },
   tagline: { ...(Typography.body as object) },

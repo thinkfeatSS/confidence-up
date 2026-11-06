@@ -2,7 +2,9 @@ import asyncio
 import time
 from datetime import datetime
 from typing import Dict, Any
+import httpx
 from sqlalchemy import select
+from app.core.config import settings
 from app.core.logging import logger
 from app.db.session import AsyncSessionLocal
 from app.db.models import (
@@ -183,6 +185,50 @@ async def process_speech_session(session_id: str):
             session.status_stage = "Results ready"
             session.progress_percent = 100
             session.error_message = None
+
+            # Inter-service sync with NestJS (XP, badges, streaks, user progress)
+            try:
+                async with httpx.AsyncClient(timeout=10.0) as client:
+                    sync_url = f"{settings.CORE_API_URL.rstrip('/')}/api/v1/speech/sync-session"
+                    headers = {
+                        "Content-Type": "application/json",
+                        "x-internal-secret": settings.INTERNAL_SERVICE_SECRET or settings.JWT_SECRET,
+                    }
+                    payload = {
+                        "userId": session.user_id,
+                        "sessionId": session.id,
+                        "transcript": transcript_text,
+                        "topic": session.topic,
+                        "languageDetected": lang_detection.get("language_label", "English"),
+                        "wordCount": metrics.get("word_count", 0),
+                        "sentenceCount": metrics.get("sentence_count", 0),
+                        "fillerCount": metrics.get("filler_count", 0),
+                        "vocabularyRichness": metrics.get("vocabulary_richness", 0.0),
+                        "repetitionScore": metrics.get("repetition_score", 0.0),
+                        "averageVolume": metrics.get("average_volume", 0.0),
+                        "pauseFrequency": metrics.get("pause_frequency", 0.0),
+                        "speechSpeedWpm": metrics.get("speech_speed_wpm", 0.0),
+                        "fluencyScore": components.speech_fluency,
+                        "topicRelevanceScore": components.topic_relevance,
+                        "overallConfidenceScore": overall_score,
+                        "durationSeconds": duration_sec,
+                        "xpEarned": xp_earned,
+                        "coachingFeedback": coaching_output.coaching_feedback,
+                        "personalizedSuggestions": coaching_output.personalized_suggestions,
+                        "miniMission": coaching_output.next_mission,
+                        "missionId": session.mission_id,
+                        "challengeId": session.challenge_id,
+                    }
+                    resp = await client.post(sync_url, json=payload, headers=headers)
+                    if resp.status_code in (200, 201):
+                        sync_data = resp.json()
+                        session.gamification = sync_data.get("gamification")
+                        logger.info(f"Successfully synced session {session_id} to NestJS: {sync_data}")
+                    else:
+                        logger.warning(f"NestJS sync returned status {resp.status_code}: {resp.text}")
+            except Exception as sync_err:
+                logger.warning(f"Failed to sync session {session_id} to NestJS (non-blocking): {sync_err}")
+
             await db.commit()
             
             logger.info(f"Session {session_id} completed successfully in {processing_time_ms}ms with Confidence Score: {overall_score}")

@@ -9,7 +9,7 @@ export const contactContent = {
   hero: {
     title: 'We would love to hear from you.',
     subtitle:
-      'Questions about SpeakUpMic, partnerships, press, or support — our team at ThinkFeat is here to help.',
+      'Questions about Truefluent AI, partnerships, press, or support — our team at ThinkFeat is here to help.',
   },
   info: {
     emailLabel: 'Email us',
@@ -18,9 +18,9 @@ export const contactContent = {
   },
   faqs: [
     {
-      question: 'How do I contact SpeakUpMic?',
+      question: 'How do I contact Truefluent AI?',
       answer:
-        'You can reach the SpeakUpMic team by emailing info@thinkfeat.com or using the contact form on this page. We respond within 2 business days.',
+        'You can reach the Truefluent AI team by emailing info@testitan.com or using the contact form on this page. We respond within 2 business days.',
     },
     {
       question: 'How do I report a bug or get app support?',

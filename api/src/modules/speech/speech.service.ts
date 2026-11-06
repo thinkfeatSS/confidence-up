@@ -10,7 +10,7 @@ import { generateOllamaJson } from '../../common/utils/ollama.util';
 import { getLevelInfo } from '../../common/utils/xp-engine.util';
 
 import { CreateSpeechSessionDto } from './dto/create-speech-session.dto';
-
+import { SyncSpeechSessionDto } from './dto/sync-speech-session.dto';
 import { AnalyzeSpeechAiDto } from './dto/analyze-speech-ai.dto';
 
 import { XpSource, ActivityEventType, Prisma } from '@prisma/client';
@@ -34,6 +34,183 @@ export class SpeechService {
   ) {}
 
 
+
+  async syncSession(dto: SyncSpeechSessionDto) {
+    const { userId, sessionId, ...rest } = dto;
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true },
+    });
+    if (!user) {
+      this.logger.warn(`Cannot sync session: user ${userId} not found`);
+      return { success: false, error: 'User not found' };
+    }
+
+    const xpEarned =
+      rest.xpEarned !== undefined
+        ? Math.max(0, Math.round(rest.xpEarned))
+        : this.calculateXp(rest.overallConfidenceScore);
+
+    let validMissionId: string | undefined = undefined;
+    let validChallengeId: string | undefined = undefined;
+
+    if (rest.missionId) {
+      const missionExists = await this.prisma.mission.findUnique({
+        where: { id: rest.missionId },
+        select: { id: true },
+      });
+      if (missionExists) validMissionId = rest.missionId;
+    }
+
+    if (rest.challengeId) {
+      const challengeExists = await this.prisma.challenge.findUnique({
+        where: { id: rest.challengeId },
+        select: { id: true },
+      });
+      if (challengeExists) validChallengeId = rest.challengeId;
+    }
+
+    const baseData = {
+      transcript: rest.transcript,
+      topic: rest.topic,
+      languageDetected: rest.languageDetected,
+      wordCount: rest.wordCount,
+      sentenceCount: rest.sentenceCount ?? 0,
+      fillerCount: rest.fillerCount,
+      vocabularyRichness: rest.vocabularyRichness,
+      repetitionScore: rest.repetitionScore ?? 0,
+      averageVolume: rest.averageVolume,
+      pauseFrequency: rest.pauseFrequency ?? 0,
+      speechSpeedWpm: rest.speechSpeedWpm,
+      fluencyScore: rest.fluencyScore,
+      topicRelevanceScore: rest.topicRelevanceScore,
+      overallConfidenceScore: rest.overallConfidenceScore,
+      durationSeconds: rest.durationSeconds,
+      xpEarned,
+      languageMix: rest.languageMix as Prisma.InputJsonValue | undefined,
+      confidenceComponents: rest.confidenceComponents as Prisma.InputJsonValue | undefined,
+      localMetrics: rest.localMetrics as Prisma.InputJsonValue | undefined,
+      aiInsights: rest.aiInsights as Prisma.InputJsonValue | undefined,
+      fillerBreakdown: rest.fillerBreakdown as Prisma.InputJsonValue | undefined,
+      coachingFeedback: rest.coachingFeedback ?? [],
+      personalizedSuggestions: rest.personalizedSuggestions ?? [],
+      miniMission: rest.miniMission,
+      analysisMeta: rest.analysisMeta as Prisma.InputJsonValue | undefined,
+      missionId: validMissionId,
+      challengeId: validChallengeId,
+    };
+
+    let sessionRecord;
+    if (sessionId) {
+      const existing = await this.prisma.speechSession.findUnique({
+        where: { id: sessionId },
+        select: { id: true },
+      });
+      if (existing) {
+        sessionRecord = await this.prisma.speechSession.update({
+          where: { id: sessionId },
+          data: baseData,
+        });
+      } else {
+        sessionRecord = await this.prisma.speechSession.create({
+          data: {
+            id: sessionId,
+            userId,
+            ...baseData,
+          },
+        });
+      }
+    } else {
+      sessionRecord = await this.prisma.speechSession.create({
+        data: {
+          userId,
+          ...baseData,
+        },
+      });
+    }
+
+    const confidenceAgg = await this.prisma.speechSession.aggregate({
+      where: { userId },
+      _avg: { overallConfidenceScore: true },
+    });
+
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        confidenceScore:
+          Math.round((confidenceAgg._avg.overallConfidenceScore ?? 0) * 100) / 100,
+      },
+    });
+
+    const gamification = await this.gamificationService.awardXp(
+      userId,
+      xpEarned,
+      XpSource.SPEECH_SESSION,
+      sessionRecord.id,
+    );
+
+    if (validChallengeId) {
+      try {
+        const challenge = await this.prisma.challenge.findUnique({
+          where: { id: validChallengeId },
+        });
+        if (challenge) {
+          const existing = await this.prisma.userChallenge.findUnique({
+            where: { userId_challengeId: { userId, challengeId: validChallengeId } },
+          });
+          if (!existing?.completedAt) {
+            await this.prisma.userChallenge.upsert({
+              where: { userId_challengeId: { userId, challengeId: validChallengeId } },
+              update: { completedAt: new Date() },
+              create: { userId, challengeId: validChallengeId, completedAt: new Date() },
+            });
+            await this.gamificationService.awardXp(
+              userId,
+              challenge.xpReward,
+              XpSource.CHALLENGE,
+              validChallengeId,
+            );
+          }
+        }
+      } catch {
+        // Non-blocking
+      }
+    }
+
+    let newBadges: Array<{
+      id: string;
+      name: string;
+      description: string;
+      icon: string;
+      tier: string;
+    }> = [];
+
+    if (gamification.newBadges.length > 0) {
+      const badges = await this.prisma.badge.findMany({
+        where: { name: { in: gamification.newBadges }, isActive: true },
+      });
+      newBadges = badges.map((badge) => ({
+        id: badge.id,
+        name: badge.name,
+        description: badge.description,
+        icon: badge.icon,
+        tier: badge.tier,
+      }));
+    }
+
+    return {
+      success: true,
+      sessionId: sessionRecord.id,
+      xpEarned,
+      gamification: {
+        xpEarned,
+        newLevel: gamification.newLevel,
+        leveledUp: gamification.leveledUp,
+        newBadges,
+      },
+    };
+  }
 
   async createSession(userId: string, dto: CreateSpeechSessionDto) {
 
@@ -406,7 +583,7 @@ export class SpeechService {
     };
 
     return [
-      'You are Atlas, the expert SpeakUpMic speaking, pronunciation, and confidence coach.',
+      'You are Atlas, the expert Speak Up Mic speaking, pronunciation, and confidence coach.',
       'Return strict JSON only. Do not include markdown or explanations.',
       'The app computes the final confidence score locally. You provide semantic coaching, pronunciation guidance, and filler word feedback.',
       'Identify exact filler words and words with unclear pronunciation. Provide actionable tips to replace fillers with silent pauses.',

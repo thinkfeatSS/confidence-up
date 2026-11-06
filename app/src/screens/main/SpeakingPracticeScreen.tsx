@@ -13,7 +13,22 @@ import { Spacing, BorderRadius, Typography } from '../../theme';
 import { useTheme } from '../../theme/ThemeContext';
 import { apiClient, unwrapApiData } from '../../services/api';
 import { toSpeechSessionDto, mapSpeechSessionFromApi } from '../../utils/apiHelpers';
-import { saveLocalSpeechSession } from '../../services/localSpeechStorage';
+import {
+  saveLocalSpeechSession,
+  enqueueOfflineAudio,
+} from '../../services/localSpeechStorage';
+import {
+  startAudioRecording,
+  stopAudioRecording,
+  cancelAudioRecording,
+  subscribeAudioMetering,
+  AudioRecordResult,
+} from '../../modules/speech/services/audioRecordingService';
+import {
+  uploadSpeechAudio,
+  pollSessionStatus,
+  SessionStatusPollResult,
+} from '../../modules/speech/services/audioUploadService';
 import {
   buildSpeechCelebrations,
   highlightToBadge,
@@ -104,24 +119,11 @@ export const SpeakingPracticeScreen = () => {
   // Stage progress steps
   const STAGES = [
     { title: 'Uploading speech audio', icon: '📤' },
-    { title: 'Transcribing speech & word confidence', icon: '🎧' },
-    { title: 'Analyzing pronunciation, fluency & fillers', icon: '📊' },
+    { title: 'Transcribing speech with Whisper AI', icon: '🎧' },
+    { title: 'Analyzing pronunciation, fluency & pauses', icon: '📊' },
     { title: 'Generating AI Coaching & Feedback', icon: '🤖' },
     { title: 'Calculating Confidence Score (v2.0)', icon: '🎯' },
   ];
-
-  useEffect(() => {
-    let interval: ReturnType<typeof setInterval> | null = null;
-    if (state === 'processing') {
-      setProcessingStageIndex(0);
-      interval = setInterval(() => {
-        setProcessingStageIndex((prev) => (prev < STAGES.length - 1 ? prev + 1 : prev));
-      }, 700);
-    }
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [state]);
 
   const buildSessionFromAnalysis = useCallback((
     result: SpeechAnalysisResult,
@@ -182,8 +184,18 @@ export const SpeakingPracticeScreen = () => {
     setNewTopicPersonalRecord(null);
     recorder.reset();
     micScale.value = withSpring(1.15, { damping: 4 });
+
+    const sessionId = `speech-${Date.now()}`;
+    let audioStarted = false;
+    try {
+      await startAudioRecording(sessionId);
+      audioStarted = true;
+    } catch (e: any) {
+      console.warn('[SpeakingPracticeScreen] Native audio recording start warning:', e);
+    }
+
     const started = await recorder.start();
-    if (!started) {
+    if (!started && !audioStarted) {
       micScale.value = withSpring(1);
       return;
     }
@@ -193,15 +205,26 @@ export const SpeakingPracticeScreen = () => {
   const stopRecording = useCallback(async () => {
     micScale.value = withSpring(1);
     setState('processing');
+    setProcessingStageIndex(0);
+
+    let audioResult: AudioRecordResult | null = null;
+    try {
+      audioResult = await stopAudioRecording();
+    } catch (e) {
+      console.warn('[SpeakingPracticeScreen] Stop audio error:', e);
+    }
 
     const recording = await recorder.stop();
-    if (!recording) {
-      setState('idle');
-      return;
-    }
-    const capturedText = recording.transcript?.trim() ?? '';
-    if (!capturedText) {
-      const spokeLongEnough = (recording?.durationSeconds ?? 0) >= 2;
+    const duration = audioResult?.durationSeconds || recording?.durationSeconds || 1;
+    const spokeLongEnough = duration >= 2;
+
+    const currentPrompt = activePrompt;
+    const previousScore = progress?.speechSessions?.[0]?.overallScore;
+    const previousFillers = progress?.speechSessions?.[0]?.fillerCount ?? 0;
+    const previousWpm = progress?.speechSessions?.[0]?.paceWPM ?? 120;
+    const prevBest = currentPromptBestScore;
+
+    if (!audioResult?.filePath && !recording?.transcript?.trim()) {
       setRecordingError(
         spokeLongEnough
           ? 'No speech was detected. Speak clearly for a few seconds and watch for live transcript text before stopping.'
@@ -211,93 +234,170 @@ export const SpeakingPracticeScreen = () => {
       return;
     }
 
-    const currentPrompt = activePrompt;
-    const previousScore = progress?.speechSessions?.[0]?.overallScore;
-    const previousFillers = progress?.speechSessions?.[0]?.fillerCount ?? 0;
-    const previousWpm = progress?.speechSessions?.[0]?.paceWPM ?? 120;
-    const prevBest = currentPromptBestScore;
+    let completedSession: SpeechSession | null = null;
+    let gamificationPayload: SpeechGamificationPayload | undefined = undefined;
 
-    const result = await analysis.mutateAsync({
-      transcript: recording.transcript,
-      topic: currentPrompt,
-      durationSeconds: recording.durationSeconds,
-      audioSamples: recording.audioSamples,
-      utteranceSegments: recording.utteranceSegments,
-      preferredLanguages: user?.preferredLanguages,
-      sessionsLast7Days: progress?.speechSessions?.slice(0, 7).length ?? 0,
-      currentStreak: user?.streak ?? 0,
-      previousScore: progress?.speechSessions?.[0]?.overallScore,
-      missionId: route.params?.missionId,
-      challengeId: route.params?.challengeId,
-    });
-    const built = buildSessionFromAnalysis(result);
+    if (audioResult && audioResult.filePath) {
+      try {
+        setProcessingStageIndex(0); // Uploading & Queued
+        const uploadRes = await uploadSpeechAudio({
+          audioResult,
+          topic: currentPrompt,
+          missionId: route.params?.missionId,
+          challengeId: route.params?.challengeId,
+        });
 
-    if (previousScore !== undefined) {
+        const pollResult = await pollSessionStatus(
+          uploadRes.session_id,
+          (progressData) => {
+            if (progressData.status === 'transcribing') setProcessingStageIndex(1);
+            else if (progressData.status === 'analyzing') setProcessingStageIndex(2);
+            else if (progressData.status === 'coaching') setProcessingStageIndex(3);
+            else if (progressData.status === 'completed') setProcessingStageIndex(4);
+          },
+        );
+
+        if (pollResult && pollResult.status === 'completed') {
+          const overallScore = Math.round(pollResult.overall_confidence_score ?? 75);
+          const fluency = Math.round(pollResult.confidence_components?.speech_fluency ?? 75);
+          const topicRelevance = Math.round(pollResult.confidence_components?.topic_relevance ?? 75);
+          const vocabulary = Math.round(pollResult.confidence_components?.vocabulary ?? 70);
+          const consistency = Math.round(pollResult.confidence_components?.practice_consistency ?? 70);
+          const transcriptText = pollResult.transcript || recording?.transcript || '';
+          const wpm = Math.round(pollResult.metrics?.words_per_minute ?? 120);
+          const fillerCount = pollResult.metrics?.filler_count ?? 0;
+          const xpEarned = pollResult.xp_earned ?? pollResult.gamification?.xp_earned ?? 50;
+
+          completedSession = {
+            id: pollResult.session_id,
+            date: new Date().toISOString().split('T')[0],
+            prompt: currentPrompt,
+            overallScore,
+            clarityScore: fluency,
+            fillerCount,
+            paceWPM: wpm,
+            toneScore: topicRelevance,
+            transcript: transcriptText,
+            fillerWords: pollResult.metrics?.filler_words ?? [],
+            fillerBreakdown: {},
+            feedback: pollResult.coaching?.coaching_feedback ?? [],
+            xpEarned,
+            languageDetected: pollResult.language?.language_label ?? 'English',
+            sentenceCount: pollResult.metrics?.sentence_count ?? 1,
+            wordCount: pollResult.metrics?.word_count ?? transcriptText.split(/\s+/).filter(Boolean).length,
+            vocabularyRichness: pollResult.metrics?.vocabulary_richness ?? 0.6,
+            repetitionScore: pollResult.metrics?.repetition_score ?? 0,
+            averageVolume: pollResult.metrics?.average_volume_db ?? 65,
+            pauseFrequency: 0,
+            components: {
+              speechFluencyScore: fluency,
+              topicRelevanceScore: topicRelevance,
+              vocabularyScore: vocabulary,
+              practiceConsistencyScore: consistency,
+              overallConfidenceScore: overallScore,
+            },
+            localMetrics: {
+              audio: {
+                speechSpeedWpm: wpm,
+                averageVolume: pollResult.metrics?.average_volume_db ?? 65,
+                volumeStability: 80,
+                pauseBreakdown: {
+                  natural: pollResult.metrics?.natural_pauses_count ?? 0,
+                  thinking: pollResult.metrics?.thinking_pauses_count ?? 0,
+                  lost: pollResult.metrics?.lost_pauses_count ?? 0,
+                },
+              },
+            },
+            aiInsights: {
+              strengths: pollResult.coaching?.strengths ?? [],
+              weaknesses: pollResult.coaching?.weaknesses ?? [],
+              coachMessage: pollResult.coaching?.coach_message ?? '',
+              emotionalTone: pollResult.coaching?.emotional_tone ?? 'Confident',
+            },
+            strengths: pollResult.coaching?.strengths ?? [],
+            weaknesses: pollResult.coaching?.weaknesses ?? [],
+            coachMessage: pollResult.coaching?.coach_message ?? '',
+            analysisProvider: 'faster-whisper',
+            suggestions: pollResult.coaching?.personalized_suggestions ?? [],
+            miniMission: pollResult.coaching?.next_mission ?? 'Practice again with fewer fillers.',
+            missionId: route.params?.missionId,
+            challengeId: route.params?.challengeId,
+          };
+
+          gamificationPayload = pollResult.gamification as SpeechGamificationPayload | undefined;
+        }
+      } catch (uploadError) {
+        console.warn('[SpeakingPracticeScreen] Remote audio pipeline failed, falling back to local analysis:', uploadError);
+        await enqueueOfflineAudio({
+          id: `speech-${Date.now()}`,
+          filePath: audioResult.filePath,
+          topic: currentPrompt,
+          missionId: route.params?.missionId,
+          challengeId: route.params?.challengeId,
+          durationSeconds: duration,
+          timestamp: Date.now(),
+        });
+      }
+    }
+
+    // Fallback: If remote processing didn't produce a session (offline or error), run client-side analysis
+    if (!completedSession) {
+      setProcessingStageIndex(2); // Analyzing locally
+      const result = await analysis.mutateAsync({
+        transcript: recording?.transcript || 'Practice session audio recorded.',
+        topic: currentPrompt,
+        durationSeconds: duration,
+        audioSamples: recording?.audioSamples || [],
+        utteranceSegments: recording?.utteranceSegments || [],
+        preferredLanguages: user?.preferredLanguages,
+        sessionsLast7Days: progress?.speechSessions?.slice(0, 7).length ?? 0,
+        currentStreak: user?.streak ?? 0,
+        previousScore: progress?.speechSessions?.[0]?.overallScore,
+        missionId: route.params?.missionId,
+        challengeId: route.params?.challengeId,
+      });
+      completedSession = buildSessionFromAnalysis(result);
+    }
+
+    if (previousScore !== undefined && completedSession) {
       setRetryComparison({
-        scoreDelta: Math.round(built.overallScore - previousScore),
-        fillerDelta: built.fillerCount - previousFillers,
-        wpmDelta: Math.round(built.paceWPM - previousWpm),
+        scoreDelta: Math.round(completedSession.overallScore - previousScore),
+        fillerDelta: completedSession.fillerCount - previousFillers,
+        wpmDelta: Math.round(completedSession.paceWPM - previousWpm),
         previousScore,
       });
     }
 
-    if (prevBest !== undefined && built.overallScore > prevBest) {
+    if (prevBest !== undefined && completedSession && completedSession.overallScore > prevBest) {
       setNewTopicPersonalRecord({
-        currentScore: built.overallScore,
+        currentScore: completedSession.overallScore,
         previousBest: prevBest,
       });
     } else {
       setNewTopicPersonalRecord(null);
     }
 
-    // Save locally right away to guarantee it shows in history even if offline/backend delays
-    await saveLocalSpeechSession(built);
+    await saveLocalSpeechSession(completedSession);
+    setSession(completedSession);
+
+    setCelebrationQueue(
+      buildSpeechCelebrations(completedSession.xpEarned, gamificationPayload, {
+        previousScore,
+        currentScore: completedSession.overallScore,
+      }),
+    );
+    setCelebrationIndex(0);
+
     queryClient.setQueryData(['progress', 'speeches'], (old: any) => {
       const list = Array.isArray(old) ? old : [];
-      return [built, ...list.filter((item: any) => item.id !== built.id)];
+      return [completedSession, ...list.filter((item: any) => item.id !== completedSession?.id)];
     });
+    queryClient.invalidateQueries({ queryKey: ['progress'] });
+    queryClient.invalidateQueries({ queryKey: ['user'] });
+    queryClient.invalidateQueries({ queryKey: ['badges'] });
+    queryClient.invalidateQueries({ queryKey: ['gamification'] });
+    queryClient.invalidateQueries({ queryKey: ['challenges'] });
 
-    try {
-      const res = await apiClient.post<any, any>(
-        '/speech/sessions',
-        toSpeechSessionDto(built, recording.durationSeconds),
-      );
-      const payload = unwrapApiData<any>(res);
-      const saved = mapSpeechSessionFromApi(payload, currentPrompt);
-      const mergedSession = { ...built, ...saved, prompt: currentPrompt, feedback: built.feedback };
-      setSession(mergedSession);
-      await saveLocalSpeechSession(mergedSession);
-
-      const gamification = payload?.gamification as SpeechGamificationPayload | undefined;
-      setCelebrationQueue(
-        buildSpeechCelebrations(built.xpEarned, gamification, {
-          previousScore,
-          currentScore: built.overallScore,
-        }),
-      );
-      setCelebrationIndex(0);
-
-      queryClient.setQueryData(['progress', 'speeches'], (old: any) => {
-        const list = Array.isArray(old) ? old : [];
-        return [mergedSession, ...list.filter((item: any) => item.id !== built.id && item.id !== mergedSession.id)];
-      });
-      queryClient.invalidateQueries({ queryKey: ['progress'] });
-      queryClient.invalidateQueries({ queryKey: ['user'] });
-      queryClient.invalidateQueries({ queryKey: ['badges'] });
-      queryClient.invalidateQueries({ queryKey: ['gamification'] });
-      queryClient.invalidateQueries({ queryKey: ['challenges'] });
-    } catch (err) {
-      console.warn('[SpeakingPracticeScreen] Remote save failed, preserved locally:', err);
-      setSession(built);
-      setCelebrationQueue(
-        buildSpeechCelebrations(built.xpEarned, undefined, {
-          previousScore,
-          currentScore: built.overallScore,
-        }),
-      );
-      setCelebrationIndex(0);
-      queryClient.invalidateQueries({ queryKey: ['progress'] });
-    }
     setState('results');
     setShowXP(true);
   }, [
@@ -316,10 +416,12 @@ export const SpeakingPracticeScreen = () => {
   const startFreshRecording = useCallback(() => {
     setState('idle');
     recorder.reset();
+    cancelAudioRecording().catch(() => {});
     setSession(null);
     setRecordingError(null);
     setRetryComparison(null);
     setNewTopicPersonalRecord(null);
+    setProcessingStageIndex(0);
   }, [recorder]);
 
   const tryAgain = useCallback(() => {

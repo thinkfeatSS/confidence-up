@@ -25,7 +25,7 @@ export const validationSchema = Joi.object({
   MAIL_SECURE: Joi.string().default('true'),
   MAIL_USER: Joi.string().email().required(),
   MAIL_PASSWORD: Joi.string().required(),
-  MAIL_FROM_NAME: Joi.string().default('SpeakUpMic'),
+  MAIL_FROM_NAME: Joi.string().default('Speak Up Mic'),
   MAIL_FROM_ADDRESS: Joi.string().email().required(),
 
   FIREBASE_PROJECT_ID: Joi.string().optional(),

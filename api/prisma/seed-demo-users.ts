@@ -79,12 +79,11 @@ function dateOnly(daysBack: number) {
 }
 
 async function seedDemoUser(passwordHash: string) {
-  const [missions, challenges, badges, fearLevels, skillNodes] = await Promise.all([
+  const [missions, challenges, badges, fearLevels] = await Promise.all([
     prisma.mission.findMany({ where: { isActive: true }, take: 6, orderBy: { createdAt: 'asc' } }),
     prisma.challenge.findMany({ where: { isActive: true }, take: 4, orderBy: { createdAt: 'asc' } }),
     prisma.badge.findMany({ where: { isActive: true }, take: 6, orderBy: { createdAt: 'asc' } }),
     prisma.fearLevel.findMany({ take: 5, orderBy: [{ categoryId: 'asc' }, { levelNumber: 'asc' }] }),
-    prisma.skillNode.findMany({ where: { tier: { lte: 3 } }, orderBy: { tier: 'asc' } }),
   ]);
 
   const xpTotal = 520;
@@ -175,13 +174,6 @@ async function seedDemoUser(passwordHash: string) {
   for (const level of fearLevels) {
     await prisma.userFearProgress.create({
       data: { userId: demo.id, fearLevelId: level.id, completedAt: daysAgo(10 - level.levelNumber) },
-    });
-  }
-
-  // Skill tree — tier 1–3 nodes
-  for (const node of skillNodes) {
-    await prisma.userSkillNode.create({
-      data: { userId: demo.id, skillNodeId: node.id, unlockedAt: daysAgo(20 - node.tier * 2) },
     });
   }
 
@@ -318,40 +310,6 @@ async function seedDemoUser(passwordHash: string) {
     });
   }
 
-  // Journal entries
-  const journals = [
-    {
-      title: 'First week reflection',
-      body: 'I noticed my anxiety drops when I practice for just five minutes before meetings. Small wins matter.',
-      mood: 4,
-      daysAgo: 2,
-    },
-    {
-      title: 'Interview prep',
-      body: 'Practiced my "tell me about yourself" answer three times. Feeling more natural each round.',
-      mood: 4,
-      daysAgo: 4,
-    },
-    {
-      title: 'Streak motivation',
-      body: 'Seven days in a row! The daily mission keeps me accountable even on busy days.',
-      mood: 5,
-      daysAgo: 0,
-    },
-  ];
-  for (const entry of journals) {
-    await prisma.journalEntry.create({
-      data: {
-        userId: demo.id,
-        title: entry.title,
-        body: entry.body,
-        mood: entry.mood,
-        reflectionPrompt: 'What felt easier today than last week?',
-        createdAt: daysAgo(entry.daysAgo),
-      },
-    });
-  }
-
   // Notifications
   const notifications = [
     { title: 'Badge earned: First Speech', body: 'You recorded your first practice session!', type: NotificationType.BADGE_EARNED },
@@ -416,7 +374,7 @@ async function seedDemoUser(passwordHash: string) {
 
   console.log(`✅ Demo user: ${DEMO.email} (password: ${DEMO.password})`);
   console.log(`   XP: ${xpTotal} | Level: 4 | Confidence: 74 | Streak: 7`);
-  console.log(`   ${speechSamples.length} speech sessions, ${journals.length} journal entries`);
+  console.log(`   ${speechSamples.length} speech sessions completed`);
   return demo;
 }
 

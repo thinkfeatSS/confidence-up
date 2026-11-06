@@ -7,15 +7,26 @@ import {
   Query,
   ParseIntPipe,
   DefaultValuePipe,
+  UseGuards,
 } from '@nestjs/common';
 import { SpeechService } from './speech.service';
 import { CreateSpeechSessionDto } from './dto/create-speech-session.dto';
 import { AnalyzeSpeechAiDto } from './dto/analyze-speech-ai.dto';
+import { SyncSpeechSessionDto } from './dto/sync-speech-session.dto';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { Public } from '../../common/decorators/public.decorator';
+import { InternalSecretGuard } from '../../common/guards/internal-secret.guard';
 
 @Controller('speech')
 export class SpeechController {
   constructor(private readonly speechService: SpeechService) {}
+
+  @Post('sync-session')
+  @Public()
+  @UseGuards(InternalSecretGuard)
+  syncSession(@Body() dto: SyncSpeechSessionDto) {
+    return this.speechService.syncSession(dto);
+  }
 
   @Post('sessions')
   createSession(@CurrentUser('id') userId: string, @Body() dto: CreateSpeechSessionDto) {

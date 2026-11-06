@@ -21,6 +21,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../theme/ThemeContext';
 import { BorderRadius, Spacing, Typography } from '../theme';
 import { setOnNetworkFailure } from '../services/api';
+import { syncOfflineAudioSessions } from '../services/speechSyncService';
 
 type NetworkContextValue = {
   isOffline: boolean;
@@ -64,6 +65,7 @@ export const NetworkProvider = ({ children }: { children: ReactNode }) => {
       setShowOfflineBanner(false);
       setShowOnlineToast(true);
       setTimeout(() => setShowOnlineToast(false), 3500);
+      syncOfflineAudioSessions().catch(() => {});
     }
   }, []);
 

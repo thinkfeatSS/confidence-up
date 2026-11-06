@@ -1,48 +1,12 @@
 #!/bin/bash
 # ==============================================================================
-# ConfidenceUp - Production VPS Deployment Script
+# Truefluent AI - Unified FastAPI Production Deployment Script (VPS)
 # ==============================================================================
 set -e
 
-echo "🚀 Starting ConfidenceUp deployment on VPS..."
+echo "🚀 Starting Truefluent AI deployment on VPS (https://speakupmic.binaryunit.tech)..."
 
-# 0. Ensure api/.env exists and is up to date
-if [ ! -f api/.env ]; then
-  echo "📝 Creating api/.env from production template..."
-  mkdir -p api
-  cat << 'EOF' > api/.env
-DATABASE_URL="mysql://u897031851_ismail:Mastsanai110@148.222.53.12:3306/u897031851_confidenceup"
-NODE_ENV=production
-PORT=3000
-APP_URL=https://speakupmic.binaryunit.tech
-FRONTEND_URL=https://speakupmic.vercel.app
-JWT_SECRET=39xDp8E+RbI5839moflWxbwEZbyK0nm4I+XsGQ6Gmn44
-JWT_EXPIRES_IN=15m
-JWT_REFRESH_SECRET=A5fvnDAZxMiuFuVBFvMdUKZsCPHkVZiC9jid8lMfcG88
-JWT_REFRESH_EXPIRES_IN=7d
-GOOGLE_CLIENT_ID=408638792904-bjj0a2ap9ic3ln2aghp0c5vhuf8d2hph.apps.googleusercontent.com
-MAIL_HOST=smtp.hostinger.com
-MAIL_PORT=465
-MAIL_SECURE=true
-MAIL_USER=info@thinkfeat.com
-MAIL_PASSWORD=c948f8^I
-MAIL_FROM_NAME=SpeakUpMic
-MAIL_FROM_ADDRESS=info@thinkfeat.com
-CRON_SECRET=BIr/MEiDyaIY/D6feYhghZGhL/i+G1rclomzanW4WLcc
-OLLAMA_BASE_URL=http://ollama:11434
-OLLAMA_MODEL=llama3.2:3b
-CORS_ALLOWED_ORIGINS=https://speakupmic.vercel.app,https://speakupmic.binaryunit.tech,https://binaryunit.tech
-EOF
-else
-  echo "🔄 Updating existing api/.env with SpeakUpMic, Ollama and speakupmic.binaryunit.tech..."
-  sed -i '/GEMINI/d' api/.env 2>/dev/null || true
-  grep -q "OLLAMA_BASE_URL" api/.env || echo "OLLAMA_BASE_URL=http://ollama:11434" >> api/.env
-  grep -q "OLLAMA_MODEL" api/.env || echo "OLLAMA_MODEL=llama3.2:3b" >> api/.env
-  sed -i 's|http://binaryunit.tech|https://speakupmic.binaryunit.tech|g' api/.env 2>/dev/null || true
-  sed -i 's|MAIL_FROM_NAME=ConfidenceUp|MAIL_FROM_NAME=SpeakUpMic|g' api/.env 2>/dev/null || true
-fi
-
-# 1. Ensure SSL directory & placeholder exists so Nginx can start HTTPS
+# 1. Ensure SSL directory & placeholder certificate exists for Nginx boot
 mkdir -p ./certbot/conf/live/speakupmic.binaryunit.tech
 mkdir -p ./certbot/www/.well-known/acme-challenge
 if [ ! -f ./certbot/conf/live/speakupmic.binaryunit.tech/fullchain.pem ]; then
@@ -50,25 +14,41 @@ if [ ! -f ./certbot/conf/live/speakupmic.binaryunit.tech/fullchain.pem ]; then
   openssl req -x509 -nodes -newkey rsa:2048 -days 1 \
     -keyout ./certbot/conf/live/speakupmic.binaryunit.tech/privkey.pem \
     -out ./certbot/conf/live/speakupmic.binaryunit.tech/fullchain.pem \
-    -subj "/CN=localhost" 2>/dev/null || true
+    -subj "/CN=speakupmic.binaryunit.tech" 2>/dev/null || true
 fi
 
-# 2. Pull latest code or build images
-echo "📦 Building and starting Docker containers..."
+# 2. Setup separate truefluent_ai database in MySQL container
+echo "🗄️ Setting up truefluent_ai database in MySQL container..."
+MYSQL_CONTAINER=$(docker ps --filter "name=mysql" --format "{{.Names}}" | head -n 1)
+
+if [ -n "$MYSQL_CONTAINER" ]; then
+  echo "   Found MySQL container: $MYSQL_CONTAINER"
+  # Attempt creating truefluent_ai database (tries common passwords or environment)
+  docker exec "$MYSQL_CONTAINER" mysql -uroot -pmysql_secret -e "CREATE DATABASE IF NOT EXISTS truefluent_ai CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" 2>/dev/null || \
+  docker exec "$MYSQL_CONTAINER" mysql -uroot -e "CREATE DATABASE IF NOT EXISTS truefluent_ai CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" 2>/dev/null || \
+  echo "   Note: Please verify truefluent_ai database exists in $MYSQL_CONTAINER"
+else
+  echo "⚠️ No MySQL container detected directly via name=mysql. If running on host, ensure truefluent_ai is created."
+fi
+
+# 3. Build & start unified FastAPI backend and background worker
+echo "📦 Building and starting Truefluent AI Docker containers..."
+docker compose -f docker-compose.prod.yml down --remove-orphans || true
 docker compose -f docker-compose.prod.yml up -d --build
 
-# 2. Run Prisma migrations inside API container
-echo "🔄 Running Prisma migrations against remote database..."
-docker compose -f docker-compose.prod.yml exec -T api npx prisma migrate deploy
+# 4. Wait for FastAPI to initialize
+echo "⏳ Waiting for FastAPI service to become healthy..."
+sleep 8
 
-# 3. Seed initial database data & admin/demo accounts
-echo "🌱 Seeding badges, missions, skill tree, and admin/demo users..."
-docker compose -f docker-compose.prod.yml exec -T api npm run seed || true
-docker compose -f docker-compose.prod.yml exec -T api npm run seed:demo || true
+# 5. Seed database schema, badges, fears, and master accounts
+echo "🌱 Running Truefluent AI database initialization and seeding..."
+docker compose -f docker-compose.prod.yml exec -T fastapi python -m app.db.seed_data || true
 
-# 4. Pull Ollama model inside container if not already downloaded
-echo "🦙 Ensuring Ollama LLM model is ready..."
+# 6. Ensure Ollama AI model is ready
+echo "🦙 Ensuring Ollama llama3.2:3b model is pulled..."
 docker compose -f docker-compose.prod.yml exec -T ollama ollama pull llama3.2:3b || true
 
-echo "✅ Deployment successful! Service status:"
+echo "✅ Truefluent AI deployment successful!"
+echo "   Endpoint: https://speakupmic.binaryunit.tech/api/v1"
+echo "   Web App:  https://speakupmic.vercel.app"
 docker compose -f docker-compose.prod.yml ps

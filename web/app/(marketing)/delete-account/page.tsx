@@ -7,9 +7,9 @@ import { site } from '@/content/site';
 export const metadata = buildMetadata({
   title: 'Delete Account & Data',
   description:
-    'Learn how to request deletion of your SpeakUpMic account and personal data in compliance with Google Play and privacy guidelines.',
+    'Learn how to request deletion of your Speak Up Mic account and personal data in compliance with Google Play and privacy guidelines.',
   path: '/delete-account',
-  keywords: ['delete account', 'data deletion', 'delete SpeakUpMic data', 'privacy'],
+  keywords: ['delete account', 'data deletion', 'delete Speak Up Mic data', 'privacy'],
 });
 
 export default function DeleteAccountPage() {
@@ -41,7 +41,7 @@ export default function DeleteAccountPage() {
             <div className="space-y-4">
               <h2 className="text-2xl font-bold tracking-tight">Method 1: Delete Directly in the Mobile App (Recommended)</h2>
               <p className="text-muted-foreground">
-                If you still have the SpeakUpMic app installed on your device, you can delete your account immediately:
+                If you still have the Speak Up Mic app installed on your device, you can delete your account immediately:
               </p>
               <div className="grid gap-4 sm:grid-cols-2">
                 {inAppSteps.map((item) => (
@@ -76,18 +76,18 @@ export default function DeleteAccountPage() {
                 <p>
                   <strong className="text-foreground">Email:</strong>{' '}
                   <a
-                    href={`mailto:${supportEmail}?subject=SpeakUpMic%20Account%20Deletion%20Request`}
+                    href={`mailto:${supportEmail}?subject=Speak%20Up%20Mic%20Account%20Deletion%20Request`}
                     className="font-medium text-primary underline underline-offset-4 hover:opacity-80"
                   >
                     {supportEmail}
                   </a>
                 </p>
                 <p>
-                  <strong className="text-foreground">Subject Line:</strong> SpeakUpMic Account Deletion Request
+                  <strong className="text-foreground">Subject Line:</strong> Speak Up Mic Account Deletion Request
                 </p>
                 <p>
                   <strong className="text-foreground">Required Details:</strong> Please provide the email address
-                  registered with your SpeakUpMic account.
+                  registered with your Speak Up Mic account.
                 </p>
               </div>
               <div className="pt-2">

@@ -4,8 +4,8 @@ import { Header } from '@/components/layout/Header';
 import { AdminShell } from '@/components/layout/AdminShell';
 
 export const metadata: Metadata = {
-  title: 'SpeakUpMic Admin',
-  description: 'Admin panel for SpeakUpMic',
+  title: 'Truefluent AI Admin',
+  description: 'Admin panel for Truefluent AI',
 };
 
 export default function AdminLayout({

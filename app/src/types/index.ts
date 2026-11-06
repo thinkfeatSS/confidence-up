@@ -83,19 +83,6 @@ export interface Badge {
   isNew?: boolean;
 }
 
-// ─── Journal ──────────────────────────────────────────────────────────────────
-
-export type MoodLevel = 1 | 2 | 3 | 4 | 5;
-
-export interface JournalEntry {
-  id: string;
-  title: string;
-  body: string;
-  mood: MoodLevel;
-  date: string;
-  linkedChallengeId?: string;
-}
-
 // ─── Progress ─────────────────────────────────────────────────────────────────
 
 export interface DailyScore {
@@ -158,38 +145,6 @@ export interface UserProgress {
   totalSpeeches: number;
   totalChallenges: number;
   averageScore: number;
-}
-
-// ─── Skill Tree ───────────────────────────────────────────────────────────────
-
-export type SkillBranch = 'speaking' | 'confidence' | 'communication';
-
-export interface SkillNode {
-  id: string;
-  title: string;
-  description: string;
-  branch: SkillBranch;
-  nodeLevel: number;
-  unlocked: boolean;
-  available: boolean;
-  canUnlock?: boolean;
-  blockReason?: string | null;
-  requirement: string;
-  requirementProgress: number;
-  requirementTotal: number;
-  x: number;
-  y: number;
-}
-
-// ─── Chat ─────────────────────────────────────────────────────────────────────
-
-export type ChatRole = 'user' | 'ai';
-
-export interface ChatMessage {
-  id: string;
-  role: ChatRole;
-  content: string;
-  timestamp: string;
 }
 
 // ─── Navigation ───────────────────────────────────────────────────────────────

@@ -10,14 +10,14 @@ export const privacyContent = {
   title: 'Privacy Policy',
   lastUpdated: 'June 25, 2026',
   intro:
-    'This Privacy Policy explains how ThinkFeat ("we", "us", "our") collects, uses, and protects your information when you use the SpeakUpMic mobile app and related services.',
+    'This Privacy Policy explains how ThinkFeat ("we", "us", "our") collects, uses, and protects your information when you use the Truefluent AI mobile app and related services.',
   sections: [
     {
       id: 'introduction',
       title: '1. Introduction & data controller',
-      summary: 'ThinkFeat is the data controller for SpeakUpMic.',
+      summary: 'ThinkFeat is the data controller for Truefluent AI.',
       paragraphs: [
-        'ThinkFeat operates SpeakUpMic and is responsible for your personal data. For privacy-related requests, contact us at info@thinkfeat.com.',
+        'ThinkFeat operates Truefluent AI and is responsible for your personal data. For privacy-related requests, contact us at info@testitan.com.',
       ],
     },
     {
@@ -62,7 +62,7 @@ export const privacyContent = {
       id: 'data-sharing',
       title: '5. Data sharing',
       summary: 'We do not sell your personal data.',
-      paragraphs: ['We may share data with trusted service providers who help us operate SpeakUpMic:'],
+      paragraphs: ['We may share data with trusted service providers who help us operate Truefluent AI:'],
       list: [
         'Cloud hosting and database providers.',
         'Email delivery services (transactional emails).',
@@ -91,15 +91,15 @@ export const privacyContent = {
         'Export your data in a portable format.',
         'Object to or restrict certain processing.',
         'Withdraw consent where processing is consent-based.',
-        'To exercise these rights, email info@thinkfeat.com. We will respond within 30 days.',
+        'To exercise these rights, email info@testitan.com. We will respond within 30 days.',
       ],
     },
     {
       id: 'children',
       title: "8. Children's privacy",
-      summary: 'SpeakUpMic is not intended for children under 13.',
+      summary: 'Truefluent AI is not intended for children under 13.',
       paragraphs: [
-        'SpeakUpMic is not directed at children under 13 years of age. We do not knowingly collect personal information from children under 13. If you believe a child has provided us data, contact us and we will delete it promptly.',
+        'Truefluent AI is not directed at children under 13 years of age. We do not knowingly collect personal information from children under 13. If you believe a child has provided us data, contact us and we will delete it promptly.',
       ],
     },
     {
@@ -115,7 +115,7 @@ export const privacyContent = {
       title: '10. Cookies & tracking',
       summary: 'The admin website uses cookies; the mobile app uses device identifiers.',
       paragraphs: [
-        'The SpeakUpMic admin website may use essential cookies for authentication. The mobile app uses device tokens for push notifications and local storage for session data. You can disable notifications in your device settings.',
+        'The Truefluent AI admin website may use essential cookies for authentication. The mobile app uses device tokens for push notifications and local storage for session data. You can disable notifications in your device settings.',
       ],
     },
     {
@@ -123,7 +123,7 @@ export const privacyContent = {
       title: '11. Changes to this policy',
       summary: 'We will update this page when our practices change.',
       paragraphs: [
-        'We may update this Privacy Policy from time to time. We will post the revised policy on this page with an updated "Last updated" date. Continued use of SpeakUpMic after changes constitutes acceptance.',
+        'We may update this Privacy Policy from time to time. We will post the revised policy on this page with an updated "Last updated" date. Continued use of Truefluent AI after changes constitutes acceptance.',
       ],
     },
     {
@@ -131,7 +131,7 @@ export const privacyContent = {
       title: '12. Contact us',
       summary: 'Reach us for privacy questions.',
       paragraphs: [
-        'For privacy-related inquiries, contact ThinkFeat at info@thinkfeat.com.',
+        'For privacy-related inquiries, contact ThinkFeat at info@testitan.com.',
       ],
     },
   ] as LegalSection[],

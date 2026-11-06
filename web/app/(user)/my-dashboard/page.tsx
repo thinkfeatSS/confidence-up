@@ -4,7 +4,7 @@ import { UserDashboard } from '@/components/user/UserDashboard';
 
 export const metadata: Metadata = {
   title: 'My Dashboard',
-  description: 'View your SpeakUpMic progress, stats, and performance.',
+  description: 'View your Speak Up Mic progress, stats, and performance.',
 };
 
 export default function MyDashboardPage() {
