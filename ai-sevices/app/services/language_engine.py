@@ -72,7 +72,14 @@ Transcript:
                     "model": settings.OLLAMA_MODEL,
                     "prompt": prompt,
                     "stream": False,
-                    "format": "json"
+                    "format": "json",
+                    "keep_alive": "5m",
+                    "options": {
+                        "temperature": 0.2,
+                        "num_ctx": 1024,
+                        "num_predict": 100,
+                        "num_thread": 2,
+                    }
                 }
             )
             if resp.status_code == 200:

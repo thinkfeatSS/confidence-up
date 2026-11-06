@@ -74,6 +74,14 @@ async def chat_with_coach(
                     "model": settings.OLLAMA_MODEL,
                     "prompt": full_prompt,
                     "stream": False,
+                    "keep_alive": "5m",
+                    "options": {
+                        "temperature": 0.4,
+                        "top_p": 0.9,
+                        "num_ctx": 2048,
+                        "num_predict": 300,
+                        "num_thread": 2,
+                    },
                 }
             )
             if resp.status_code == 200:

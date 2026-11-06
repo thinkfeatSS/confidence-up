@@ -58,9 +58,13 @@ Speech Input Data:
                         "prompt": prompt,
                         "stream": False,
                         "format": "json",
+                        "keep_alive": "5m",
                         "options": {
                             "temperature": 0.35,
                             "top_p": 0.9,
+                            "num_ctx": 2048,
+                            "num_predict": 450,
+                            "num_thread": 2,
                         }
                     }
                 )

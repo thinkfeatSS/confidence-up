@@ -117,6 +117,18 @@ npx react-native run-android
 npx react-native run-ios
 ```
 
+### Store Release Builds
+```bash
+# Generate signed production APK for direct distribution
+npm run build:android
+
+# Generate signed production Android App Bundle (.aab) for Google Play Store upload
+npm run bundle:android
+```
+The output binaries are generated in:
+- Release APK: `app/android/app/build/outputs/apk/release/app-release.apk`
+- Store Bundle AAB: `app/android/app/build/outputs/bundle/release/app-release.aab`
+
 ---
 
 ## 4. Scheduled Maintenance & Cron Jobs
