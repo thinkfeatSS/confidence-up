@@ -1,76 +1,92 @@
-# ConfidenceUp — Full Stack Setup Guide
+# Truefluent AI — Full Stack Setup Guide
 
 ## Project Structure
 
 ```
 confidence-builder/
-├── api/      ← NestJS backend (MySQL + Prisma)
-├── app/      ← React Native mobile app
-└── web/      ← Next.js admin panel
+├── ai-sevices/ ← Unified FastAPI backend (MySQL + SQLAlchemy + Celery + Ollama AI)
+├── app/        ← Truefluent AI React Native mobile app
+└── web/        ← Truefluent AI Next.js web admin portal
 ```
 
 ---
 
 ## Prerequisites
 
+- Python 3.11+
 - Node.js 20+
-- MySQL 8.0+
-- Android Studio / Xcode (for mobile)
+- Docker & Docker Compose
+- MySQL 8.0+ / Redis 7+
+- Android Studio / Xcode (for mobile development)
 
 ---
 
-## 1. Database Setup
+## 1. Unified FastAPI Backend (`ai-sevices/`)
 
-Create a MySQL database:
-```sql
-CREATE DATABASE confidence_builder CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+The backend is a unified FastAPI service handling all API endpoints for both the Mobile App and the Web Admin Portal, including Atlas AI Coach (Ollama Llama 3.2), speech analysis, gamification, and Celery asynchronous background tasks.
+
+### Architecture
+
 ```
+Mobile App (React Native)       Web Admin Portal (Next.js)
+         \                             /
+          \                           /
+           ▼                         ▼
+   HTTPS (https://speakupmic.binaryunit.tech/api/v1)
+                    │
+                    ▼
+          Nginx Reverse Proxy
+                    │
+                    ▼
+         Unified FastAPI Backend
+        (ai-sevices/app - Port 8006)
+          │            │           │
+          ▼            ▼           ▼
+     MySQL Database  Redis     Ollama (Llama 3.2 3B)
+          ▲            ▲
+          │            │
+      Celery Background Worker
+```
+
+### Configure Environment
+Copy `.env.example` to `.env` in `ai-sevices/`:
+```bash
+cp ai-sevices/.env.example ai-sevices/.env
+```
+Key configuration values:
+- `DATABASE_URL`: `mysql+pymysql://<user>:<pass>@<host>:<port>/<dbname>`
+- `REDIS_URL`: `redis://localhost:6379/0`
+- `SECRET_KEY`: JWT secret key
+- `OLLAMA_BASE_URL`: `http://localhost:11434`
+- `OLLAMA_MODEL`: `llama3.2:3b`
+- `CRON_SECRET`: Secret header key for scheduled cron endpoints (`X-Cron-Secret`)
+- `SMTP_USER` / `SMTP_PASSWORD`: SMTP mail configuration for transactional emails
+
+### Running Locally with Docker Compose
+```bash
+docker compose up -d --build
+```
+
+### Running Locally with Python
+```bash
+cd ai-sevices
+python -m venv venv
+source venv/bin/activate  # or venv\Scripts\activate on Windows
+pip install -r requirements.txt
+uvicorn app.main:app --host 0.0.0.0 --port 8006 --reload
+```
+
+Interactive API documentation available at `http://localhost:8006/docs`.
 
 ---
 
-## 2. Backend API (`api/`)
+## 2. Web Admin Portal (`web/`)
 
-### Configure environment
-```bash
-cp api/.env api/.env.local
-```
-Edit `api/.env` and fill in:
-- `DATABASE_URL` — your MySQL connection string
-- `JWT_SECRET` and `JWT_REFRESH_SECRET` — generate with `openssl rand -base64 32`
-- `GOOGLE_CLIENT_ID` — Web client ID from Google Cloud Console (for mobile Google Sign-In)
-- `CRON_SECRET` — required in production; secures `/cron/*` HTTP job endpoints (see `api/scripts/hostinger/`)
-- `MAIL_PASSWORD` — Hostinger email password for info@thinkfeat.com
-- `FIREBASE_*` — from Firebase Console → Project Settings → Service Accounts
+Next.js application providing analytics, user management, fear categories, missions, challenges, device version management, and audit logs.
 
-### Run migrations and start
-```bash
-cd api
-npm install
-npx prisma migrate dev --name init
-npm run start:dev
-```
-
-API runs at `http://localhost:3000`
-API docs prefix: `/api/v1`
-
-### Create first admin user
-After running the app, register a user via the API, then manually update their role in MySQL:
-```sql
-UPDATE users SET role = 'ADMIN' WHERE email = 'your-admin@email.com';
-```
-
----
-
-## 3. Admin Panel (`web/`)
-
-### Configure environment
-```bash
-# web/.env.production — live API (Vercel deploys)
-NEXT_PUBLIC_API_URL=http://binaryunit.tech/api/v1
-
-# web/.env.development or .env.local — local API
-NEXT_PUBLIC_API_URL=http://localhost:3000/api/v1
-```
+### Configure Environment
+- Production: `NEXT_PUBLIC_API_URL=https://speakupmic.binaryunit.tech/api/v1`
+- Local development: `NEXT_PUBLIC_API_URL=http://localhost:8006/api/v1`
 
 ### Run
 ```bash
@@ -78,26 +94,19 @@ cd web
 npm install
 npm run dev
 ```
-
-Admin panel runs at `http://localhost:3001`
-
-### Login
-Use the admin credentials you set up above.
+Runs at `http://localhost:3001` or `http://localhost:3000`.
 
 ---
 
-## 4. Mobile App (`app/`)
+## 3. Mobile App (`app/`)
 
-### API URL (production vs local)
+React Native mobile application for Truefluent AI speech confidence coaching.
 
-| Build | Env file | API |
-|-------|----------|-----|
-| **Release APK** | `app/.env` | `http://binaryunit.tech/api/v1` |
-| **Debug** (`run-android`) | `app/.env.development` | `http://10.0.2.2:3000/api/v1` (emulator → local API) |
-
-Edit `app/.env.development` for local backend during development. Release builds use `app/.env` (production).
-
-Physical device on Wi‑Fi: set `API_BASE_URL=http://YOUR_PC_IP:3000/api/v1` in `.env.development`.
+### API URL
+- Production (`app/.env`): `API_BASE_URL=https://speakupmic.binaryunit.tech/api/v1`
+- Development (`app/.env.development`):
+  - Emulator: `http://10.0.2.2:8006/api/v1`
+  - Physical Device: `http://<YOUR_PC_IP>:8006/api/v1`
 
 ### Run
 ```bash
@@ -110,136 +119,36 @@ npx react-native run-ios
 
 ---
 
-## 5. Firebase Push Notifications (Optional — Phase 6 completion)
+## 4. Scheduled Maintenance & Cron Jobs
 
-1. Create a Firebase project at https://console.firebase.google.com
-2. Add Android/iOS apps to the Firebase project
-3. Download `google-services.json` → place in `app/android/app/`
-4. Download `GoogleService-Info.plist` → place in `app/ios/`
-5. Install Firebase packages:
-   ```bash
-   cd app
-   npm install @react-native-firebase/app @react-native-firebase/messaging
-   cd android && ./gradlew build
-   ```
-6. Update `src/services/notifications.ts` — uncomment the Firebase code blocks
-7. Fill in `api/.env`:
-   - `FIREBASE_PROJECT_ID`
-   - `FIREBASE_CLIENT_EMAIL`
-   - `FIREBASE_PRIVATE_KEY`
+Automated maintenance tasks can be triggered using POST requests with the `X-Cron-Secret` header:
+
+| Endpoint | Description |
+|----------|-------------|
+| `/api/v1/cron/daily-mission` | Rotates the daily featured challenge/mission |
+| `/api/v1/cron/reset-streaks` | Resets inactive streaks |
+| `/api/v1/cron/streak-reminders` | Dispatches reminder notifications |
+| `/api/v1/cron/mission-reminders` | Dispatches daily mission notifications |
+| `/api/v1/cron/weekly-reports` | Compiles and sends weekly progress reports |
 
 ---
 
-## 6. Google Sign-In (Optional)
+## 5. API Endpoints Summary
 
-1. Enable Google Sign-In in Google Cloud Console
-2. Create OAuth 2.0 credentials (Web client ID + Android client)
-3. Add to `api/.env`: `GOOGLE_CLIENT_ID` (the **Web** client ID)
-4. Add to `app/.env`: `GOOGLE_WEB_CLIENT_ID` (same Web client ID as above)
-5. Install in mobile app:
-   ```bash
-   npm install @react-native-google-signin/google-signin
-   ```
-6. Follow setup guide: https://react-native-google-signin.github.io/docs/setting-up/get-config-file
+Base URL (Production): `https://speakupmic.binaryunit.tech/api/v1`
 
-Mobile flow: app obtains a Google `idToken` → `POST /auth/google/mobile` → API verifies token and returns `{ user, accessToken, refreshToken }`.
+All responses follow standard REST patterns wrapped in `{ success: boolean, data: T, timestamp: string }`.
 
----
-
-## 7. Scheduled jobs on Hostinger
-
-On Hostinger Business Node.js hosting, use **hPanel cron jobs** to hit secured API endpoints instead of relying on in-process schedulers.
-
-1. Set in production `api/.env`: `NODE_ENV=production`, `CRON_SECRET=<random-32-chars>`, `CRON_INTERNAL_ENABLED=false`
-2. Follow `api/scripts/hostinger/README.md` to upload `run-cron.sh` and create 5 cron entries (daily mission, streak reset, reminders, weekly emails)
-
-Cron endpoints (POST, header `X-Cron-Secret`):
-
-| Endpoint | Schedule (UTC) |
-|----------|----------------|
-| `/cron/daily-mission` | Daily 00:05 |
-| `/cron/reset-streaks` | Daily 00:00 |
-| `/cron/streak-reminders` | Daily 08:00 |
-| `/cron/mission-reminders` | Daily 09:00 |
-| `/cron/weekly-reports` | Monday 09:00 |
-
----
-
-## API Endpoints Summary
-
-Base URL (production): `http://binaryunit.tech/api/v1`  
-Local dev: `http://localhost:3000/api/v1`
-
-All responses are wrapped: `{ success: boolean, data: T, timestamp: string }`
-
-### Auth
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | /auth/register | Register new user |
-| POST | /auth/verify-email | Verify OTP |
-| POST | /auth/verify-email/resend | Resend OTP |
-| POST | /auth/login | Login |
-| POST | /auth/google/mobile | Google Sign-In (mobile idToken → JWT) |
-| POST | /auth/forgot-password | Send reset OTP |
-| POST | /auth/reset-password | Reset password |
-| POST | /auth/refresh | Refresh tokens |
-| POST | /auth/logout | Logout |
-| GET | /auth/me | Current user |
-
-### User Features (all require Bearer token)
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET/PATCH | /users/me | Profile |
-| POST | /users/me/onboarding | Save quiz |
-| GET | /missions | List missions |
-| GET | /missions/today | Daily mission |
-| POST | /missions/:id/complete | Complete mission |
-| POST | /missions/:id/bookmark | Toggle bookmark |
-| GET | /challenges | List challenges |
-| POST | /challenges/:id/start | Start challenge |
-| POST | /challenges/:id/complete | Complete challenge |
-| GET | /fears | Fear categories |
-| POST | /fears/me/:id/complete | Complete fear level |
-| GET/POST/PATCH/DELETE | /journal | Journal entries |
-| POST | /speech/sessions | Save practice session |
-| GET | /gamification/me/xp | XP + level |
-| POST | /gamification/me/checkin | Daily check-in |
-| GET | /gamification/me/streak | Streak |
-| GET | /badges | All badges |
-| GET | /badges/me | My badges |
-| GET | /analytics/me/progress | Progress charts |
-| GET | /notifications | Notification inbox |
-| POST | /notifications/read-all | Mark all read |
-| GET | /announcements/active | Active announcements |
-| POST | /support/tickets | Create support ticket |
-| POST | /feedback | Submit feedback |
-| GET | /referral/me/code | My referral code |
-| POST | /referral/apply | Apply referral code |
-
-### Admin Endpoints (require ADMIN role)
-All admin endpoints are prefixed with the resource path + `/admin/`
-
----
-
-## Architecture
-
-```
-Mobile App (React Native)
-    ↓ JWT Bearer token
-NestJS API (api/)
-    ↓ Prisma ORM
-MySQL Database
-    ↓ firebase-admin
-FCM Push Notifications
-    ↓ nodemailer
-Hostinger SMTP (info@thinkfeat.com)
-
-Admin Panel (Next.js web/)
-    ↓ JWT cookie
-NestJS API (api/) — same backend
-```
-
-## Static Data (app-side only — no API needed)
-- Confidence level labels: Novice, Apprentice, Practitioner, Adept, Expert, Specialist, Master, Grandmaster, Elite, Legend
-- Navigation structure and tab names
-- System role display names (User, Admin)
+### Core Routes
+- **Auth**: `/auth/register`, `/auth/login`, `/auth/me`, `/auth/refresh`, `/auth/google/mobile`, `/auth/verify-email`, `/auth/forgot-password`, `/auth/reset-password`
+- **Users**: `/users/me`, `/users/me/onboarding`, `DELETE /users/me`, `/users/admin`
+- **Coach**: `/coach/chat` (Ollama AI Atlas Coach)
+- **Speech**: `/speech/sessions`, `/speech/analyze`
+- **Gamification**: `/gamification/me/xp`, `/gamification/me/checkin`, `/gamification/me/streak`
+- **Missions & Challenges**: `/missions`, `/missions/today`, `/challenges`, `/challenges/me/active`
+- **Fears**: `/fears`, `/fears/me/:id/complete`
+- **Journal**: `/journal` (CRUD)
+- **Badges**: `/badges`, `/badges/me`
+- **Devices**: `/devices/check-version`, `/devices/admin/versions`
+- **Audit**: `/audit/logs`
+- **Cron**: `/cron/*`

@@ -17,3 +17,4 @@ async def get_skill_tree_empty():
         "items": [],
         "message": "Skill Tree feature has been retired."
     }
+

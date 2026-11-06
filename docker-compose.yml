@@ -9,7 +9,6 @@ services:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
       - fastapi
-      - api
     restart: unless-stopped
     networks:
       - confidence_net
@@ -65,37 +64,6 @@ services:
       - redis
       - mysql
       - ollama
-    restart: unless-stopped
-    networks:
-      - confidence_net
-
-  # NestJS Core Backend (User Auth, Gamification, Badges)
-  api:
-    build:
-      context: ./api
-      dockerfile: Dockerfile
-    container_name: confidence_nestjs
-    env_file:
-      - ./api/.env
-    environment:
-      - NODE_ENV=production
-      - DATABASE_URL=mysql://root:mysql_secret@mysql:3306/confidence_builder
-      - JWT_SECRET=39xDp8E+RbI5839moflWxbwEZbyK0nm4I+XsGQ6Gmn44
-      - JWT_REFRESH_SECRET=A5fvnDAZxMiuFuVBFvMdUKZsCPHkVZiC9jid8lMfcG88
-      - MAIL_HOST=smtp.hostinger.com
-      - MAIL_PORT=465
-      - MAIL_SECURE=true
-      - MAIL_USER=info@thinkfeat.com
-      - MAIL_PASSWORD=c948f8^I
-      - MAIL_FROM_NAME=ConfidenceUp
-      - CRON_SECRET=BIr/MEiDyaIY/D6feYhghZGhL/i+G1rclomzanW4WLcc
-      - OLLAMA_BASE_URL=http://ollama:11434
-      - OLLAMA_MODEL=llama3.2:3b
-    depends_on:
-      - mysql
-      - ollama
-    ports:
-      - "3000:3000"
     restart: unless-stopped
     networks:
       - confidence_net

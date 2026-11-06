@@ -35,3 +35,4 @@ async def log_admin_action(
     except Exception as ex:
         # Non-blocking for audit logging failures
         return None
+

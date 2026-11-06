@@ -121,3 +121,25 @@ def test_admin_endpoints_authorized():
     assert "userGrowth" in d_dash["data"]
 
 
+def test_coach_chat_endpoint():
+    user_token = create_access_token({"sub": "user-001", "role": "USER"})
+    headers = {"Authorization": f"Bearer {user_token}"}
+    payload = {
+        "messages": [{"role": "user", "content": "I feel nervous before my presentation."}],
+        "context": {"userName": "Alex", "streak": 5, "confidenceScore": 75.0}
+    }
+    res = client.post("/api/v1/coach/chat", headers=headers, json=payload)
+    assert res.status_code == 200
+    data = res.json()
+    assert data["success"] is True
+    assert "reply" in data["data"]
+    assert len(data["data"]["reply"]) > 0
+
+
+def test_cron_daily_mission():
+    res = client.post("/api/v1/cron/daily-mission")
+    assert res.status_code == 200
+    data = res.json()
+    assert data["ok"] is True
+
+

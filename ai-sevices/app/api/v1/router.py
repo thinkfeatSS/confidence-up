@@ -24,6 +24,8 @@ from app.api.v1.endpoints import (
     devices,
     audit,
     skill_tree,
+    coach,
+    cron,
 )
 
 api_router = APIRouter()
@@ -32,6 +34,7 @@ api_router = APIRouter()
 api_router.include_router(auth.router, tags=["Authentication & Identity"])
 api_router.include_router(users.router, tags=["Users & Profiles"])
 api_router.include_router(speech.router, tags=["Speech Intelligence & Sessions"])
+api_router.include_router(coach.router, tags=["AI Speech Coach"])
 api_router.include_router(gamification.router, tags=["Gamification & XP"])
 api_router.include_router(badges.router, tags=["Badges & Accolades"])
 api_router.include_router(missions.router, tags=["Missions"])
@@ -50,6 +53,7 @@ api_router.include_router(activity.router, tags=["Activity Timeline"])
 api_router.include_router(devices.router, tags=["Devices & App Versions"])
 api_router.include_router(audit.router, tags=["Audit Logs"])
 api_router.include_router(skill_tree.router, tags=["Skill Tree"])
+api_router.include_router(cron.router, tags=["Scheduled Tasks & Maintenance"])
 
 # ─── Specialized AI & System Operations ───────────────────────────────────────
 api_router.include_router(progress.router, tags=["AI Progress Tracking"])

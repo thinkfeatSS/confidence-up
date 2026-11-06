@@ -230,8 +230,9 @@ async def get_user_stats(current_user: AuthUser = Depends(get_current_user), db:
 
 
 @router.post("/me/delete-request")
+@router.delete("/me")
 async def request_account_deletion(
-    dto: AccountDeletionDto,
+    dto: Optional[AccountDeletionDto] = None,
     current_user: AuthUser = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -239,10 +240,11 @@ async def request_account_deletion(
     existing = (await db.execute(stmt)).scalar_one_or_none()
 
     scheduled_date = datetime.utcnow()
+    reason_str = dto.reason if dto else "User requested account deletion"
     if not existing:
         req = AccountDeletionRequest(
             user_id=current_user.id,
-            reason=dto.reason,
+            reason=reason_str,
             status="PENDING",
             scheduled_for=scheduled_date,
         )
