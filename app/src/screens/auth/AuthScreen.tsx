@@ -128,7 +128,11 @@ export const AuthScreen = ({ navigation, route }: Props) => {
         );
       }
 
-      await loginWithGoogle(idToken);
+      const user = result.data?.user;
+      await loginWithGoogle(
+        idToken,
+        user ? { email: user.email, name: user.name, photo: user.photo } : undefined,
+      );
     } catch (err: unknown) {
       const code = (err as { code?: string })?.code;
       if (code === 'SIGN_IN_CANCELLED' || code === '-5') return;
@@ -136,12 +140,11 @@ export const AuthScreen = ({ navigation, route }: Props) => {
       const parsed = parseApiError(err);
       if (parsed.isNetworkError || isNetworkError(err)) return;
 
-      const rawMsg = (err as Error)?.message || String(err);
-      const nativeMessage = `Error [${code || 'UNKNOWN'}]: ${rawMsg}\n\n${
+      const message = parsed.message || (err as Error)?.message || String(err);
+      const nativeMessage =
         code === '10' || code === 'DEVELOPER_ERROR'
-          ? 'Check Google Play Services OAuth propagation or account authentication.'
-          : ''
-      }`;
+          ? `${message}\n\nCheck Google Play Services OAuth propagation or account authentication.`
+          : message;
 
       Alert.alert('Google Sign-In failed', nativeMessage);
     } finally {

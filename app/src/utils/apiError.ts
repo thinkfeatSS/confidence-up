@@ -25,14 +25,25 @@ export function parseApiError(err: unknown, fallback = 'Something went wrong. Pl
     };
   }
 
-  const axiosResponse = e.response as { status?: number; data?: { message?: string | string[] } } | undefined;
+  const axiosResponse = e.response as
+    | { status?: number; data?: { message?: string | string[]; detail?: string | any[] } }
+    | undefined;
   if (axiosResponse?.data) {
-    const raw = axiosResponse.data.message;
-    const message = Array.isArray(raw) ? raw.join(', ') : raw;
+    const raw = axiosResponse.data.detail ?? axiosResponse.data.message;
+    let message: string | undefined;
+    if (typeof raw === 'string') {
+      message = raw;
+    } else if (Array.isArray(raw)) {
+      message = raw
+        .map((item) => (typeof item === 'object' && item && 'msg' in item ? String(item.msg) : String(item)))
+        .join(', ');
+    } else if (typeof raw === 'object' && raw !== null && 'msg' in raw) {
+      message = String((raw as any).msg);
+    }
     if (message) {
       return {
         statusCode: axiosResponse.status ?? 0,
-        message: typeof message === 'string' ? message : fallback,
+        message,
         isNetworkError: false,
       };
     }

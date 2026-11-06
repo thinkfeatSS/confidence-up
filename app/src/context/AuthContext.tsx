@@ -36,7 +36,10 @@ interface AuthContextValue {
   hasCompletedOnboarding: boolean;
   register: (name: string, email: string, password: string) => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
-  loginWithGoogle: (idToken: string) => Promise<void>;
+  loginWithGoogle: (
+    idToken: string,
+    profile?: { email?: string; name?: string | null; photo?: string | null },
+  ) => Promise<void>;
   verifyEmail: (email: string, otp: string) => Promise<void>;
   resendOtp: (email: string) => Promise<void>;
   forgotPassword: (email: string) => Promise<void>;
@@ -183,16 +186,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     await persistSession(payload.user, payload.accessToken, payload.refreshToken);
   }, [persistSession]);
 
-  const loginWithGoogle = useCallback(async (idToken: string) => {
-    const device = await NotificationsService.getAuthDevicePayload();
-    const res = await apiClient.post<any, any>('/auth/google/mobile', {
-      idToken,
-      ...device,
-      platform: device.platform ?? 'ANDROID',
-    });
-    const payload = unwrapApiData<{ accessToken: string; refreshToken: string; user: any }>(res);
-    await persistSession(payload.user, payload.accessToken, payload.refreshToken);
-  }, [persistSession]);
+  const loginWithGoogle = useCallback(
+    async (
+      idToken: string,
+      profile?: { email?: string; name?: string | null; photo?: string | null },
+    ) => {
+      const device = await NotificationsService.getAuthDevicePayload();
+      const res = await apiClient.post<any, any>('/auth/google/mobile', {
+        idToken,
+        email: profile?.email,
+        name: profile?.name,
+        avatarUrl: profile?.photo,
+        ...device,
+        platform: device.platform ?? 'ANDROID',
+      });
+      const payload = unwrapApiData<{ accessToken: string; refreshToken: string; user: any }>(res);
+      await persistSession(payload.user, payload.accessToken, payload.refreshToken);
+    },
+    [persistSession],
+  );
 
   const verifyEmail = useCallback(
     async (email: string, otp: string) => {
