@@ -2,6 +2,7 @@ import React, { useCallback, useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { MainStackNavProp } from '../../navigation/types';
+import { useAuth } from '../../context/AuthContext';
 import { useUser } from '../../hooks/useUser';
 import { useTodaysMission } from '../../hooks/useMissions';
 import { useFears } from '../../hooks/useFears';
@@ -49,11 +50,32 @@ const QuickAction = React.memo(({ emoji, label, color, onPress }: {
 export const HomeScreen = () => {
   const navigation = useNavigation<MainStackNavProp>();
   const { colors } = useTheme();
+  const { user: authUser } = useAuth();
   const { data: user } = useUser();
   const { data: todaysMission } = useTodaysMission();
   const { data: fears } = useFears();
   const { data: badges } = useEarnedBadges();
   const unreadCount = useUnreadNotificationCount();
+
+  const activeUser = user ?? (authUser ? {
+    id: authUser.id,
+    name: authUser.name,
+    email: authUser.email,
+    level: authUser.level,
+    levelTitle: `Level ${authUser.level}`,
+    xp: authUser.xpTotal,
+    xpToNextLevel: 100,
+    totalXP: authUser.xpTotal,
+    streak: 0,
+    streakShields: 0,
+    confidenceScore: 70,
+    confidenceAreas: [],
+    preferredLanguages: ['English'],
+    fears: [],
+    totalSpeeches: 0,
+    totalChallenges: 0,
+    joinedAt: '',
+  } : null);
 
   const earnedBadges = useMemo(() => (badges ?? []).slice(0, 8), [badges]);
   const fearList = useMemo(() => fears ?? [], [fears]);
@@ -78,16 +100,16 @@ export const HomeScreen = () => {
     [navigation],
   );
 
-  if (!user) return null;
+  if (!activeUser) return null;
 
   return (
     <GradientBackground style={styles.container}>
       <XPBar
-        level={user.level}
-        levelTitle={user.levelTitle}
-        xp={user.xp}
-        xpToNextLevel={user.xpToNextLevel}
-        streak={user.streak}
+        level={activeUser.level}
+        levelTitle={activeUser.levelTitle}
+        xp={activeUser.xp}
+        xpToNextLevel={activeUser.xpToNextLevel}
+        streak={activeUser.streak}
       />
       <ScrollView
         contentContainerStyle={styles.scroll}
@@ -97,7 +119,7 @@ export const HomeScreen = () => {
         <View style={styles.greetingRow}>
           <View style={{ flex: 1 }}>
             <Text style={[styles.greetHi, { color: colors.textPrimary }]} numberOfLines={1}>
-              Hey, {user.name} 👋
+              Hey, {activeUser.name} 👋
             </Text>
             <Text style={[styles.greetSub, { color: colors.textMuted }]}>Ready to level up today?</Text>
           </View>
@@ -119,13 +141,13 @@ export const HomeScreen = () => {
         {/* Confidence Ring + Stats */}
         <GlassCard style={styles.ringCard} noPadding>
           <View style={styles.ringRow}>
-            <ConfidenceRing score={user.confidenceScore} size={120} />
+            <ConfidenceRing score={activeUser.confidenceScore} size={120} />
             <View style={styles.ringStats}>
-              <StatRow icon="⚡" label="Total XP" value={user.totalXP.toLocaleString()} colors={colors} />
+              <StatRow icon="⚡" label="Total XP" value={activeUser.totalXP.toLocaleString()} colors={colors} />
               <View style={[styles.divider, { backgroundColor: colors.border }]} />
-              <StatRow icon="🎤" label="Speeches" value={String(user.totalSpeeches)} colors={colors} />
+              <StatRow icon="🎤" label="Speeches" value={String(activeUser.totalSpeeches)} colors={colors} />
               <View style={[styles.divider, { backgroundColor: colors.border }]} />
-              <StatRow icon="✅" label="Challenges" value={String(user.totalChallenges)} colors={colors} />
+              <StatRow icon="✅" label="Challenges" value={String(activeUser.totalChallenges)} colors={colors} />
             </View>
           </View>
         </GlassCard>

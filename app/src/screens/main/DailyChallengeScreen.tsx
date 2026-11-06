@@ -19,7 +19,7 @@ import { CategoryChip } from '../../components/common/CategoryChip';
 import { DifficultyBadge } from '../../components/common/DifficultyBadge';
 import { StreakFlame } from '../../components/gamification/StreakFlame';
 import { useTheme } from '../../theme/ThemeContext';
-import { Spacing, BorderRadius, Typography } from '../../theme';
+import { Spacing, Typography } from '../../theme';
 
 export const DailyChallengeScreen = () => {
   const navigation = useNavigation<MainStackNavProp>();

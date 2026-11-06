@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiClient, unwrapApiData } from '../services/api';
+import { apiClient } from '../services/api';
 import { Challenge, Category, Difficulty } from '../types';
 import {
   unwrapList,

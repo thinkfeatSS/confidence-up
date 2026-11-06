@@ -17,7 +17,7 @@ interface DifficultyBadgeProps {
   size?: 'sm' | 'md';
 }
 
-const _DifficultyBadge = ({ difficulty, size = 'md' }: DifficultyBadgeProps) => {
+const DifficultyBadgeComponent = ({ difficulty, size = 'md' }: DifficultyBadgeProps) => {
   const { colors } = useTheme();
   const key = (String(difficulty).toLowerCase() as Difficulty) in buildDifficultyConfig(colors)
     ? (String(difficulty).toLowerCase() as Difficulty)
@@ -44,7 +44,7 @@ const _DifficultyBadge = ({ difficulty, size = 'md' }: DifficultyBadgeProps) => 
     </View>
   );
 };
-export const DifficultyBadge = React.memo(_DifficultyBadge);
+export const DifficultyBadge = React.memo(DifficultyBadgeComponent);
 
 const styles = StyleSheet.create({
   badge: {

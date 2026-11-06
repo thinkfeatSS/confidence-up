@@ -1,5 +1,5 @@
 import React, { useEffect, useCallback } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Modal } from 'react-native';
+import { Text, TouchableOpacity, StyleSheet, Modal } from 'react-native';
 import Animated, { useSharedValue, withSpring, withSequence, withTiming, withRepeat, useAnimatedStyle, runOnJS } from 'react-native-reanimated';
 import LinearGradient from 'react-native-linear-gradient';
 import { Typography } from '../../theme';
@@ -12,7 +12,7 @@ interface LevelUpOverlayProps {
   onDismiss: () => void;
 }
 
-const _LevelUpOverlay = ({ visible, newLevel, newTitle, onDismiss }: LevelUpOverlayProps) => {
+const LevelUpOverlayComponent = ({ visible, newLevel, newTitle, onDismiss }: LevelUpOverlayProps) => {
   const { colors } = useTheme();
   const scale = useSharedValue(0);
   const opacity = useSharedValue(0);
@@ -83,7 +83,7 @@ const _LevelUpOverlay = ({ visible, newLevel, newTitle, onDismiss }: LevelUpOver
   );
 };
 
-export const LevelUpOverlay = React.memo(_LevelUpOverlay);
+export const LevelUpOverlay = React.memo(LevelUpOverlayComponent);
 
 const styles = StyleSheet.create({
   overlay: {

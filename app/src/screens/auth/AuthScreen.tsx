@@ -11,7 +11,6 @@ import {
   ScrollView,
   Alert,
 } from 'react-native';
-import LinearGradient from 'react-native-linear-gradient';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { StackScreenProps } from '@react-navigation/stack';
 import { AuthStackParamList } from '../../navigation/types';
@@ -33,7 +32,7 @@ export const AuthScreen = ({ navigation, route }: Props) => {
   const { register, login, loginWithGoogle, isAuthenticated, hasCompletedOnboarding } = useAuth();
   const verifiedEmail = route.params?.verifiedEmail;
   const showVerifiedBanner = route.params?.showVerifiedBanner;
-  const [mode, setMode] = useState<'login' | 'register'>(verifiedEmail ? 'register' : 'login');
+  const [mode, setMode] = useState<'login' | 'register'>('login');
   const [name, setName] = useState('');
   const [email, setEmail] = useState(verifiedEmail ?? '');
   const [password, setPassword] = useState('');

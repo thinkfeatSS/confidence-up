@@ -147,7 +147,7 @@ export async function pollSessionStatus(
       }
     }
 
-    await new Promise((resolve) => setTimeout(resolve, intervalMs));
+    await new Promise<void>((resolve) => setTimeout(() => resolve(), intervalMs));
   }
 
   throw new Error('Speech analysis timed out. Please check your practice history.');

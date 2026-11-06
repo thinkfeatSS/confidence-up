@@ -35,12 +35,12 @@ export async function requestAudioRecordingPermissions(): Promise<boolean> {
       {
         title: 'Microphone Permission',
         message:
-          'ConfidenceUp needs microphone access to record and analyze your speaking practice.',
+          'Truefluent AI needs microphone access to record and analyze your speaking practice.',
         buttonPositive: 'Allow',
       },
     );
     return granted === PermissionsAndroid.RESULTS.GRANTED;
-  } catch (e) {
+  } catch (_e) {
     return false;
   }
 }

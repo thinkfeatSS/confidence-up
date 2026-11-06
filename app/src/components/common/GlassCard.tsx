@@ -11,7 +11,7 @@ interface GlassCardProps {
   noPadding?: boolean;
 }
 
-const _GlassCard = ({ children, style, glowColor, padding = 20, noPadding = false }: GlassCardProps) => {
+const GlassCardComponent = ({ children, style, glowColor, padding = 20, noPadding = false }: GlassCardProps) => {
   const { colors } = useTheme();
   const glowStyle = useMemo(
     () =>
@@ -44,7 +44,7 @@ const _GlassCard = ({ children, style, glowColor, padding = 20, noPadding = fals
     </View>
   );
 };
-export const GlassCard = React.memo(_GlassCard);
+export const GlassCard = React.memo(GlassCardComponent);
 
 const styles = StyleSheet.create({
   card: {

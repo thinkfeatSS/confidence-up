@@ -4,7 +4,7 @@ import { StackScreenProps } from '@react-navigation/stack';
 import { GradientBackground } from '../../components/common/GradientBackground';
 import { GlassCard } from '../../components/common/GlassCard';
 import { useTheme } from '../../theme/ThemeContext';
-import { Spacing, BorderRadius, Typography } from '../../theme';
+import { Spacing, Typography } from '../../theme';
 import { privacyContent } from '../../content/legal/privacy';
 import { termsContent } from '../../content/legal/terms';
 import { AuthStackParamList, MainStackParamList } from '../../navigation/types';

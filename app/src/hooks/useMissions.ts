@@ -17,7 +17,7 @@ export const mapMission = (m: any, extras?: { isDaily?: boolean; date?: string }
   difficulty: normalizeDifficulty(m.difficulty),
   xpReward: m.xpReward ?? 0,
   tips: parseTips(m.tips),
-  completed: !!m.userStatus?.completedAt || m.completed === true,
+  completed: !!m.userStatus?.completedAt || m.completed === true || m.isCompleted === true,
   completedAt: m.userStatus?.completedAt ?? m.completedAt,
   prompt: m.prompt ?? '',
   isDaily: extras?.isDaily ?? m.isDaily ?? false,
@@ -32,14 +32,17 @@ const fetchMissions = async (): Promise<Mission[]> => {
 const fetchTodaysMission = async (): Promise<Mission | null> => {
   const res = await apiClient.get<any, any>('/missions/today');
   const daily = unwrapApiData<any>(res);
-  if (!daily?.mission) return null;
+  if (!daily) return null;
+
+  const missionObj = daily.mission ?? daily;
+  if (!missionObj?.id) return null;
 
   const dateStr =
     typeof daily.date === 'string'
       ? daily.date.split('T')[0]
       : new Date().toISOString().split('T')[0];
 
-  return mapMission(daily.mission, { isDaily: true, date: dateStr });
+  return mapMission(missionObj, { isDaily: true, date: dateStr });
 };
 
 export const useMissions = () =>

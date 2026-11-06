@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { Text, StyleSheet } from 'react-native';
 import { GlassCard } from '../common/GlassCard';
 import { Typography, Spacing } from '../../theme';
 import { useTheme } from '../../theme/ThemeContext';

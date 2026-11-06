@@ -56,7 +56,8 @@ class UserSettingsPatchDto(BaseModel):
 
 
 class DeviceDto(BaseModel):
-    fcmToken: str
+    fcmToken: Optional[str] = None
+    deviceToken: Optional[str] = None
     platform: Optional[str] = "ANDROID"
     appVersion: Optional[str] = None
 
@@ -172,7 +173,11 @@ async def register_device(
     current_user: AuthUser = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    stmt = select(Device).where(Device.fcm_token == dto.fcmToken)
+    token = dto.fcmToken or dto.deviceToken
+    if not token:
+        raise HTTPException(status_code=400, detail="Device token or FCM token is required.")
+
+    stmt = select(Device).where(Device.fcm_token == token)
     res = await db.execute(stmt)
     device = res.scalar_one_or_none()
 
@@ -184,7 +189,7 @@ async def register_device(
     else:
         device = Device(
             user_id=current_user.id,
-            fcm_token=dto.fcmToken,
+            fcm_token=token,
             platform=dto.platform or "ANDROID",
             app_version=dto.appVersion,
         )

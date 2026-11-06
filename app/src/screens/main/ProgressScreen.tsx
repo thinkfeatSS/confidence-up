@@ -79,8 +79,8 @@ const EnhancedLineChart = React.memo(({
       <Svg width={chartWidth} height={CHART_HEIGHT}>
         <Defs>
           <LinearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
-            <Stop offset="0" stopColor={strokeColor} stopOpacity="0.35" />
-            <Stop offset="1" stopColor={strokeColor} stopOpacity="0.0" />
+            <Stop offset="0" stopColor={fillColor || strokeColor} stopOpacity="0.35" />
+            <Stop offset="1" stopColor={fillColor || strokeColor} stopOpacity="0.0" />
           </LinearGradient>
         </Defs>
 

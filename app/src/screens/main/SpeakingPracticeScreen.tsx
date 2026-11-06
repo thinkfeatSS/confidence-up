@@ -1,6 +1,6 @@
-import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
-import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import Animated, { useSharedValue, withSpring, useAnimatedStyle } from 'react-native-reanimated';
 import { GradientBackground } from '../../components/common/GradientBackground';
 import { GlassCard } from '../../components/common/GlassCard';
@@ -11,8 +11,6 @@ import { LevelUpOverlay } from '../../components/gamification/LevelUpOverlay';
 import { SpeakingPracticeListModal } from '../../components/speech/SpeakingPracticeListModal';
 import { Spacing, BorderRadius, Typography } from '../../theme';
 import { useTheme } from '../../theme/ThemeContext';
-import { apiClient, unwrapApiData } from '../../services/api';
-import { toSpeechSessionDto, mapSpeechSessionFromApi } from '../../utils/apiHelpers';
 import {
   saveLocalSpeechSession,
   enqueueOfflineAudio,
@@ -21,13 +19,11 @@ import {
   startAudioRecording,
   stopAudioRecording,
   cancelAudioRecording,
-  subscribeAudioMetering,
   AudioRecordResult,
 } from '../../modules/speech/services/audioRecordingService';
 import {
   uploadSpeechAudio,
   pollSessionStatus,
-  SessionStatusPollResult,
 } from '../../modules/speech/services/audioUploadService';
 import {
   buildSpeechCelebrations,
@@ -235,7 +231,7 @@ export const SpeakingPracticeScreen = () => {
     }
 
     let completedSession: SpeechSession | null = null;
-    let gamificationPayload: SpeechGamificationPayload | undefined = undefined;
+    let gamificationPayload: SpeechGamificationPayload | undefined;
 
     if (audioResult && audioResult.filePath) {
       try {
@@ -263,6 +259,8 @@ export const SpeakingPracticeScreen = () => {
           const topicRelevance = Math.round(pollResult.confidence_components?.topic_relevance ?? 75);
           const vocabulary = Math.round(pollResult.confidence_components?.vocabulary ?? 70);
           const consistency = Math.round(pollResult.confidence_components?.practice_consistency ?? 70);
+          const structureScore = Math.round(pollResult.confidence_components?.structure ?? 75);
+          const energyScore = Math.round(pollResult.confidence_components?.energy ?? 75);
           const transcriptText = pollResult.transcript || recording?.transcript || '';
           const wpm = Math.round(pollResult.metrics?.words_per_minute ?? 120);
           const fillerCount = pollResult.metrics?.filler_count ?? 0;
@@ -293,8 +291,9 @@ export const SpeakingPracticeScreen = () => {
               speechFluencyScore: fluency,
               topicRelevanceScore: topicRelevance,
               vocabularyScore: vocabulary,
+              structureScore,
+              energyScore,
               practiceConsistencyScore: consistency,
-              overallConfidenceScore: overallScore,
             },
             localMetrics: {
               audio: {
@@ -794,13 +793,19 @@ export const SpeakingPracticeScreen = () => {
                 style={styles.retryButton}
               />
               <PrimaryButton
-                label="Choose Topic 📋"
-                onPress={() => setShowPracticeListModal(true)}
-                variant="outline"
+                label="Next Topic ➡️"
+                onPress={tryAnother}
                 size="md"
                 style={styles.retryButton}
               />
             </View>
+            <PrimaryButton
+              label="Choose Practice Topic 📋"
+              onPress={() => setShowPracticeListModal(true)}
+              variant="outline"
+              size="md"
+              style={{ marginTop: Spacing.sm }}
+            />
           </View>
         )}
 

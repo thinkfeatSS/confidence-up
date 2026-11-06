@@ -21,7 +21,7 @@ export const FeedbackScreen = ({ navigation }: Props) => {
     setLoading(true);
     try {
       await apiClient.post('/feedback', { rating, comment: comment.trim() || undefined, featureArea: 'app' });
-      Alert.alert('Thank you!', 'Your feedback helps us improve ConfidenceUp.');
+      Alert.alert('Thank you!', 'Your feedback helps us improve Truefluent AI.');
       navigation.goBack();
     } catch (err: any) {
       Alert.alert('Error', err?.message ?? 'Failed to send feedback.');

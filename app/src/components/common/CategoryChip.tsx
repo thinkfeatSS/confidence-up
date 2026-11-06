@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Category } from '../../types';
-import { Typography, Spacing, BorderRadius } from '../../theme';
+import { BorderRadius } from '../../theme';
 import { useTheme } from '../../theme/ThemeContext';
 import { ThemeColors } from '../../theme/colors';
 
@@ -19,7 +19,7 @@ interface CategoryChipProps {
   size?: 'sm' | 'md';
 }
 
-const _CategoryChip = ({ category, size = 'md' }: CategoryChipProps) => {
+const CategoryChipComponent = ({ category, size = 'md' }: CategoryChipProps) => {
   const { colors } = useTheme();
   const config = useMemo(() => buildCategoryConfig(colors)[category], [colors, category]);
   const isSmall = size === 'sm';
@@ -45,7 +45,7 @@ const _CategoryChip = ({ category, size = 'md' }: CategoryChipProps) => {
     </View>
   );
 };
-export const CategoryChip = React.memo(_CategoryChip);
+export const CategoryChip = React.memo(CategoryChipComponent);
 
 const styles = StyleSheet.create({
   chip: {

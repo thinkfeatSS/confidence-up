@@ -13,7 +13,7 @@ interface BadgeUnlockSheetProps {
   subtitle?: string;
 }
 
-const _BadgeUnlockSheet = ({ badge, visible, onDismiss, subtitle = 'ACHIEVEMENT UNLOCKED' }: BadgeUnlockSheetProps) => {
+const BadgeUnlockSheetComponent = ({ badge, visible, onDismiss, subtitle = 'ACHIEVEMENT UNLOCKED' }: BadgeUnlockSheetProps) => {
   const { colors } = useTheme();
   const translateY = useSharedValue(300);
   const iconScale = useSharedValue(0);
@@ -87,7 +87,7 @@ const _BadgeUnlockSheet = ({ badge, visible, onDismiss, subtitle = 'ACHIEVEMENT 
   );
 };
 
-export const BadgeUnlockSheet = React.memo(_BadgeUnlockSheet);
+export const BadgeUnlockSheet = React.memo(BadgeUnlockSheetComponent);
 
 const styles = StyleSheet.create({
   backdrop: {

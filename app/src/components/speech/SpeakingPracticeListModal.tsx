@@ -11,8 +11,6 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GlassCard } from '../common/GlassCard';
-import { CategoryChip } from '../common/CategoryChip';
-import { DifficultyBadge } from '../common/DifficultyBadge';
 import { Spacing, BorderRadius, Typography } from '../../theme';
 import { useTheme } from '../../theme/ThemeContext';
 import { SPEAKING_PRACTICES, SpeakingPracticeItem } from '../../data/speakingPractices';

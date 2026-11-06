@@ -8,7 +8,7 @@ interface XPGainFloatProps {
   onComplete?: () => void;
 }
 
-const _XPGainFloat = ({ amount, onComplete }: XPGainFloatProps) => {
+const XPGainFloatComponent = ({ amount, onComplete }: XPGainFloatProps) => {
   const { colors } = useTheme();
   const translateY = useSharedValue(0);
   const opacity = useSharedValue(1);
@@ -39,7 +39,7 @@ const _XPGainFloat = ({ amount, onComplete }: XPGainFloatProps) => {
   );
 };
 
-export const XPGainFloat = React.memo(_XPGainFloat);
+export const XPGainFloat = React.memo(XPGainFloatComponent);
 
 const styles = StyleSheet.create({
   text: {

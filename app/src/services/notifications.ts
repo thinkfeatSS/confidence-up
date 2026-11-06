@@ -59,6 +59,7 @@ export const NotificationsService = {
 
       await apiClient.post('/users/me/device', {
         deviceToken: fcmToken,
+        fcmToken,
         ...getDeviceInfo(),
       });
 
@@ -82,7 +83,7 @@ export const NotificationsService = {
     const fcmToken = await this.getFcmToken();
     return {
       ...getDeviceInfo(),
-      ...(fcmToken ? { deviceToken: fcmToken } : {}),
+      ...(fcmToken ? { deviceToken: fcmToken, fcmToken } : {}),
     };
   },
 

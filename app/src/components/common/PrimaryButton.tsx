@@ -17,7 +17,7 @@ interface PrimaryButtonProps {
 
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
-const _PrimaryButton = ({
+const PrimaryButtonComponent = ({
   label,
   onPress,
   style,
@@ -129,4 +129,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export const PrimaryButton = React.memo(_PrimaryButton);
+export const PrimaryButton = React.memo(PrimaryButtonComponent);

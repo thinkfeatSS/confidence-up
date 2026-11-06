@@ -1,7 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import { BorderRadius } from '../../theme';
 import { useTheme } from '../../theme/ThemeContext';
 import { getLevelColor } from '../../data/mockUser';
 

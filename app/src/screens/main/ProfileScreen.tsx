@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -113,7 +113,7 @@ export const ProfileScreen = () => {
                 'Your account deletion request has been processed. You will now be signed out.',
                 [{ text: 'OK', onPress: () => logout() }],
               );
-            } catch (err: any) {
+            } catch (_err: any) {
               Alert.alert(
                 'Notice',
                 'Your account has been scheduled for deletion. Signing you out now.',

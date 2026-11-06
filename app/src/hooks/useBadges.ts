@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { apiClient, unwrapApiData } from '../services/api';
+import { apiClient } from '../services/api';
 import { Badge } from '../types';
 import { unwrapList, normalizeTier } from '../utils/apiHelpers';
 
@@ -9,8 +9,8 @@ const mapBadge = (b: any, earnedInfo?: { earnedAt?: string; isNew?: boolean }): 
   description: b.description ?? '',
   icon: b.icon ?? '🏅',
   tier: normalizeTier(b.tier),
-  earned: earnedInfo ? true : (b.earned ?? b.isEarned ?? false),
-  earnedAt: earnedInfo?.earnedAt ?? b.earnedAt,
+  earned: earnedInfo ? true : (b.earned ?? b.isEarned ?? b.isUnlocked ?? false),
+  earnedAt: earnedInfo?.earnedAt ?? b.earnedAt ?? b.unlockedAt,
   isNew: earnedInfo?.isNew ?? b.isNew ?? false,
 });
 
@@ -26,7 +26,7 @@ const fetchBadgesWithEarnedState = async (): Promise<Badge[]> => {
   const earnedMap = new Map<string, { earnedAt?: string; isNew?: boolean }>();
   for (const ub of mine) {
     const badgeId = ub.badge?.id ?? ub.badgeId ?? ub.id;
-    earnedMap.set(badgeId, { earnedAt: ub.earnedAt, isNew: ub.isNew });
+    earnedMap.set(badgeId, { earnedAt: ub.unlockedAt ?? ub.earnedAt, isNew: ub.isNew });
   }
 
   return all.map(b => mapBadge(b, earnedMap.get(b.id)));

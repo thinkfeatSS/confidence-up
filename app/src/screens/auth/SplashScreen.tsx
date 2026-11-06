@@ -8,7 +8,6 @@ import Animated, {
   useAnimatedStyle,
   Easing,
 } from 'react-native-reanimated';
-import LinearGradient from 'react-native-linear-gradient';
 import { StackScreenProps } from '@react-navigation/stack';
 import { AuthStackParamList } from '../../navigation/types';
 import { Typography } from '../../theme';
@@ -19,7 +18,7 @@ import { BrandHeroBackground } from '../../components/common/BrandHeroBackground
 type Props = StackScreenProps<AuthStackParamList, 'Splash'>;
 
 export const SplashScreen = ({ navigation }: Props) => {
-  const { colors, isDark } = useTheme();
+  const { colors } = useTheme();
   const { isAuthenticated, isLoading } = useAuth();
 
   const logoScale = useSharedValue(0);

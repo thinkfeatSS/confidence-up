@@ -5,14 +5,14 @@ import { unwrapList } from '../utils/apiHelpers';
 
 const buildFears = (categories: any[], completedIds: Set<string>): Fear[] =>
   categories.map(cat => {
-    const levels: FearLevel[] = (cat.fearLevels ?? []).map((l: any) => ({
+    const levels: FearLevel[] = (cat.fearLevels ?? cat.levels ?? []).map((l: any) => ({
       id: l.id,
       level: l.levelNumber ?? l.level ?? 0,
       title: l.title,
       description: l.description,
       tips: Array.isArray(l.tips) ? l.tips : [],
       xpReward: l.xpReward ?? 0,
-      completed: completedIds.has(l.id),
+      completed: l.isCompleted === true || completedIds.has(l.id),
     }));
 
     const firstIncomplete = levels.find((l: FearLevel) => !l.completed);
@@ -39,10 +39,17 @@ const fetchFears = async (): Promise<Fear[]> => {
   ]);
 
   const categories = unwrapList<any>(catalogRes);
-  const progress = unwrapApiData<string[] | unknown>(progressRes);
-  const completedIds = new Set<string>(
-    Array.isArray(progress) ? progress : unwrapList<string>(progressRes),
-  );
+  const progressList = unwrapList<any>(progressRes);
+  const completedIds = new Set<string>();
+
+  for (const item of progressList) {
+    if (typeof item === 'string') {
+      completedIds.add(item);
+    } else if (item && typeof item === 'object') {
+      const id = item.fearLevelId ?? item.id;
+      if (id) completedIds.add(String(id));
+    }
+  }
 
   return buildFears(categories, completedIds);
 };

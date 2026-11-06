@@ -12,7 +12,7 @@ import {
 import LinearGradient from 'react-native-linear-gradient';
 import { StackScreenProps } from '@react-navigation/stack';
 import { AuthStackParamList } from '../../navigation/types';
-import { Spacing, BorderRadius, Typography } from '../../theme';
+import { Spacing, Typography } from '../../theme';
 import { useTheme } from '../../theme/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import { GradientBackground } from '../../components/common/GradientBackground';

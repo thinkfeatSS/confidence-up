@@ -2,9 +2,8 @@ import NetInfo from '@react-native-community/netinfo';
 import {
   getOfflineAudioQueue,
   dequeueOfflineAudio,
-  OfflineAudioJob,
 } from './localSpeechStorage';
-import { uploadSpeechAudio, pollSessionStatus } from '../modules/speech/services/audioUploadService';
+import { uploadSpeechAudio } from '../modules/speech/services/audioUploadService';
 
 let isSyncing = false;
 
