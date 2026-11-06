@@ -66,7 +66,10 @@ async def list_all_badges(current_user: AuthUser = Depends(get_current_user), db
     # Get user unlocked badge map
     ub_res = await db.execute(select(UserBadge).where(UserBadge.user_id == current_user.id))
     user_badges = ub_res.scalars().all()
-    unlocked_map = {ub.badge_id: ub.unlocked_at.isoformat() for ub in user_badges}
+    unlocked_map = {
+        ub.badge_id: (ub.unlocked_at.isoformat() if ub.unlocked_at else None)
+        for ub in user_badges
+    }
 
     data = [serialize_badge(b, unlocked_map.get(b.id)) for b in badges]
     return {"success": True, "data": data}
@@ -83,7 +86,10 @@ async def get_my_badges(current_user: AuthUser = Depends(get_current_user), db: 
     res = await db.execute(stmt)
     records = res.all()
 
-    data = [serialize_badge(b, unlocked_at.isoformat()) for b, unlocked_at in records]
+    data = [
+        serialize_badge(b, unlocked_at.isoformat() if unlocked_at else None)
+        for b, unlocked_at in records
+    ]
     return {"success": True, "data": data}
 
 

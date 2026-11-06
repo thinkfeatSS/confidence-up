@@ -40,39 +40,51 @@ const EnhancedLineChart = React.memo(({
   };
 
   const chartData = useMemo(() => {
-    if (!data || data.length === 0) {
+    const raw = (data || [])
+      .filter((d) => d && typeof d === 'object')
+      .map((d) => ({
+        ...d,
+        score: typeof d.score === 'number' && !Number.isNaN(d.score) ? Math.round(d.score) : 50,
+      }));
+
+    if (raw.length === 0) {
       return [
         { score: 65, label: 'Start' },
         { score: 70, label: 'Mid' },
         { score: 75, label: 'Now' },
       ];
     }
-    if (data.length === 1) {
+    if (raw.length === 1) {
       return [
-        { score: Math.max(20, data[0].score - 10), label: 'Prev' },
-        { score: data[0].score, label: 'Current' },
+        { score: Math.max(20, raw[0].score - 10), label: 'Prev' },
+        { score: raw[0].score, label: 'Current' },
       ];
     }
-    return data;
+    return raw;
   }, [data]);
 
-  const min = Math.min(40, ...chartData.map((d) => d.score));
-  const max = Math.max(100, ...chartData.map((d) => d.score));
+  const scores = chartData.map((d) => d.score);
+  const min = Math.min(40, ...scores);
+  const max = Math.max(100, ...scores);
   const range = max - min || 1;
 
-  const widthAvailable = chartWidth - CHART_PAD_LEFT - CHART_PAD_RIGHT;
-  const heightAvailable = CHART_HEIGHT - CHART_PAD_TOP - CHART_PAD_BOTTOM;
+  const widthAvailable = Math.max(chartWidth - CHART_PAD_LEFT - CHART_PAD_RIGHT, 20);
+  const heightAvailable = Math.max(CHART_HEIGHT - CHART_PAD_TOP - CHART_PAD_BOTTOM, 20);
 
   const points = chartData.map((d, i) => {
     const x = CHART_PAD_LEFT + (i / Math.max(chartData.length - 1, 1)) * widthAvailable;
     const y = CHART_PAD_TOP + (1 - (d.score - min) / range) * heightAvailable;
-    return { x, y, score: d.score, label: d.label ?? d.date };
+    return {
+      x: Number.isNaN(x) ? CHART_PAD_LEFT : Math.round(x * 10) / 10,
+      y: Number.isNaN(y) ? CHART_PAD_TOP : Math.round(y * 10) / 10,
+      score: d.score,
+      label: d.label ?? d.date,
+    };
   });
 
+  const lastPointX = points.length > 0 ? points[points.length - 1].x : chartWidth - CHART_PAD_RIGHT;
   const polylineStr = points.map((p) => `${p.x},${p.y}`).join(' ');
-  const polygonStr = `${CHART_PAD_LEFT},${CHART_HEIGHT - CHART_PAD_BOTTOM} ${polylineStr} ${
-    points[points.length - 1].x
-  },${CHART_HEIGHT - CHART_PAD_BOTTOM}`;
+  const polygonStr = `${CHART_PAD_LEFT},${CHART_HEIGHT - CHART_PAD_BOTTOM} ${polylineStr} ${lastPointX},${CHART_HEIGHT - CHART_PAD_BOTTOM}`;
 
   return (
     <View onLayout={handleLayout} style={styles.chartContainer}>
@@ -157,11 +169,11 @@ export const ProgressScreen = () => {
     const listB = progress?.speechSessions ?? [];
     const raw = listA.length > 0 ? listA : listB;
     if (sessionFilter === 'best') {
-      return [...raw].sort((a, b) => b.overallScore - a.overallScore).slice(0, 8);
+      return [...raw].sort((a, b) => (b.overallScore ?? 0) - (a.overallScore ?? 0)).slice(0, 8);
     }
     return [...raw].sort((a, b) => {
-      const timeA = new Date(a.date).getTime() || 0;
-      const timeB = new Date(b.date).getTime() || 0;
+      const timeA = a?.date ? new Date(a.date).getTime() || 0 : 0;
+      const timeB = b?.date ? new Date(b.date).getTime() || 0 : 0;
       return timeB - timeA;
     }).slice(0, 10);
   }, [speechSessions, progress?.speechSessions, sessionFilter]);
@@ -174,21 +186,21 @@ export const ProgressScreen = () => {
     if (raw.length > 0) {
       const sorted = [...raw]
         .sort((a, b) => {
-          const timeA = new Date(a.date).getTime() || 0;
-          const timeB = new Date(b.date).getTime() || 0;
+          const timeA = a?.date ? new Date(a.date).getTime() || 0 : 0;
+          const timeB = b?.date ? new Date(b.date).getTime() || 0 : 0;
           return timeA - timeB;
         })
         .slice(-(period === 'week' ? 7 : 14));
       return sorted.map((s, idx) => ({
-        score: s.overallScore,
-        date: s.date ? s.date.split('T')[0] : `Session #${idx + 1}`,
+        score: typeof s.overallScore === 'number' && !Number.isNaN(s.overallScore) ? s.overallScore : 0,
+        date: s.date && typeof s.date === 'string' ? s.date.split('T')[0] : `Session #${idx + 1}`,
         label: `#${idx + 1}`,
       }));
     }
     if (history && history.length > 0) {
       return history.map((h, idx) => ({
-        score: h.score,
-        date: h.date,
+        score: typeof h.score === 'number' && !Number.isNaN(h.score) ? h.score : 0,
+        date: h.date && typeof h.date === 'string' ? h.date.split('T')[0] : `Session #${idx + 1}`,
         label: `#${idx + 1}`,
       }));
     }
@@ -199,21 +211,29 @@ export const ProgressScreen = () => {
     const listA = speechSessions ?? [];
     const listB = progress?.speechSessions ?? [];
     const raw = listA.length > 0 ? listA : listB;
+    const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const groups = new Map<string, { total: number; count: number; best: number }>();
     for (const session of raw) {
-      const date = new Date(session.date);
-      const key = Number.isNaN(date.getTime())
-        ? (session.date ? session.date.slice(0, 7) : 'Recent')
-        : date.toLocaleString('default', { month: 'short' });
+      if (!session) continue;
+      const score = typeof session.overallScore === 'number' && !Number.isNaN(session.overallScore) ? session.overallScore : 0;
+      let key = 'Recent';
+      if (session.date) {
+        const d = new Date(session.date);
+        if (!Number.isNaN(d.getTime())) {
+          key = MONTH_NAMES[d.getMonth()];
+        } else if (typeof session.date === 'string') {
+          key = session.date.slice(0, 7);
+        }
+      }
       const current = groups.get(key) ?? { total: 0, count: 0, best: 0 };
-      current.total += session.overallScore;
+      current.total += score;
       current.count += 1;
-      current.best = Math.max(current.best, session.overallScore);
+      current.best = Math.max(current.best, score);
       groups.set(key, current);
     }
     return Array.from(groups.entries()).slice(0, 6).map(([month, item]) => ({
       month,
-      average: Math.round(item.total / item.count),
+      average: item.count > 0 ? Math.round(item.total / item.count) : 0,
       best: item.best,
       count: item.count,
     }));
@@ -240,16 +260,16 @@ export const ProgressScreen = () => {
         {user && (
           <GlassCard style={styles.ringCard} noPadding glowColor={colors.accentPurple}>
             <View style={styles.ringRow}>
-              <ConfidenceRing score={user.confidenceScore} size={130} />
+              <ConfidenceRing score={user.confidenceScore ?? 50} size={130} />
               <View style={styles.ringInfo}>
-                <Text style={[styles.ringLevel, { color: colors.textPrimary }]}>{user.levelTitle}</Text>
-                <Text style={[styles.ringXP, { color: colors.xpGold }]}>{user.totalXP.toLocaleString()} Total XP 🪙</Text>
+                <Text style={[styles.ringLevel, { color: colors.textPrimary }]}>{user.levelTitle || 'Novice'}</Text>
+                <Text style={[styles.ringXP, { color: colors.xpGold }]}>{(user.totalXP ?? 0).toLocaleString()} Total XP 🪙</Text>
                 <View style={styles.streakRow}>
                   <Text style={{ fontSize: 18 }}>🔥</Text>
-                  <Text style={[styles.streakText, { color: colors.streakOrange }]}>{user.streak} day streak</Text>
+                  <Text style={[styles.streakText, { color: colors.streakOrange }]}>{user.streak ?? 0} day streak</Text>
                 </View>
                 <Text style={[styles.totalSpeechesText, { color: colors.accentCyan }]}>
-                  🎙️ {user.totalSpeeches} speaking sessions completed
+                  🎙️ {user.totalSpeeches ?? 0} speaking sessions completed
                 </Text>
               </View>
             </View>
@@ -294,11 +314,15 @@ export const ProgressScreen = () => {
 
           <View style={styles.chartLabels}>
             <Text style={[styles.chartLabel, { color: colors.textMuted }]}>
-              {chartPoints[0]?.date ? chartPoints[0].date.split('T')[0] : 'First Session'}
+              {chartPoints[0]?.date
+                ? (typeof chartPoints[0].date === 'string' ? chartPoints[0].date.split('T')[0] : String(chartPoints[0].date))
+                : 'First Session'}
             </Text>
             <Text style={[styles.chartLabel, { color: colors.textMuted }]}>
               {chartPoints[chartPoints.length - 1]?.date
-                ? chartPoints[chartPoints.length - 1].date.split('T')[0]
+                ? (typeof chartPoints[chartPoints.length - 1].date === 'string'
+                    ? chartPoints[chartPoints.length - 1].date.split('T')[0]
+                    : String(chartPoints[chartPoints.length - 1].date))
                 : 'Latest'}
             </Text>
           </View>
@@ -376,35 +400,35 @@ export const ProgressScreen = () => {
           <View>
             <SectionHeader title="Growth Intelligence" />
             <View style={styles.statsGrid}>
-              <StatCard icon="🏆" value={progress.growthMetrics.confidence.best} label="Best Score" color={colors.success} />
-              <StatCard icon="📊" value={progress.growthMetrics.confidence.average} label="Average" color={colors.accentCyan} />
+              <StatCard icon="🏆" value={progress.growthMetrics.confidence?.best ?? 0} label="Best Score" color={colors.success} />
+              <StatCard icon="📊" value={progress.growthMetrics.confidence?.average ?? 0} label="Average" color={colors.accentCyan} />
               <StatCard
                 icon="📈"
-                value={`${progress.growthMetrics.confidence.growthPercent > 0 ? '+' : ''}${progress.growthMetrics.confidence.growthPercent}%`}
+                value={`${(progress.growthMetrics.confidence?.growthPercent ?? 0) > 0 ? '+' : ''}${progress.growthMetrics.confidence?.growthPercent ?? 0}%`}
                 label="Confidence Growth"
                 color={colors.accentPurpleLight}
               />
               <StatCard
                 icon="📚"
-                value={`${progress.growthMetrics.vocabulary.growthPercent > 0 ? '+' : ''}${progress.growthMetrics.vocabulary.growthPercent}%`}
+                value={`${(progress.growthMetrics.vocabulary?.growthPercent ?? 0) > 0 ? '+' : ''}${progress.growthMetrics.vocabulary?.growthPercent ?? 0}%`}
                 label="Vocab Growth"
                 color={colors.xpGold}
               />
               <StatCard
                 icon="🗣️"
-                value={`${progress.growthMetrics.wpm.changePercent > 0 ? '+' : ''}${progress.growthMetrics.wpm.changePercent}%`}
+                value={`${(progress.growthMetrics.wpm?.changePercent ?? 0) > 0 ? '+' : ''}${progress.growthMetrics.wpm?.changePercent ?? 0}%`}
                 label="WPM Change"
                 color={colors.accentCyan}
               />
               <StatCard
                 icon="⏸️"
-                value={`${progress.growthMetrics.pauses.reductionPercent}%`}
+                value={`${progress.growthMetrics.pauses?.reductionPercent ?? 0}%`}
                 label="Pause Reduction"
                 color={colors.success}
               />
               <StatCard
                 icon="🔥"
-                value={progress.growthMetrics.consistency.streakDays}
+                value={progress.growthMetrics.consistency?.streakDays ?? 0}
                 label="Day Streak"
                 color={colors.streakOrange}
               />
@@ -417,12 +441,12 @@ export const ProgressScreen = () => {
           <View>
             <SectionHeader title="Overall Stats" />
             <View style={styles.statsGrid}>
-              <StatCard icon="⚡" value={progress.totalXP.toLocaleString()} label="Total XP" color={colors.xpGold} />
-              <StatCard icon="📅" value={progress.weeklyXP} label="Weekly XP" color={colors.accentCyan} />
-              <StatCard icon="🔥" value={progress.bestStreak} label="Best Streak" color={colors.streakOrange} />
-              <StatCard icon="🎤" value={progress.totalSpeeches} label="Speeches" color={colors.accentPurpleLight} />
-              <StatCard icon="✅" value={progress.totalChallenges} label="Challenges" color={colors.success} />
-              <StatCard icon="🎯" value={`${progress.averageScore}%`} label="Avg Score" color={colors.accentCyan} />
+              <StatCard icon="⚡" value={(progress.totalXP ?? 0).toLocaleString()} label="Total XP" color={colors.xpGold} />
+              <StatCard icon="📅" value={progress.weeklyXP ?? 0} label="Weekly XP" color={colors.accentCyan} />
+              <StatCard icon="🔥" value={progress.bestStreak ?? 0} label="Best Streak" color={colors.streakOrange} />
+              <StatCard icon="🎤" value={progress.totalSpeeches ?? 0} label="Speeches" color={colors.accentPurpleLight} />
+              <StatCard icon="✅" value={progress.totalChallenges ?? 0} label="Challenges" color={colors.success} />
+              <StatCard icon="🎯" value={`${progress.averageScore ?? 0}%`} label="Avg Score" color={colors.accentCyan} />
             </View>
           </View>
         )}
@@ -460,7 +484,7 @@ export const ProgressScreen = () => {
                     <View
                       style={[
                         styles.timelineBarFill,
-                        { width: `${item.average}%`, backgroundColor: colors.accentPurpleLight },
+                        { width: `${Math.min(Math.max(item.average, 0), 100)}%`, backgroundColor: colors.accentPurpleLight },
                       ]}
                     />
                   </View>
@@ -493,8 +517,9 @@ export const ProgressScreen = () => {
 
 const SessionScoreCard = React.memo(({ session, scoreColor }: { session: SpeechSession; scoreColor: string }) => {
   const { colors } = useTheme();
-  const dateStr = session.date ? session.date.split('T')[0] : 'Recent';
+  const dateStr = session.date && typeof session.date === 'string' ? session.date.split('T')[0] : 'Recent';
   const pronunciationScore = (session.components as any)?.pronunciationScore ?? 85;
+  const overallScore = typeof session.overallScore === 'number' && !Number.isNaN(session.overallScore) ? session.overallScore : 0;
 
   return (
     <GlassCard style={styles.sessionCard} padding={14}>
@@ -508,7 +533,7 @@ const SessionScoreCard = React.memo(({ session, scoreColor }: { session: SpeechS
           </Text>
         </View>
         <View style={[styles.scoreBadge, { backgroundColor: `${scoreColor}20`, borderColor: scoreColor }]}>
-          <Text style={[styles.scoreBadgeNumber, { color: scoreColor }]}>{session.overallScore}</Text>
+          <Text style={[styles.scoreBadgeNumber, { color: scoreColor }]}>{overallScore}</Text>
           <Text style={[styles.scoreBadgeLabel, { color: scoreColor }]}>SCORE</Text>
         </View>
       </View>

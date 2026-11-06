@@ -15,18 +15,20 @@ const mapBadge = (b: any, earnedInfo?: { earnedAt?: string; isNew?: boolean }): 
 });
 
 const fetchBadgesWithEarnedState = async (): Promise<Badge[]> => {
-  const [allRes, mineRes] = await Promise.all([
+  const [allRes, mineRes] = await Promise.allSettled([
     apiClient.get<any, any>('/badges'),
     apiClient.get<any, any>('/badges/me'),
   ]);
 
-  const all = unwrapList<any>(allRes);
-  const mine = unwrapList<any>(mineRes);
+  const all = allRes.status === 'fulfilled' ? unwrapList<any>(allRes.value) : [];
+  const mine = mineRes.status === 'fulfilled' ? unwrapList<any>(mineRes.value) : [];
 
   const earnedMap = new Map<string, { earnedAt?: string; isNew?: boolean }>();
   for (const ub of mine) {
-    const badgeId = ub.badge?.id ?? ub.badgeId ?? ub.id;
-    earnedMap.set(badgeId, { earnedAt: ub.unlockedAt ?? ub.earnedAt, isNew: ub.isNew });
+    const badgeId = ub?.badge?.id ?? ub?.badgeId ?? ub?.id;
+    if (badgeId) {
+      earnedMap.set(badgeId, { earnedAt: ub.unlockedAt ?? ub.earnedAt, isNew: ub.isNew });
+    }
   }
 
   return all.map(b => mapBadge(b, earnedMap.get(b.id)));

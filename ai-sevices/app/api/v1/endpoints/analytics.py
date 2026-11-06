@@ -120,7 +120,130 @@ async def get_user_progress(
     current_conf = latest_sess.overall_confidence_score if latest_sess else 50.0
     conf_gain = round(current_conf - baseline_conf, 1)
 
+    scores = [s.overall_confidence_score for s in all_sessions]
+    recent_sessions = all_sessions[-7:] if all_sessions else []
+    baseline_sessions = all_sessions[:7] if all_sessions else []
+    recent_scores = [s.overall_confidence_score for s in recent_sessions]
+    baseline_scores = [s.overall_confidence_score for s in baseline_sessions]
+
+    avg_all_scores = round(sum(scores) / len(scores), 1) if scores else 0.0
+    avg_recent_scores = round(sum(recent_scores) / len(recent_scores), 1) if recent_scores else 0.0
+    avg_baseline_scores = round(sum(baseline_scores) / len(baseline_scores), 1) if baseline_scores else 0.0
+
+    def calc_pct_change(curr: float, base: float) -> int:
+        if not base:
+            return 0
+        return round(((curr - base) / base) * 100)
+
+    recent_vocab = [s.vocabulary_richness for s in recent_sessions if s.vocabulary_richness is not None]
+    base_vocab = [s.vocabulary_richness for s in baseline_sessions if s.vocabulary_richness is not None]
+    curr_vocab_avg = round(sum(recent_vocab) / len(recent_vocab), 1) if recent_vocab else 0.0
+    base_vocab_avg = round(sum(base_vocab) / len(base_vocab), 1) if base_vocab else 0.0
+
+    recent_wpm = [s.speech_speed_wpm for s in recent_sessions if s.speech_speed_wpm is not None]
+    base_wpm = [s.speech_speed_wpm for s in baseline_sessions if s.speech_speed_wpm is not None]
+    curr_wpm_avg = round(sum(recent_wpm) / len(recent_wpm), 1) if recent_wpm else 0.0
+    base_wpm_avg = round(sum(base_wpm) / len(base_wpm), 1) if base_wpm else 0.0
+
+    recent_fillers = [s.filler_count for s in recent_sessions if s.filler_count is not None]
+    base_fillers = [s.filler_count for s in baseline_sessions if s.filler_count is not None]
+    curr_fillers_avg = round(sum(recent_fillers) / len(recent_fillers), 1) if recent_fillers else 0.0
+    base_fillers_avg = round(sum(base_fillers) / len(base_fillers), 1) if base_fillers else 0.0
+    fillers_reduction = (
+        round(((base_fillers_avg - curr_fillers_avg) / base_fillers_avg) * 100)
+        if base_fillers_avg
+        else 0
+    )
+
+    recent_pauses = [s.pause_frequency for s in recent_sessions if s.pause_frequency is not None]
+    base_pauses = [s.pause_frequency for s in baseline_sessions if s.pause_frequency is not None]
+    curr_pauses_avg = round(sum(recent_pauses) / len(recent_pauses), 1) if recent_pauses else 0.0
+    base_pauses_avg = round(sum(base_pauses) / len(base_pauses), 1) if base_pauses else 0.0
+    pauses_reduction = (
+        round(((base_pauses_avg - curr_pauses_avg) / base_pauses_avg) * 100)
+        if base_pauses_avg
+        else 0
+    )
+
+    sessions_last_30 = [s for s in all_sessions if s.created_at and s.created_at >= thirty_days_ago]
+    sessions_last_7 = [s for s in all_sessions if s.created_at and s.created_at >= (now - timedelta(days=7))]
+
     growth_metrics = {
+        # Structured GrowthMetrics (expected by both Mobile and Web)
+        "confidence": {
+            "best": round(max(scores), 1) if scores else 0.0,
+            "average": avg_all_scores,
+            "growthPercent": calc_pct_change(avg_recent_scores, avg_baseline_scores),
+            "trend": [
+                {
+                    "date": s.created_at.isoformat() if s.created_at else "",
+                    "value": s.overall_confidence_score,
+                }
+                for s in all_sessions[-14:]
+            ],
+        },
+        "vocabulary": {
+            "uniqueWordsNow": round(curr_vocab_avg),
+            "uniqueWordsBaseline": round(base_vocab_avg),
+            "growthPercent": calc_pct_change(curr_vocab_avg, base_vocab_avg),
+        },
+        "wpm": {
+            "current": round(curr_wpm_avg),
+            "baseline": round(base_wpm_avg),
+            "changePercent": calc_pct_change(curr_wpm_avg, base_wpm_avg),
+        },
+        "fillers": {
+            "current": round(curr_fillers_avg),
+            "baseline": round(base_fillers_avg),
+            "reductionPercent": fillers_reduction,
+        },
+        "pauses": {
+            "current": curr_pauses_avg,
+            "baseline": base_pauses_avg,
+            "reductionPercent": pauses_reduction,
+        },
+        "components": {
+            "fluency": [
+                {
+                    "date": s.created_at.isoformat() if s.created_at else "",
+                    "value": s.fluency_score,
+                }
+                for s in all_sessions[-14:]
+            ],
+            "structure": [
+                {
+                    "date": s.created_at.isoformat() if s.created_at else "",
+                    "value": (s.confidence_components or {}).get("structureScore", 0)
+                    if isinstance(s.confidence_components, dict)
+                    else 0,
+                }
+                for s in all_sessions[-14:]
+            ],
+            "energy": [
+                {
+                    "date": s.created_at.isoformat() if s.created_at else "",
+                    "value": (s.confidence_components or {}).get("energyScore", 0)
+                    if isinstance(s.confidence_components, dict)
+                    else 0,
+                }
+                for s in all_sessions[-14:]
+            ],
+            "vocabulary": [
+                {
+                    "date": s.created_at.isoformat() if s.created_at else "",
+                    "value": (s.confidence_components or {}).get("vocabularyScore", 0)
+                    if isinstance(s.confidence_components, dict)
+                    else 0,
+                }
+                for s in all_sessions[-14:]
+            ],
+        },
+        "consistency": {
+            "streakDays": current_streak,
+            "sessionsLast7Days": len(sessions_last_7),
+            "sessionsLast30Days": len(sessions_last_30),
+        },
+        # Legacy flat properties for backward compatibility
         "baselineConfidence": baseline_conf,
         "currentConfidence": current_conf,
         "confidenceGain": conf_gain,

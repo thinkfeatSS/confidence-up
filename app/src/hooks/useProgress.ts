@@ -7,6 +7,13 @@ import { computeGrowthMetrics } from '../modules/speech/intelligence/growthAnaly
 import { GrowthMetrics } from '../modules/speech/types/speechAnalysis.types';
 import { getLocalSpeechSessions, mergeSpeechSessions } from '../services/localSpeechStorage';
 
+export function mapGrowthMetricsFromApi(raw: unknown): GrowthMetrics | undefined {
+  if (!raw || typeof raw !== 'object') return undefined;
+  const g = raw as Record<string, any>;
+  if (!g.confidence || typeof g.confidence !== 'object') return undefined;
+  return g as GrowthMetrics;
+}
+
 const fetchSpeechSessions = async (): Promise<SpeechSession[]> => {
   let apiSessions: SpeechSession[] = [];
   try {
@@ -41,7 +48,7 @@ const fetchProgress = async (): Promise<UserProgress> => {
   const speechSessions = mergeSpeechSessions(apiSpeechSessions, localSessions);
 
   const growthMetrics: GrowthMetrics =
-    p.growthMetrics ??
+    mapGrowthMetricsFromApi(p.growthMetrics) ??
     computeGrowthMetrics(speechSessions, parseBestStreak(streak));
 
   const totalSpeeches = Math.max(
@@ -56,10 +63,10 @@ const fetchProgress = async (): Promise<UserProgress> => {
     bestStreak: parseBestStreak(streak),
     totalSpeeches,
     totalChallenges: u._count?.userChallenges ?? u.totalChallenges ?? 0,
-    averageScore: Math.round(s.averageConfidenceScore ?? u.confidenceScore ?? (speechSessions.length ? speechSessions.reduce((acc, cur) => acc + cur.overallScore, 0) / speechSessions.length : 0)),
+    averageScore: Math.round(s.averageConfidenceScore ?? u.confidenceScore ?? (speechSessions.length ? speechSessions.reduce((acc, cur) => acc + (cur.overallScore || 0), 0) / speechSessions.length : 0)),
     confidenceHistory: (p.confidenceTimeline ?? []).map((d: any): DailyScore => ({
-      date: typeof d.date === 'string' ? d.date.split('T')[0] : d.date,
-      score: Math.round(d.overallConfidenceScore ?? d.score ?? 0),
+      date: typeof d?.date === 'string' ? d.date.split('T')[0] : String(d?.date ?? ''),
+      score: Math.round(d?.overallConfidenceScore ?? d?.score ?? 0),
     })),
     speechSessions,
     growthMetrics,
@@ -83,8 +90,8 @@ export const useConfidenceHistory = (period: 'week' | 'month' = 'week') =>
         const history: any[] = p.confidenceTimeline ?? [];
         const limit = period === 'week' ? 7 : 30;
         return history.slice(-limit).map((d: any): DailyScore => ({
-          date: typeof d.date === 'string' ? d.date.split('T')[0] : d.date,
-          score: Math.round(d.overallConfidenceScore ?? d.score ?? 0),
+          date: typeof d?.date === 'string' ? d.date.split('T')[0] : String(d?.date ?? ''),
+          score: Math.round(d?.overallConfidenceScore ?? d?.score ?? 0),
         }));
       } catch {
         return [];

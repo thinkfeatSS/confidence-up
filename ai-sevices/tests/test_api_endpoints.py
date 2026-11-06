@@ -184,6 +184,20 @@ def test_user_analytics_progress():
     data = res.json()
     assert data["success"] is True
     assert "growthMetrics" in data["data"]
+    gm = data["data"]["growthMetrics"]
+    # Verify structured growth metrics for mobile and web
+    assert "confidence" in gm
+    assert "best" in gm["confidence"]
+    assert "average" in gm["confidence"]
+    assert "growthPercent" in gm["confidence"]
+    assert "vocabulary" in gm
+    assert "wpm" in gm
+    assert "fillers" in gm
+    assert "pauses" in gm
+    assert "consistency" in gm
+    # Verify backward compatible flat fields
+    assert "baselineConfidence" in gm
+    assert "currentConfidence" in gm
     assert "confidenceTimeline" in data["data"]
 
 

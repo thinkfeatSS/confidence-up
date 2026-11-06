@@ -14,10 +14,14 @@ interface StatCardProps {
 export const StatCard = React.memo(({ icon, value, label, color }: StatCardProps) => {
   const { colors } = useTheme();
   const accent = color ?? colors.accentPurpleLight;
+  const displayValue = value !== undefined && value !== null
+    ? (typeof value === 'object' ? JSON.stringify(value) : String(value))
+    : '0';
+
   return (
     <GlassCard style={styles.card} padding={14}>
       <Text style={styles.icon}>{icon}</Text>
-      <Text style={[styles.value, { color: accent }]}>{value}</Text>
+      <Text style={[styles.value, { color: accent }]}>{displayValue}</Text>
       <Text style={[styles.label, { color: colors.textMuted }]}>{label}</Text>
     </GlassCard>
   );

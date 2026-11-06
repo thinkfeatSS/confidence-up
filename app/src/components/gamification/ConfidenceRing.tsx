@@ -16,21 +16,22 @@ interface ConfidenceRingProps {
 export const ConfidenceRing = React.memo(({ score, size = 120, strokeWidth = 10, showLabel = true }: ConfidenceRingProps) => {
   const { colors } = useTheme();
   const progress = useSharedValue(0);
+  const safeScore = typeof score === 'number' && !Number.isNaN(score) ? Math.min(Math.max(Math.round(score), 0), 100) : 0;
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
 
   useEffect(() => {
-    progress.value = withTiming(score / 100, {
+    progress.value = withTiming(safeScore / 100, {
       duration: 1400,
       easing: Easing.out(Easing.cubic),
     });
-  }, [score, progress]);
+  }, [safeScore, progress]);
 
   const animatedProps = useAnimatedProps(() => ({
     strokeDashoffset: circumference * (1 - progress.value),
   }));
 
-  const scoreColor = score >= 70 ? colors.success : score >= 45 ? colors.xpGold : colors.danger;
+  const scoreColor = safeScore >= 70 ? colors.success : safeScore >= 45 ? colors.xpGold : colors.danger;
   const containerStyle = useMemo(
     () => ({ width: size, height: size, justifyContent: 'center' as const, alignItems: 'center' as const }),
     [size],
@@ -82,7 +83,7 @@ export const ConfidenceRing = React.memo(({ score, size = 120, strokeWidth = 10,
       </Svg>
       {showLabel && (
         <View style={styles.center}>
-          <Text style={scoreTextStyle}>{score}</Text>
+          <Text style={scoreTextStyle}>{safeScore}</Text>
           <Text style={labelTextStyle}>SCORE</Text>
         </View>
       )}
