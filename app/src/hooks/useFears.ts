@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiClient, unwrapApiData } from '../services/api';
+import { apiClient } from '../services/api';
 import { Fear, FearLevel } from '../types';
 import { unwrapList } from '../utils/apiHelpers';
 
@@ -33,13 +33,13 @@ const buildFears = (categories: any[], completedIds: Set<string>): Fear[] =>
   });
 
 const fetchFears = async (): Promise<Fear[]> => {
-  const [catalogRes, progressRes] = await Promise.all([
+  const [catalogRes, progressRes] = await Promise.allSettled([
     apiClient.get<any, any>('/fears'),
     apiClient.get<any, any>('/fears/me'),
   ]);
 
-  const categories = unwrapList<any>(catalogRes);
-  const progressList = unwrapList<any>(progressRes);
+  const categories = catalogRes.status === 'fulfilled' ? unwrapList<any>(catalogRes.value) : [];
+  const progressList = progressRes.status === 'fulfilled' ? unwrapList<any>(progressRes.value) : [];
   const completedIds = new Set<string>();
 
   for (const item of progressList) {

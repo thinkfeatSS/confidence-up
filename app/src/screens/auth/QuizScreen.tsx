@@ -55,7 +55,7 @@ export const QuizScreen = ({ navigation }: Props) => {
 
   const next = () => {
     if (step < TOTAL_STEPS) { setStep(s => s + 1); }
-    else { void finish(); }
+    else { finish(); }
   };
 
   const finish = async () => {

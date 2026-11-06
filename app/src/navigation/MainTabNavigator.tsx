@@ -18,47 +18,66 @@ const Tab = createBottomTabNavigator<MainTabParamList>();
 const TabIcon = ({
   emoji,
   focused,
-  dotColor,
 }: {
   emoji: string;
   focused: boolean;
-  dotColor: string;
-}) => (
-  <View style={tabStyles.iconWrapper}>
-    <Text style={tabStyles.tabEmoji}>{emoji}</Text>
-    <View
-      style={[
-        tabStyles.activeDot,
-        focused && { backgroundColor: dotColor },
-      ]}
-    />
-  </View>
-);
+}) => {
+  const { colors } = useTheme();
+  return (
+    <View style={tabStyles.iconWrapper}>
+      <Text style={tabStyles.tabEmoji}>{emoji}</Text>
+      <View
+        style={[
+          tabStyles.activeDot,
+          focused && { backgroundColor: colors.accentPurpleLight },
+        ]}
+      />
+    </View>
+  );
+};
+
+const renderHomeIcon = ({ focused }: { focused: boolean }) => <TabIcon emoji="🏠" focused={focused} />;
+const renderPracticeIcon = ({ focused }: { focused: boolean }) => <TabIcon emoji="🎤" focused={focused} />;
+const renderMissionsIcon = () => <Text style={tabStyles.centerEmoji}>⚔️</Text>;
+const renderProgressIcon = ({ focused }: { focused: boolean }) => <TabIcon emoji="📊" focused={focused} />;
+const renderProfileIcon = ({ focused }: { focused: boolean }) => <TabIcon emoji="👤" focused={focused} />;
 
 const MissionsTabButton = ({
   children,
   onPress,
-  bgColor,
-  borderColor,
   style,
   accessibilityState,
   accessibilityRole,
   accessibilityLabel,
   testID,
-}: BottomTabBarButtonProps & { bgColor: string; borderColor: string }) => (
-  <View style={[tabStyles.centerButtonWrapper, style]} pointerEvents="box-none">
-    <TouchableOpacity
-      style={[tabStyles.centerButton, { backgroundColor: bgColor, borderColor }]}
-      onPress={onPress ?? undefined}
-      activeOpacity={0.85}
-      accessibilityRole={accessibilityRole ?? 'button'}
-      accessibilityState={accessibilityState}
-      accessibilityLabel={accessibilityLabel ?? 'Daily Missions'}
-      testID={testID}>
-      {children}
-    </TouchableOpacity>
-  </View>
-);
+}: BottomTabBarButtonProps) => {
+  const { colors } = useTheme();
+  return (
+    <View style={[tabStyles.centerButtonWrapper, style]} pointerEvents="box-none">
+      <TouchableOpacity
+        style={[tabStyles.centerButton, { backgroundColor: colors.accentPurple, borderColor: colors.bgPrimary }]}
+        onPress={onPress ?? undefined}
+        activeOpacity={0.85}
+        accessibilityRole={accessibilityRole ?? 'button'}
+        accessibilityState={accessibilityState}
+        accessibilityLabel={accessibilityLabel ?? 'Daily Missions'}
+        testID={testID}>
+        {children}
+      </TouchableOpacity>
+    </View>
+  );
+};
+
+const renderMissionsButton = (props: BottomTabBarButtonProps) => <MissionsTabButton {...props} />;
+
+const homeOptions = { tabBarIcon: renderHomeIcon };
+const practiceOptions = { tabBarIcon: renderPracticeIcon };
+const missionsOptions = {
+  tabBarIcon: renderMissionsIcon,
+  tabBarButton: renderMissionsButton,
+};
+const progressOptions = { tabBarIcon: renderProgressIcon };
+const profileOptions = { tabBarIcon: renderProfileIcon };
 
 export const MainTabNavigator = () => {
   const { colors } = useTheme();
@@ -88,52 +107,6 @@ export const MainTabNavigator = () => {
       tabBarHideOnKeyboard: true as const,
     }),
     [colors, barHeight, bottomInset],
-  );
-
-  const homeOptions = useMemo(
-    () => ({
-      tabBarIcon: ({ focused }: { focused: boolean }) => (
-        <TabIcon emoji="🏠" focused={focused} dotColor={colors.accentPurpleLight} />
-      ),
-    }),
-    [colors.accentPurpleLight],
-  );
-  const practiceOptions = useMemo(
-    () => ({
-      tabBarIcon: ({ focused }: { focused: boolean }) => (
-        <TabIcon emoji="🎤" focused={focused} dotColor={colors.accentPurpleLight} />
-      ),
-    }),
-    [colors.accentPurpleLight],
-  );
-  const missionsOptions = useMemo(
-    () => ({
-      tabBarIcon: () => <Text style={tabStyles.centerEmoji}>⚔️</Text>,
-      tabBarButton: (props: BottomTabBarButtonProps) => (
-        <MissionsTabButton
-          {...props}
-          bgColor={colors.accentPurple}
-          borderColor={colors.bgPrimary}
-        />
-      ),
-    }),
-    [colors.accentPurple, colors.bgPrimary],
-  );
-  const progressOptions = useMemo(
-    () => ({
-      tabBarIcon: ({ focused }: { focused: boolean }) => (
-        <TabIcon emoji="📊" focused={focused} dotColor={colors.accentPurpleLight} />
-      ),
-    }),
-    [colors.accentPurpleLight],
-  );
-  const profileOptions = useMemo(
-    () => ({
-      tabBarIcon: ({ focused }: { focused: boolean }) => (
-        <TabIcon emoji="👤" focused={focused} dotColor={colors.accentPurpleLight} />
-      ),
-    }),
-    [colors.accentPurpleLight],
   );
 
   return (

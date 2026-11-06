@@ -202,7 +202,7 @@ export function useSpeechRecorder(preferredLanguages?: string[]) {
       restartTimerRef.current = null;
       if (!isRecordingRef.current) return;
 
-      void Voice.start(
+      Voice.start(
         activeLocaleRef.current,
         Platform.OS === 'android' ? androidVoiceOptions() : undefined,
       )
@@ -218,7 +218,7 @@ export function useSpeechRecorder(preferredLanguages?: string[]) {
       restartTimerRef.current = null;
       if (!isRecordingRef.current) return;
 
-      void Voice.start(
+      Voice.start(
         activeLocaleRef.current,
         Platform.OS === 'android' ? androidVoiceOptions() : undefined,
       )

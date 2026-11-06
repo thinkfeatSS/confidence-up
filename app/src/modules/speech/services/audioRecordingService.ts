@@ -40,7 +40,7 @@ export async function requestAudioRecordingPermissions(): Promise<boolean> {
       },
     );
     return granted === PermissionsAndroid.RESULTS.GRANTED;
-  } catch (_e) {
+  } catch {
     return false;
   }
 }

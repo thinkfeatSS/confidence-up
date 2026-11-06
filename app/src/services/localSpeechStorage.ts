@@ -100,7 +100,7 @@ export async function getOfflineAudioQueue(): Promise<OfflineAudioJob[]> {
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     return Array.isArray(parsed) ? (parsed as OfflineAudioJob[]) : [];
-  } catch (_err) {
+  } catch {
     return [];
   }
 }
