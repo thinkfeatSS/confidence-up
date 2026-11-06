@@ -17,7 +17,8 @@ export function getAuthSlideGradient(isDark: boolean, colors: ThemeColors): stri
 }
 
 export type OnboardingSlideConfig = {
-  emoji: string;
+  emoji?: string;
+  showLogo?: boolean;
   title: string;
   body: string;
   gradient: [string, string];
@@ -28,18 +29,21 @@ export function getOnboardingSlides(isDark: boolean, colors: ThemeColors): Onboa
     return [
       {
         emoji: '⚡',
+        showLogo: true,
         title: 'Level Up Your Confidence',
         body: 'Earn XP, unlock badges, and grow from a shy beginner to a confident champion through real-life challenges.',
         gradient: [colors.accentPurple, '#4C1D95'],
       },
       {
         emoji: '🎤',
+        showLogo: false,
         title: 'AI-Powered Speaking Coach',
         body: 'Practice speeches with your AI coach Atlas. Get instant feedback on clarity, pace, and tone.',
         gradient: ['#0891B2', colors.accentCyan],
       },
       {
         emoji: '🗺️',
+        showLogo: false,
         title: 'Face Your Fears Daily',
         body: 'Track your top fears — public speaking, interviews, and more. Complete small challenges to conquer them.',
         gradient: ['#D97706', colors.xpGold],
@@ -50,18 +54,21 @@ export function getOnboardingSlides(isDark: boolean, colors: ThemeColors): Onboa
   return [
     {
       emoji: '⚡',
+      showLogo: true,
       title: 'Level Up Your Confidence',
       body: 'Earn XP, unlock badges, and grow from a shy beginner to a confident champion through real-life challenges.',
       gradient: ['#7C3AED', '#A78BFA'],
     },
     {
       emoji: '🎤',
+      showLogo: false,
       title: 'AI-Powered Speaking Coach',
       body: 'Practice speeches with your AI coach Atlas. Get instant feedback on clarity, pace, and tone.',
       gradient: ['#0891B2', '#22D3EE'],
     },
     {
       emoji: '🗺️',
+      showLogo: false,
       title: 'Face Your Fears Daily',
       body: 'Track your top fears — public speaking, interviews, and more. Complete small challenges to conquer them.',
       gradient: ['#D97706', '#FBBF24'],

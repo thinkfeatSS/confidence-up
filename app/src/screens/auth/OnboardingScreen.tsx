@@ -2,6 +2,7 @@ import React, { useRef, useState, useMemo, useEffect } from 'react';
 import {
   View,
   Text,
+  Image,
   StyleSheet,
   useWindowDimensions,
   ScrollView,
@@ -70,6 +71,36 @@ export const OnboardingScreen = ({ navigation }: Props) => {
 
   return (
     <BrandHeroBackground style={styles.container}>
+      {/* Top Brand Header with Truefluent AI Logo & Skip */}
+      <View
+        style={[
+          styles.headerRow,
+          {
+            paddingTop: Math.max(insets.top, 10) + (isShortScreen ? 4 : 8),
+          },
+        ]}>
+        <View style={styles.brandRow}>
+          <View style={styles.headerLogoWrapper}>
+            <Image
+              source={require('../../assets/images/logo.png')}
+              style={styles.headerLogo}
+              resizeMode="contain"
+              accessibilityLabel="Truefluent AI Logo"
+            />
+          </View>
+          <Text style={[styles.brandName, { color: colors.textPrimary }]}>Truefluent AI</Text>
+        </View>
+
+        <TouchableOpacity
+          onPress={() => navigation.replace('Login')}
+          activeOpacity={0.6}
+          accessibilityRole="button"
+          accessibilityLabel="Skip onboarding"
+          style={styles.topSkipBtn}>
+          <Text style={[styles.topSkipText, { color: colors.textMuted }]}>Skip</Text>
+        </TouchableOpacity>
+      </View>
+
       <ScrollView
         ref={scrollRef}
         horizontal
@@ -86,7 +117,7 @@ export const OnboardingScreen = ({ navigation }: Props) => {
               styles.slide,
               {
                 width,
-                paddingTop: insets.top + (isShortScreen ? 12 : 24),
+                paddingTop: isShortScreen ? 8 : 16,
               },
             ]}>
             <View style={styles.slideContent}>
@@ -103,7 +134,26 @@ export const OnboardingScreen = ({ navigation }: Props) => {
                       shadowOpacity: isDark ? 0.6 : 0.35,
                     },
                   ]}>
-                  <Text style={{ fontSize: Math.round(circleSize * 0.44) }}>{slide.emoji}</Text>
+                  {slide.showLogo ? (
+                    <View
+                      style={[
+                        styles.slideLogoWrapper,
+                        {
+                          width: Math.round(circleSize * 0.72),
+                          height: Math.round(circleSize * 0.72),
+                          borderRadius: Math.round(circleSize * 0.2),
+                        },
+                      ]}>
+                      <Image
+                        source={require('../../assets/images/logo.png')}
+                        style={styles.slideLogo}
+                        resizeMode="contain"
+                        accessibilityLabel="Truefluent AI Logo"
+                      />
+                    </View>
+                  ) : (
+                    <Text style={{ fontSize: Math.round(circleSize * 0.44) }}>{slide.emoji}</Text>
+                  )}
                 </LinearGradient>
               </View>
 
@@ -203,6 +253,45 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.lg,
+    paddingBottom: Spacing.sm,
+    zIndex: 10,
+  },
+  brandRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  headerLogoWrapper: {
+    width: 32,
+    height: 32,
+    borderRadius: 9,
+    overflow: 'hidden',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  headerLogo: {
+    width: 30,
+    height: 30,
+  },
+  brandName: {
+    fontSize: 16,
+    fontWeight: '800',
+    letterSpacing: -0.2,
+  },
+  topSkipBtn: {
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+  },
+  topSkipText: {
+    ...(Typography.body as object),
+    fontSize: 14,
+    fontWeight: '600',
+  },
   scrollView: {
     flex: 1,
     width: '100%',
@@ -233,6 +322,15 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 0 },
     shadowRadius: 24,
     elevation: 15,
+  },
+  slideLogoWrapper: {
+    overflow: 'hidden',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  slideLogo: {
+    width: '100%',
+    height: '100%',
   },
   title: {
     fontWeight: '800',
