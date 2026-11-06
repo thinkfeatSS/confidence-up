@@ -164,4 +164,94 @@ def test_coach_chat_single_message_format():
     assert "reply" in data["data"]
 
 
+def test_user_analytics_summary():
+    user_token = create_access_token({"sub": "user-001", "role": "USER"})
+    headers = {"Authorization": f"Bearer {user_token}"}
+    res = client.get("/api/v1/analytics/me/summary?period=week", headers=headers)
+    assert res.status_code == 200
+    data = res.json()
+    assert data["success"] is True
+    assert "xpEarned" in data["data"]
+    assert "badgesEarned" in data["data"]
+    assert "streakDays" in data["data"]
+
+
+def test_user_analytics_progress():
+    user_token = create_access_token({"sub": "user-001", "role": "USER"})
+    headers = {"Authorization": f"Bearer {user_token}"}
+    res = client.get("/api/v1/analytics/me/progress", headers=headers)
+    assert res.status_code == 200
+    data = res.json()
+    assert data["success"] is True
+    assert "growthMetrics" in data["data"]
+    assert "confidenceTimeline" in data["data"]
+
+
+def test_feedback_submission_with_feature_area():
+    user_token = create_access_token({"sub": "user-001", "role": "USER"})
+    headers = {"Authorization": f"Bearer {user_token}"}
+    res = client.post("/api/v1/feedback", headers=headers, json={
+        "rating": 5,
+        "comment": "Amazing speech analysis accuracy!",
+        "featureArea": "app"
+    })
+    assert res.status_code == 200
+    data = res.json()
+    assert data["success"] is True
+    assert data["data"]["rating"] == 5
+    assert data["data"]["page"] == "app"
+
+
+def test_google_mobile_auth_payload():
+    import jwt
+    mock_id_token = jwt.encode(
+        {"email": "mobile_tester@truefluent.ai", "name": "Mobile Tester", "sub": "google-12345"},
+        "dummy-secret",
+        algorithm="HS256"
+    )
+    res = client.post("/api/v1/auth/google/mobile", json={
+        "idToken": mock_id_token,
+        "platform": "ANDROID"
+    })
+    assert res.status_code == 200
+    data = res.json()
+    assert data["success"] is True
+    assert "accessToken" in data["data"]
+    assert data["data"]["user"]["email"] == "mobile_tester@truefluent.ai"
+
+
+def test_speech_session_sync_payload():
+    user_token = create_access_token({"sub": "user-001", "role": "USER"})
+    headers = {"Authorization": f"Bearer {user_token}"}
+    res = client.post("/api/v1/speech/sync-session", headers=headers, json={
+        "transcript": "Hello world, testing speech session sync.",
+        "topic": "General Speaking",
+        "overallConfidenceScore": 85.0,
+        "durationSeconds": 30,
+        "wordCount": 10,
+        "fillerCount": 0,
+        "vocabularyRichness": 75.0,
+        "averageVolume": 70.0,
+        "speechSpeedWpm": 130.0,
+        "fluencyScore": 88.0,
+        "topicRelevanceScore": 90.0,
+        "personalizedSuggestions": ["Keep practicing clear vowel sounds."]
+    })
+    assert res.status_code == 200
+    data = res.json()
+    assert data["success"] is True
+    assert "sessionId" in data
+
+
+def test_referral_code_retrieval():
+    user_token = create_access_token({"sub": "user-001", "role": "USER"})
+    headers = {"Authorization": f"Bearer {user_token}"}
+    res = client.get("/api/v1/referral/me/code", headers=headers)
+    assert res.status_code == 200
+    data = res.json()
+    assert data["success"] is True
+    assert "referralCode" in data["data"]
+
+
+
 

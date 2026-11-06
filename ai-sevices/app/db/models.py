@@ -172,6 +172,10 @@ class UserBadge(Base):
     user = relationship("User", back_populates="user_badges")
     badge = relationship("Badge", back_populates="user_badges")
 
+    @property
+    def earned_at(self):
+        return self.unlocked_at
+
 
 class Streak(Base):
     __tablename__ = "streaks"

@@ -166,7 +166,6 @@ async def upload_speech_audio(
         file_name=saved_filename,
         mime_type=content_type,
         file_size_bytes=file_size,
-        format=file_ext.replace(".", ""),
     )
     db.add(audio_record)
     await db.commit()
@@ -272,11 +271,11 @@ async def create_speech_session(
             "overallConfidenceScore": payload.overallConfidenceScore,
             "xpEarned": xpEarned,
             "gamification": {
-                "newXp": gamification["new_xp"],
-                "newLevel": gamification["new_level"],
-                "leveledUp": gamification["leveled_up"],
-                "levelTitle": get_level_info(gamification["new_level"])["title"],
-                "newBadges": gamification["new_badges"],
+                "newXp": gamification.get("totalXp") or gamification.get("newXp") or gamification.get("new_xp", 0),
+                "newLevel": gamification.get("newLevel") or gamification.get("new_level", 1),
+                "leveledUp": bool(gamification.get("leveledUp") or gamification.get("leveled_up", False)),
+                "levelTitle": get_level_info(gamification.get("newLevel") or gamification.get("new_level", 1))["title"],
+                "newBadges": gamification.get("newBadges") or gamification.get("new_badges", []),
             }
         }
     }
@@ -422,7 +421,7 @@ async def sync_speech_session(
         ai_insights=payload.aiInsights,
         filler_breakdown=payload.fillerBreakdown,
         coaching_feedback=payload.coachingFeedback,
-        personalizedSuggestions=payload.personalizedSuggestions,
+        personalized_suggestions=payload.personalizedSuggestions,
         mini_mission=payload.miniMission,
         analysis_meta=payload.analysisMeta,
         mission_id=payload.missionId,
@@ -437,10 +436,10 @@ async def sync_speech_session(
         "sessionId": session_id,
         "xpEarned": xpEarned,
         "gamification": {
-            "newXp": gamification["new_xp"],
-            "newLevel": gamification["new_level"],
-            "leveledUp": gamification["leveled_up"],
-            "newBadges": gamification["new_badges"],
+            "newXp": gamification.get("totalXp") or gamification.get("newXp") or gamification.get("new_xp", 0),
+            "newLevel": gamification.get("newLevel") or gamification.get("new_level", 1),
+            "leveledUp": bool(gamification.get("leveledUp") or gamification.get("leveled_up", False)),
+            "newBadges": gamification.get("newBadges") or gamification.get("new_badges", []),
         }
     }
 
@@ -604,7 +603,7 @@ async def get_practice_session_status(
                 filler_count=metrics.filler_count,
                 filler_words=metrics.filler_words or [],
                 filler_breakdown=metrics.filler_breakdown or {},
-                words_per_minute=metrics.words_per_minute,
+                words_per_minute=getattr(metrics, "speech_speed_wpm", 0.0) or getattr(metrics, "words_per_minute", 0.0),
                 active_speaking_seconds=metrics.active_speaking_seconds,
                 average_volume_db=metrics.average_volume_db,
                 volume_stability_score=metrics.volume_stability_score,

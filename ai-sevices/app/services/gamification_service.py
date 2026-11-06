@@ -65,9 +65,14 @@ async def award_xp(
     return {
         "xpEarned": amount,
         "totalXp": user.xp_total,
+        "newXp": user.xp_total,
+        "new_xp": user.xp_total,
         "newLevel": user.level,
+        "new_level": user.level,
         "leveledUp": leveled_up,
+        "leveled_up": leveled_up,
         "newBadges": new_badges,
+        "new_badges": new_badges,
     }
 
 
@@ -152,18 +157,19 @@ async def evaluate_user_badges(db: AsyncSession, user_id: str) -> List[Dict[str,
         if badge.id in unlocked_ids:
             continue
 
+        b_name = (badge.name or "").strip().lower()
         qualifies = False
-        if badge.name == "First Words" and speech_count >= 1:
+        if b_name == "first words" and speech_count >= 1:
             qualifies = True
-        elif badge.name == "Voice Explorer" and speech_count >= 5:
+        elif b_name == "voice explorer" and speech_count >= 5:
             qualifies = True
-        elif badge.name == "Master Orator" and speech_count >= 20:
+        elif b_name == "master orator" and speech_count >= 20:
             qualifies = True
-        elif badge.name == "Consistency Starter" and current_streak >= 3:
+        elif b_name == "consistency starter" and current_streak >= 3:
             qualifies = True
-        elif badge.name == "Week Warrior" and current_streak >= 7:
+        elif b_name == "week warrior" and current_streak >= 7:
             qualifies = True
-        elif badge.name == "Fortnight Force" and current_streak >= 14:
+        elif b_name == "fortnight force" and current_streak >= 14:
             qualifies = True
 
         if qualifies:

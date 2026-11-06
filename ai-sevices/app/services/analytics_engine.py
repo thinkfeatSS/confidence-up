@@ -240,6 +240,7 @@ def analyze_audio_pauses_and_volume(
     
     return {
         "words_per_minute": wpm,
+        "speech_speed_wpm": wpm,
         "active_speaking_seconds": round(active_speaking_seconds, 1),
         "average_volume_db": avg_volume,
         "volume_stability_score": volume_stability,

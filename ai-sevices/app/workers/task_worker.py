@@ -3,7 +3,7 @@ import time
 from datetime import datetime
 from typing import Dict, Any
 import httpx
-from sqlalchemy import select
+from sqlalchemy import select, func
 from app.core.config import settings
 from app.core.logging import logger
 from app.db.session import AsyncSessionLocal
@@ -13,12 +13,17 @@ from app.db.models import (
     Transcript,
     SpeechMetric,
     AiFeedback,
+    SpeechSession,
+    User,
+    ActivityTimeline,
 )
 from app.services.speech_engine import transcribe_audio
 from app.services.analytics_engine import analyze_speech_data
 from app.services.language_engine import detect_hybrid_language
 from app.services.coach_engine import generate_ai_coaching
 from app.services.confidence_engine import calculate_deterministic_confidence
+from app.services.gamification_service import award_xp
+from app.services.auth_service import get_level_info
 from app.workers.queue import dequeue_task
 
 TASK_QUEUE_NAME = "confidence_speech_queue"
@@ -60,7 +65,7 @@ async def process_speech_session(session_id: str):
             
             whisper_result = transcribe_audio(audio.file_path)
             transcript_text = whisper_result.get("transcript", "")
-            duration_sec = whisper_result.get("duration_seconds", audio.duration_seconds or 10.0)
+            duration_sec = whisper_result.get("duration_seconds") or getattr(session, "duration_seconds", 0.0) or 10.0
             segments = whisper_result.get("segments", [])
             whisper_lang = whisper_result.get("language", "en")
             whisper_prob = whisper_result.get("language_probability", 0.9)
@@ -186,48 +191,83 @@ async def process_speech_session(session_id: str):
             session.progress_percent = 100
             session.error_message = None
 
-            # Inter-service sync with NestJS (XP, badges, streaks, user progress)
+            # Direct persistence & gamification for unified FastAPI backend
             try:
-                async with httpx.AsyncClient(timeout=10.0) as client:
-                    sync_url = f"{settings.CORE_API_URL.rstrip('/')}/api/v1/speech/sync-session"
-                    headers = {
-                        "Content-Type": "application/json",
-                        "x-internal-secret": settings.INTERNAL_SERVICE_SECRET or settings.JWT_SECRET,
-                    }
-                    payload = {
-                        "userId": session.user_id,
+                # Check if SpeechSession already recorded
+                sp_stmt = select(SpeechSession).where(SpeechSession.id == session.id)
+                sp_res = await db.execute(sp_stmt)
+                speech_session = sp_res.scalar_one_or_none()
+                if not speech_session:
+                    speech_session = SpeechSession(
+                        id=session.id,
+                        user_id=session.user_id,
+                        transcript=transcript_text,
+                        topic=session.topic or "General Speaking",
+                        language_detected=lang_detection.get("language_label", "English"),
+                        word_count=metrics.get("word_count", 0),
+                        sentence_count=metrics.get("sentence_count", 0),
+                        filler_count=metrics.get("filler_count", 0),
+                        vocabulary_richness=metrics.get("vocabulary_richness", 0.0),
+                        repetition_score=metrics.get("repetition_score", 0.0),
+                        average_volume=metrics.get("average_volume_db", 0.0),
+                        pause_frequency=metrics.get("pause_frequency", 0.0),
+                        speech_speed_wpm=metrics.get("speech_speed_wpm", metrics.get("words_per_minute", 0.0)),
+                        fluency_score=components.speech_fluency,
+                        topic_relevance_score=components.topic_relevance,
+                        overall_confidence_score=overall_score,
+                        duration_seconds=int(duration_sec),
+                        xp_earned=xp_earned,
+                        confidence_components={
+                            "speech_fluency": components.speech_fluency,
+                            "topic_relevance": components.topic_relevance,
+                            "vocabulary": components.vocabulary,
+                            "practice_consistency": components.practice_consistency,
+                            "structure": getattr(components, "structure", 70.0),
+                            "energy": getattr(components, "energy", 75.0),
+                        },
+                        coaching_feedback=coaching_output.coaching_feedback,
+                        personalized_suggestions=coaching_output.personalized_suggestions,
+                        mini_mission=coaching_output.next_mission,
+                        mission_id=session.mission_id,
+                        challenge_id=session.challenge_id,
+                    )
+                    db.add(speech_session)
+
+                # Award XP & evaluate badges
+                gamification = await award_xp(db, session.user_id, xp_earned, "SPEECH_SESSION", session.id)
+                session.gamification = {
+                    "newXp": gamification["totalXp"],
+                    "newLevel": gamification["newLevel"],
+                    "leveledUp": gamification["leveledUp"],
+                    "levelTitle": get_level_info(gamification["newLevel"])["title"],
+                    "newBadges": gamification["newBadges"],
+                }
+
+                # Update user confidence score in User table
+                avg_res = await db.execute(
+                    select(func.avg(SpeechSession.overall_confidence_score)).where(SpeechSession.user_id == session.user_id)
+                )
+                avg_score = avg_res.scalar() or overall_score
+                u_res = await db.execute(select(User).where(User.id == session.user_id))
+                user_obj = u_res.scalar_one_or_none()
+                if user_obj:
+                    user_obj.confidence_score = round(float(avg_score), 2)
+
+                # Record activity timeline event
+                timeline_event = ActivityTimeline(
+                    user_id=session.user_id,
+                    event_type="SPEECH_SESSION",
+                    title="Practice Audio Analyzed",
+                    description=f"Scored {overall_score}% on {session.topic or 'General Speaking'}",
+                    metadata_json={
                         "sessionId": session.id,
-                        "transcript": transcript_text,
-                        "topic": session.topic,
-                        "languageDetected": lang_detection.get("language_label", "English"),
-                        "wordCount": metrics.get("word_count", 0),
-                        "sentenceCount": metrics.get("sentence_count", 0),
-                        "fillerCount": metrics.get("filler_count", 0),
-                        "vocabularyRichness": metrics.get("vocabulary_richness", 0.0),
-                        "repetitionScore": metrics.get("repetition_score", 0.0),
-                        "averageVolume": metrics.get("average_volume", 0.0),
-                        "pauseFrequency": metrics.get("pause_frequency", 0.0),
-                        "speechSpeedWpm": metrics.get("speech_speed_wpm", 0.0),
-                        "fluencyScore": components.speech_fluency,
-                        "topicRelevanceScore": components.topic_relevance,
                         "overallConfidenceScore": overall_score,
-                        "durationSeconds": duration_sec,
                         "xpEarned": xp_earned,
-                        "coachingFeedback": coaching_output.coaching_feedback,
-                        "personalizedSuggestions": coaching_output.personalized_suggestions,
-                        "miniMission": coaching_output.next_mission,
-                        "missionId": session.mission_id,
-                        "challengeId": session.challenge_id,
                     }
-                    resp = await client.post(sync_url, json=payload, headers=headers)
-                    if resp.status_code in (200, 201):
-                        sync_data = resp.json()
-                        session.gamification = sync_data.get("gamification")
-                        logger.info(f"Successfully synced session {session_id} to NestJS: {sync_data}")
-                    else:
-                        logger.warning(f"NestJS sync returned status {resp.status_code}: {resp.text}")
-            except Exception as sync_err:
-                logger.warning(f"Failed to sync session {session_id} to NestJS (non-blocking): {sync_err}")
+                )
+                db.add(timeline_event)
+            except Exception as direct_sync_err:
+                logger.error(f"Error in direct gamification persistence for session {session_id}: {direct_sync_err}", exc_info=True)
 
             await db.commit()
             

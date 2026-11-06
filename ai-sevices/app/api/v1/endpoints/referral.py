@@ -24,7 +24,7 @@ async def get_my_referral_code(
     u_res = await db.execute(select(User).where(User.id == userId))
     user = u_res.scalar_one_or_none()
     
-    code = f"TF-{userId[:6].upper()}"
+    code = (user.referral_code if user and user.referral_code else None) or f"TF-{userId[:6].upper()}"
 
     # Count successful referrals
     ref_count_res = await db.execute(
@@ -59,7 +59,7 @@ async def apply_referral_code(
 
     # Find referrer
     prefix = code.replace("TF-", "").lower()
-    referrer_res = await db.execute(select(User).where(User.id.startswith(prefix)))
+    referrer_res = await db.execute(select(User).where((User.referral_code == code) | (User.id.startswith(prefix))))
     referrer = referrer_res.scalars().first()
 
     if not referrer or referrer.id == userId:

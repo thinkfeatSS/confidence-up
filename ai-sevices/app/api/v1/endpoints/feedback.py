@@ -15,6 +15,7 @@ class CreateFeedbackRequest(BaseModel):
     rating: int = Field(..., ge=1, le=5)
     comment: Optional[str] = None
     page: Optional[str] = None
+    featureArea: Optional[str] = None
 
 
 @router.post("/feedback")
@@ -27,7 +28,7 @@ async def create_feedback(
         user_id=current_user.id,
         rating=payload.rating,
         comment=payload.comment,
-        page=payload.page,
+        page=payload.page or payload.featureArea,
     )
     db.add(feedback)
     await db.commit()

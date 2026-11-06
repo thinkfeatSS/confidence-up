@@ -185,7 +185,7 @@ async def get_user_summary(
 
     # Badges earned in period
     b_stmt = select(func.count(UserBadge.id)).where(
-        UserBadge.user_id == userId, UserBadge.earned_at >= since
+        UserBadge.user_id == userId, UserBadge.unlocked_at >= since
     )
     res_b = await db.execute(b_stmt)
     badges_earned = res_b.scalar() or 0
@@ -229,8 +229,11 @@ async def get_admin_dashboard(
     total_users = total_users_res.scalar() or 0
 
     # Active Today (daily checkins)
+    today_str = today_start.strftime("%Y-%m-%d")
     active_today_res = await db.execute(
-        select(func.count(func.distinct(DailyCheckin.user_id))).where(DailyCheckin.date >= today_start)
+        select(func.count(func.distinct(DailyCheckin.user_id))).where(
+            (DailyCheckin.date >= today_str) | (DailyCheckin.created_at >= today_start)
+        )
     )
     active_today = active_today_res.scalar() or 0
 
