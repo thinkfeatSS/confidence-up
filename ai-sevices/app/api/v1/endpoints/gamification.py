@@ -104,3 +104,4 @@ async def get_leaderboard(
         })
 
     return {"success": True, "data": leaderboard}
+

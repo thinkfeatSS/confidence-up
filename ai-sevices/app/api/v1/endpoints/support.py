@@ -6,7 +6,7 @@ from sqlalchemy import select, func, desc
 
 from app.core.security import get_current_user, AuthUser
 from app.db.session import get_db
-from app.db.models import SupportTicket
+from app.db.models import SupportTicket, User
 
 router = APIRouter()
 
@@ -172,3 +172,75 @@ async def get_all_tickets_admin(
             "pages": (total + limit - 1) // limit,
         }
     }
+
+
+class AdminTicketResponseDto(BaseModel):
+    adminResponse: Optional[str] = None
+    response: Optional[str] = None
+    status: Optional[str] = "RESOLVED"
+
+
+@router.get("/support/admin/tickets/{ticket_id}")
+async def get_admin_ticket_detail(
+    ticket_id: str,
+    current_user: AuthUser = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    if current_user.role != "ADMIN":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin role required.")
+
+    stmt = select(SupportTicket).where(SupportTicket.id == ticket_id)
+    t = (await db.execute(stmt)).scalar_one_or_none()
+    if not t:
+        raise HTTPException(status_code=404, detail="Support ticket not found.")
+
+    u_stmt = select(User).where(User.id == t.user_id)
+    u = (await db.execute(u_stmt)).scalar_one_or_none()
+
+    return {
+        "success": True,
+        "data": {
+            "id": t.id,
+            "subject": t.subject,
+            "body": t.message,
+            "message": t.message,
+            "status": t.status,
+            "adminResponse": t.response,
+            "response": t.response,
+            "createdAt": t.created_at.isoformat() if t.created_at else None,
+            "updatedAt": t.updated_at.isoformat() if t.updated_at else None,
+            "user": {
+                "id": u.id if u else t.user_id,
+                "name": u.name if u else "Unknown User",
+                "email": u.email if u else "unknown@user.com",
+            },
+        },
+    }
+
+
+@router.patch("/support/admin/tickets/{ticket_id}")
+async def respond_admin_ticket(
+    ticket_id: str,
+    dto: AdminTicketResponseDto,
+    current_user: AuthUser = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    if current_user.role != "ADMIN":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin role required.")
+
+    stmt = select(SupportTicket).where(SupportTicket.id == ticket_id)
+    t = (await db.execute(stmt)).scalar_one_or_none()
+    if not t:
+        raise HTTPException(status_code=404, detail="Support ticket not found.")
+
+    resp_text = dto.adminResponse or dto.response
+    if resp_text:
+        t.response = resp_text
+    if dto.status:
+        t.status = dto.status.upper()
+
+    await db.commit()
+    await db.refresh(t)
+
+    return {"success": True, "message": "Ticket response recorded successfully."}
+

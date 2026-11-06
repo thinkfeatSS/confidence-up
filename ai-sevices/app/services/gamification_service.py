@@ -186,3 +186,4 @@ async def evaluate_user_badges(db: AsyncSession, user_id: str) -> List[Dict[str,
             ))
 
     return newly_unlocked
+

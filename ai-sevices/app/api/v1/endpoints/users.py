@@ -4,12 +4,39 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update, func, desc
+from sqlalchemy.orm import selectinload
 from app.db.session import get_db
-from app.db.models import User, UserSettings, Device, SpeechSession, Streak, AccountDeletionRequest
+from app.db.models import (
+    User,
+    UserSettings,
+    Device,
+    SpeechSession,
+    Streak,
+    AccountDeletionRequest,
+    UserBadge,
+    Badge,
+)
 from app.core.security import get_current_user, AuthUser
 from app.api.v1.endpoints.auth import serialize_user
+from app.services.audit_service import log_admin_action
 
 router = APIRouter(prefix="/users", tags=["Users"])
+
+
+def serialize_admin_user(user: User, streak_days: int = 0) -> Dict[str, Any]:
+    return {
+        "id": user.id,
+        "name": user.name,
+        "email": user.email,
+        "level": user.level,
+        "xp": user.xp_total,
+        "xpTotal": user.xp_total,
+        "streak": streak_days,
+        "createdAt": user.created_at.isoformat() if user.created_at else "",
+        "isBlocked": bool(user.is_blocked),
+        "role": user.role,
+        "confidenceScore": user.confidence_score,
+    }
 
 
 class OnboardingDto(BaseModel):
@@ -225,20 +252,27 @@ async def request_account_deletion(
     return {"success": True, "message": "Account deletion scheduled."}
 
 
+@router.get("/admin")
 @router.get("")
 async def list_users_admin(
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=100),
     search: Optional[str] = None,
+    isBlocked: Optional[str] = Query(None, alias="isBlocked"),
     current_user: AuthUser = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     if current_user.role != "ADMIN":
         raise HTTPException(status_code=403, detail="Admin authorization required.")
 
-    query = select(User)
+    query = select(User).options(selectinload(User.streak))
     if search:
         query = query.where(User.email.ilike(f"%{search}%") | User.name.ilike(f"%{search}%"))
+    if isBlocked is not None and isBlocked != "":
+        if isBlocked.lower() == "true":
+            query = query.where(User.is_blocked == True)
+        elif isBlocked.lower() == "false":
+            query = query.where(User.is_blocked == False)
 
     # Count total
     count_stmt = select(func.count()).select_from(query.subquery())
@@ -248,12 +282,152 @@ async def list_users_admin(
     res = await db.execute(query)
     users = res.scalars().all()
 
+    users_list = [
+        serialize_admin_user(u, u.streak.current_streak if u.streak else 0)
+        for u in users
+    ]
+
     return {
         "success": True,
         "data": {
-            "users": [serialize_user(u) for u in users],
+            "data": users_list,
+            "users": users_list,
             "total": total,
             "page": page,
             "limit": limit,
         },
+        "total": total,
+        "page": page,
+        "limit": limit,
     }
+
+
+@router.get("/admin/{user_id}")
+async def get_user_detail_admin(
+    user_id: str,
+    current_user: AuthUser = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    if current_user.role != "ADMIN":
+        raise HTTPException(status_code=403, detail="Admin authorization required.")
+
+    stmt = select(User).where(User.id == user_id).options(selectinload(User.streak))
+    res = await db.execute(stmt)
+    u = res.scalar_one_or_none()
+    if not u:
+        raise HTTPException(status_code=404, detail="User not found.")
+
+    # Devices
+    dev_stmt = select(Device).where(Device.user_id == user_id).order_by(desc(Device.created_at))
+    devices = (await db.execute(dev_stmt)).scalars().all()
+
+    # Badges
+    ub_stmt = (
+        select(Badge)
+        .join(UserBadge, UserBadge.badge_id == Badge.id)
+        .where(UserBadge.user_id == user_id)
+    )
+    badges = (await db.execute(ub_stmt)).scalars().all()
+
+    # Activity / recent sessions
+    sess_stmt = (
+        select(SpeechSession)
+        .where(SpeechSession.user_id == user_id)
+        .order_by(desc(SpeechSession.created_at))
+        .limit(10)
+    )
+    sessions = (await db.execute(sess_stmt)).scalars().all()
+
+    return {
+        "success": True,
+        "data": {
+            "id": u.id,
+            "name": u.name,
+            "email": u.email,
+            "level": u.level,
+            "xp": u.xp_total,
+            "streak": u.streak.current_streak if u.streak else 0,
+            "createdAt": u.created_at.isoformat() if u.created_at else "",
+            "isBlocked": bool(u.is_blocked),
+            "badgesEarned": len(badges),
+            "devices": [
+                {
+                    "id": d.id,
+                    "platform": d.platform,
+                    "lastSeen": d.created_at.isoformat() if d.created_at else "",
+                }
+                for d in devices
+            ],
+            "activity": [
+                {
+                    "id": s.id,
+                    "action": f"Completed practice session - score {s.overall_confidence_score:.1f}%",
+                    "createdAt": s.created_at.isoformat() if s.created_at else "",
+                }
+                for s in sessions
+            ],
+            "badges": [
+                {"id": b.id, "name": b.name, "tier": b.tier}
+                for b in badges
+            ],
+        },
+    }
+
+
+@router.patch("/admin/{user_id}/block")
+async def block_user(
+    user_id: str,
+    current_user: AuthUser = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    if current_user.role != "ADMIN":
+        raise HTTPException(status_code=403, detail="Admin authorization required.")
+
+    stmt = select(User).where(User.id == user_id)
+    u = (await db.execute(stmt)).scalar_one_or_none()
+    if not u:
+        raise HTTPException(status_code=404, detail="User not found.")
+
+    u.is_blocked = True
+    await db.commit()
+
+    await log_admin_action(
+        db=db,
+        user_id=current_user.id,
+        action="USER_BLOCK",
+        entity_type="USER",
+        entity_id=user_id,
+        new_data={"isBlocked": True},
+    )
+
+    return {"success": True, "message": "User has been blocked."}
+
+
+@router.patch("/admin/{user_id}/unblock")
+async def unblock_user(
+    user_id: str,
+    current_user: AuthUser = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    if current_user.role != "ADMIN":
+        raise HTTPException(status_code=403, detail="Admin authorization required.")
+
+    stmt = select(User).where(User.id == user_id)
+    u = (await db.execute(stmt)).scalar_one_or_none()
+    if not u:
+        raise HTTPException(status_code=404, detail="User not found.")
+
+    u.is_blocked = False
+    await db.commit()
+
+    await log_admin_action(
+        db=db,
+        user_id=current_user.id,
+        action="USER_UNBLOCK",
+        entity_type="USER",
+        entity_id=user_id,
+        new_data={"isBlocked": False},
+    )
+
+    return {"success": True, "message": "User has been unblocked."}
+

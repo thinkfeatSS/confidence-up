@@ -299,7 +299,9 @@ async def get_admin_dashboard(
             "totalMissionsCompleted": total_missions,
             "totalSpeechSessions": sp_count or 0,
             "averageConfidenceScore": round(float(sp_avg or 0.0), 1),
+            "avgConfidenceScore": round(float(sp_avg or 0.0), 1),
             "topBadges": top_badges,
             "growthUsers": growth_users,
+            "userGrowth": growth_users,
         }
     }

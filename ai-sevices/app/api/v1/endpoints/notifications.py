@@ -106,3 +106,4 @@ async def mark_read(
         "success": True,
         "message": "Notification marked as read."
     }
+

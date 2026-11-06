@@ -13,15 +13,21 @@ router = APIRouter()
 
 class CreateAnnouncementRequest(BaseModel):
     title: str
-    content: str
+    content: Optional[str] = None
+    body: Optional[str] = None
     type: Optional[str] = "INFO"  # INFO, WARNING, UPDATE
+    startsAt: Optional[str] = None
+    endsAt: Optional[str] = None
     isActive: Optional[bool] = True
 
 
 class UpdateAnnouncementRequest(BaseModel):
     title: Optional[str] = None
     content: Optional[str] = None
+    body: Optional[str] = None
     type: Optional[str] = None
+    startsAt: Optional[str] = None
+    endsAt: Optional[str] = None
     isActive: Optional[bool] = None
 
 
@@ -77,7 +83,10 @@ async def get_all_announcements(
                     "id": a.id,
                     "title": a.title,
                     "content": a.content,
+                    "body": a.content,
                     "type": a.type,
+                    "startsAt": a.created_at.isoformat() if a.created_at else None,
+                    "endsAt": None,
                     "isActive": a.is_active,
                     "createdAt": a.created_at.isoformat() if a.created_at else None,
                 }
@@ -100,9 +109,10 @@ async def create_announcement(
     if current_user.role != "ADMIN":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin role required.")
 
+    announcement_text = payload.content or payload.body or ""
     announcement = Announcement(
         title=payload.title,
-        content=payload.content,
+        content=announcement_text,
         type=payload.type or "INFO",
         is_active=payload.isActive if payload.isActive is not None else True,
     )
@@ -116,7 +126,10 @@ async def create_announcement(
             "id": announcement.id,
             "title": announcement.title,
             "content": announcement.content,
+            "body": announcement.content,
             "type": announcement.type,
+            "startsAt": announcement.created_at.isoformat() if announcement.created_at else None,
+            "endsAt": None,
             "isActive": announcement.is_active,
             "createdAt": announcement.created_at.isoformat() if announcement.created_at else None,
         }
@@ -141,8 +154,9 @@ async def update_announcement(
 
     if payload.title is not None:
         a.title = payload.title
-    if payload.content is not None:
-        a.content = payload.content
+    new_content = payload.content or payload.body
+    if new_content is not None:
+        a.content = new_content
     if payload.type is not None:
         a.type = payload.type
     if payload.isActive is not None:
@@ -170,3 +184,4 @@ async def delete_announcement(
     await db.delete(a)
     await db.commit()
     return {"success": True, "message": "Announcement deleted."}
+

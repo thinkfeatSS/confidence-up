@@ -78,3 +78,4 @@ def get_level_info(total_xp: int) -> Dict[str, Any]:
         "progressPercent": progress_percent,
         "totalXp": total_xp,
     }
+

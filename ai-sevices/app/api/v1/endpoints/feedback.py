@@ -104,3 +104,4 @@ async def get_feedback_aggregate(
             "averageRating": round(float(avg_rating or 0.0), 2),
         }
     }
+

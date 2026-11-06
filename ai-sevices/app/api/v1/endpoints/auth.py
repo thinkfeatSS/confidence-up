@@ -439,3 +439,4 @@ async def logout(current_user: AuthUser = Depends(get_current_user), db: AsyncSe
         await db.execute(stmt)
         await db.commit()
     return {"success": True, "message": "Logged out successfully."}
+

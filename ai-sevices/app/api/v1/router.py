@@ -21,6 +21,9 @@ from app.api.v1.endpoints import (
     health,
     progress,
     benchmark,
+    devices,
+    audit,
+    skill_tree,
 )
 
 api_router = APIRouter()
@@ -44,6 +47,9 @@ api_router.include_router(feedback.router, tags=["User Feedback"])
 api_router.include_router(support.router, tags=["Support Desk"])
 api_router.include_router(referral.router, tags=["Referrals"])
 api_router.include_router(activity.router, tags=["Activity Timeline"])
+api_router.include_router(devices.router, tags=["Devices & App Versions"])
+api_router.include_router(audit.router, tags=["Audit Logs"])
+api_router.include_router(skill_tree.router, tags=["Skill Tree"])
 
 # ─── Specialized AI & System Operations ───────────────────────────────────────
 api_router.include_router(progress.router, tags=["AI Progress Tracking"])

@@ -111,3 +111,4 @@ async def get_daily_hub(current_user: AuthUser = Depends(get_current_user), db: 
             },
         },
     }
+

@@ -36,3 +36,4 @@ async def submit_contact_inquiry(payload: ContactInquiryRequest):
         "success": True,
         "message": "Thank you, we will respond within 2 business days."
     }
+

@@ -124,3 +124,4 @@ async def get_referrals_admin(
             "pages": (total + limit - 1) // limit,
         }
     }
+
