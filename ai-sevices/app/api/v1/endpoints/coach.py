@@ -22,7 +22,8 @@ class CoachContextDto(BaseModel):
 
 
 class CoachChatRequest(BaseModel):
-    messages: List[CoachMessageDto]
+    message: Optional[str] = None
+    messages: Optional[List[CoachMessageDto]] = None
     context: Optional[CoachContextDto] = None
 
 
@@ -39,9 +40,15 @@ async def chat_with_coach(
     streak_val = payload.context.streak if payload.context and payload.context.streak else 0
     score_val = payload.context.confidenceScore if payload.context and payload.context.confidenceScore else 70.0
 
+    raw_messages = payload.messages or []
+    if not raw_messages and payload.message:
+        raw_messages = [CoachMessageDto(role="user", content=payload.message)]
+    elif not raw_messages:
+        raw_messages = [CoachMessageDto(role="user", content="Hello Atlas")]
+
     last_user_message = ""
     conversation_history = []
-    for msg in payload.messages:
+    for msg in raw_messages:
         conversation_history.append(f"{msg.role.capitalize()}: {msg.content}")
         if msg.role.lower() == "user":
             last_user_message = msg.content

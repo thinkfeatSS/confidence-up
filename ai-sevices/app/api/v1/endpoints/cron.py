@@ -66,10 +66,17 @@ async def reset_expired_streaks(
     """
     Resets streaks for users who failed to practice yesterday (00:00 UTC).
     """
-    two_days_ago = datetime.utcnow() - timedelta(days=2)
+    yesterday_str = (datetime.utcnow() - timedelta(days=1)).strftime("%Y-%m-%d")
+    today_str = datetime.utcnow().strftime("%Y-%m-%d")
     stmt = (
         update(Streak)
-        .where(and_(Streak.current_streak > 0, Streak.last_active_at < two_days_ago))
+        .where(
+            and_(
+                Streak.current_streak > 0,
+                Streak.last_checkin_date != today_str,
+                Streak.last_checkin_date != yesterday_str,
+            )
+        )
         .values(current_streak=0)
     )
     res = await db.execute(stmt)
@@ -85,8 +92,13 @@ async def send_streak_reminders(
     """
     Sends in-app notifications to active learners at risk of losing their streak.
     """
-    yesterday = datetime.utcnow() - timedelta(days=1)
-    stmt = select(Streak).where(and_(Streak.current_streak > 0, Streak.last_active_at < yesterday))
+    yesterday_str = (datetime.utcnow() - timedelta(days=1)).strftime("%Y-%m-%d")
+    stmt = select(Streak).where(
+        and_(
+            Streak.current_streak > 0,
+            Streak.last_checkin_date == yesterday_str,
+        )
+    )
     res = await db.execute(stmt)
     streaks_at_risk = res.scalars().all()
 

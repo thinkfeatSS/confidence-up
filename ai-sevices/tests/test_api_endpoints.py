@@ -143,3 +143,25 @@ def test_cron_daily_mission():
     assert data["ok"] is True
 
 
+def test_cron_reset_streaks():
+    res = client.post("/api/v1/cron/reset-streaks")
+    assert res.status_code == 200
+    data = res.json()
+    assert data["ok"] is True
+    assert "streaksReset" in data
+
+
+def test_coach_chat_single_message_format():
+    token = create_access_token(data={"sub": "test-user-id", "email": "coach-test2@truefluent.ai", "role": "USER"})
+    headers = {"Authorization": f"Bearer {token}"}
+    payload = {
+        "message": "Hello Coach Atlas, test single message!"
+    }
+    res = client.post("/api/v1/coach/chat", headers=headers, json=payload)
+    assert res.status_code == 200
+    data = res.json()
+    assert data["success"] is True
+    assert "reply" in data["data"]
+
+
+
