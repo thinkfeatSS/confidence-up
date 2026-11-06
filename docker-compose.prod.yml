@@ -1,39 +1,12 @@
 services:
-  # Nginx Gateway & Reverse Proxy (SSL termination & API routing)
-  nginx:
-    image: nginx:alpine
-    container_name: confidence_nginx
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./certbot/conf:/etc/letsencrypt:ro
-      - ./certbot/www:/var/www/certbot:ro
-    depends_on:
-      - fastapi
-    restart: always
-    networks:
-      - confidence_net
-
-  # Certbot Auto SSL Certificate Renewal
-  certbot:
-    image: certbot/certbot:latest
-    container_name: confidence_certbot
-    volumes:
-      - ./certbot/conf:/etc/letsencrypt
-      - ./certbot/www:/var/www/certbot
-    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12d & wait $${!}; done;'"
-    restart: always
-    networks:
-      - confidence_net
-
   # Truefluent AI Unified FastAPI Backend
   fastapi:
     build:
       context: ./ai-sevices
       dockerfile: Dockerfile
     container_name: confidence_fastapi
+    ports:
+      - "127.0.0.1:8006:8000"
     environment:
       - ENVIRONMENT=production
       - DEBUG=false
