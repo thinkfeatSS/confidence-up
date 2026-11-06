@@ -141,10 +141,12 @@ export const AuthScreen = ({ navigation, route }: Props) => {
       if (parsed.isNetworkError || isNetworkError(err)) return;
 
       const message = parsed.message || (err as Error)?.message || String(err);
-      const nativeMessage =
-        code === '10' || code === 'DEVELOPER_ERROR'
-          ? `${message}\n\nCheck Google Play Services OAuth propagation or account authentication.`
-          : message;
+      let nativeMessage = message;
+      if (code === '10' || code === 'DEVELOPER_ERROR') {
+        nativeMessage = `${message}\n\nCheck Google Play Services OAuth propagation or account authentication.`;
+      } else if (parsed.statusCode === 400 && message.toLowerCase().includes('google authentication failed')) {
+        nativeMessage = `${message}\n\nThe backend server rejected the authentication token. Please ensure the backend service is redeployed with the latest updates.`;
+      }
 
       Alert.alert('Google Sign-In failed', nativeMessage);
     } finally {
